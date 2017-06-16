@@ -67,12 +67,11 @@ public class SocketServer {
 
 	public static SocketServer getInstance(DecisionMaker decisionMaker) {
 		if (socketServerInstance == null)
-			return new SocketServer(decisionMaker);
-		else
-			return socketServerInstance;
+			socketServerInstance = new SocketServer(decisionMaker);
+
+		return socketServerInstance;
 	}		
 
-	
 	private class ClientHandlerObjectThread implements Runnable {
 
 		private final Socket socket;

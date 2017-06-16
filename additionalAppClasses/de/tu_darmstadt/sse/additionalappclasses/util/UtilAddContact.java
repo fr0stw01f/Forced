@@ -48,9 +48,8 @@ public class UtilAddContact {
 	                // We will do batch operation to insert all above data 
 	        	//Contains the output of the app of a ContentProviderOperation. 
 	        	//It is sure to have exactly one of uri or count set
-	            ContentProviderResult[] contentProresult = null;
-	            contentProresult = contetx.getContentResolver().applyBatch(ContactsContract.AUTHORITY, cntProOper); //apply above data insertion into contacts list 
-	        }
+	            ContentProviderResult[] contentProresult = contetx.getContentResolver().applyBatch(ContactsContract.AUTHORITY, cntProOper);
+			}
 	        catch (RemoteException exp)
 	        { 
 	            //logs;

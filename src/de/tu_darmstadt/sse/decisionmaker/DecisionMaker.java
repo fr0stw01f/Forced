@@ -317,12 +317,7 @@ public class DecisionMaker {
 		
 		//start server...
 		socketServer = SocketServer.getInstance(this);
-		Runnable r1 = new Runnable() {
-			@Override
-			public void run() {
-				socketServer.startSocketServerObjectTransfer();				
-			}
-		};		
+		Runnable r1 = () -> socketServer.startSocketServerObjectTransfer();
 		Thread backgroundThreadForObjectTransfer = new Thread(r1);
 		backgroundThreadForObjectTransfer.start();				
 		
