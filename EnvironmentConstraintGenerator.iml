@@ -31,15 +31,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="module-library">
-      <library name="commons-cli-1.2.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/commons-cli-1.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="zhook.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/zhook.jar!/" />
@@ -156,5 +147,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
+    <orderEntry type="library" name="commons-cli-1.4.jar" level="project" />
   </component>
 </module>

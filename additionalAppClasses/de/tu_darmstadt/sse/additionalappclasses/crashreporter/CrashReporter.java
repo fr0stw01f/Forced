@@ -22,7 +22,7 @@ public class CrashReporter {
 			Log.i(SharedClassesSettings.TAG, "Crash reporter started: " + arg1.toString()
 					+ " at " + arg1.getStackTrace());
 			if (arg1.getCause() != null)
-				Log.i(SharedClassesSettings.TAG, "Cause: " + arg1.getCause().toString());
+				Log.i(SharedClassesSettings.TAG, "Cause: " + arg1.getCause().getStackTrace().toString());
 			if (arg1.getCause().getCause() != null)
 				Log.i(SharedClassesSettings.TAG, "Cause 2: " + arg1.getCause().getCause().toString());
 			if (arg1.getCause().getCause().getCause() != null)

@@ -18,7 +18,7 @@ public class UtilAddContact {
 	
 	public static void writePhoneContact(String displayName, String number)
 	{
-		Context contetx 	= Hooker.applicationContext; //Application's context or Activity's context
+		Context context 	= Hooker.applicationContext; //Application's context or Activity's context
 		String strDisplayName 	=  displayName; // Name of the Person to add
 		String strNumber 	=  number; //number of the person to add with the Contact
 			
@@ -45,18 +45,13 @@ public class UtilAddContact {
 	                .withValue(Phone.TYPE, Phone.TYPE_MOBILE).build()); //Type like HOME, MOBILE etc
 	        try
 	        {
-	                // We will do batch operation to insert all above data 
+				// We will do batch operation to insert all above data
 	        	//Contains the output of the app of a ContentProviderOperation. 
 	        	//It is sure to have exactly one of uri or count set
-	            ContentProviderResult[] contentProresult = contetx.getContentResolver().applyBatch(ContactsContract.AUTHORITY, cntProOper);
+	            ContentProviderResult[] contentProresult = context.getContentResolver().applyBatch(ContactsContract.AUTHORITY, cntProOper);
 			}
-	        catch (RemoteException exp)
-	        { 
+	        catch (RemoteException | OperationApplicationException exp) {
 	            //logs;
 	        }
-	        catch (OperationApplicationException exp) 
-	        {
-	            //logs
-	        }       
 	}
 }
