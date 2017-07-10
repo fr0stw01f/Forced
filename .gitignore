@@ -11,3 +11,4 @@ android-jars
 hooking
 mainException.txt
 noLoggingPoint.txt
+.gitignore
