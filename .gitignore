@@ -3,3 +3,6 @@
 CodePositions.log
 /additionalAppClassesBin/
 /sharedClassesBin/
+/sootOutput
+*.iml
+.idea
