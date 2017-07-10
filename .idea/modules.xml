@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EnvironmentConstraintGenerator.iml" filepath="$PROJECT_DIR$/EnvironmentConstraintGenerator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ForcedExecutionEngine.iml" filepath="$PROJECT_DIR$/ForcedExecutionEngine.iml" />
     </modules>
   </component>
 </project>

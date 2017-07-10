@@ -9,3 +9,11 @@ lib
 plot
 android-jars
 hooking
+.settings
+.classpath
+.project
+ant.settings.ssebuild
+ant.settings.template
+build.xml
+mainException.txt
+noLoggingPoint.txt
