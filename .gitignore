@@ -1,8 +1,9 @@
-/bin
-/testBin/
+bin
 CodePositions.log
-/additionalAppClassesBin/
-/sharedClassesBin/
-/sootOutput
+additionalAppClassesBin
+sharedClassesBin
+sootOutput
 *.iml
 .idea
+lib
+plot
