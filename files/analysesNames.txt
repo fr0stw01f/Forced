@@ -1,8 +1,8 @@
-%de.tu_darmstadt.sse.decisionmaker.analysis.filefuzzer.FileFuzzer
-%de.tu_darmstadt.sse.decisionmaker.analysis.stringtotypeextractor.StringToPrimitiveTypeFuzzer
-%de.tu_darmstadt.sse.decisionmaker.analysis.smartconstantdataextractor.SmartConstantDataExtractorFuzzyAnalysis
-%de.tu_darmstadt.sse.decisionmaker.analysis.simpleBooleanAnalysis.SimpleBooleanAnalysis
-%de.tu_darmstadt.sse.decisionmaker.analysis.integritycheck.AntiIntegrityCheckFuzzyAnalysis
-%de.tu_darmstadt.sse.decisionmaker.analysis.randomFuzzer.SimpleRandomFuzzer
-%de.tu_darmstadt.sse.decisionmaker.analysis.sourceconstantfuzzer.SourceConstantFuzzer
-%de.tu_darmstadt.sse.decisionmaker.analysis.dynamicValues.DynamicValueAnalysis
+me.zhenhao.forced.decisionmaker.analysis.filefuzzer.FileFuzzer
+me.zhenhao.forced.decisionmaker.analysis.stringtotypeextractor.StringToPrimitiveTypeFuzzer
+%me.zhenhao.forced.decisionmaker.analysis.smartconstantdataextractor.SmartConstantDataExtractorFuzzyAnalysis
+me.zhenhao.forced.decisionmaker.analysis.simpleBooleanAnalysis.SimpleBooleanAnalysis
+me.zhenhao.forced.decisionmaker.analysis.integritycheck.AntiIntegrityCheckFuzzyAnalysis
+me.zhenhao.forced.decisionmaker.analysis.randomFuzzer.SimpleRandomFuzzer
+me.zhenhao.forced.decisionmaker.analysis.sourceconstantfuzzer.SourceConstantFuzzer
+me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicValueAnalysis
