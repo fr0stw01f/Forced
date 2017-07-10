@@ -3,8 +3,6 @@ CodePositions.log
 additionalAppClassesBin
 sharedClassesBin
 sootOutput
-*.iml
-.idea
 lib
 plot
 android-jars
