@@ -195,6 +195,8 @@ class Instrumenter(private val codePositionManager: CodePositionManager,
                         dynamicValues.transform(body)
                     }
                     classLoaders.transform(body)
+
+                    body.validate()
                 }
         //todo PAPER-EVAL ONLY
         if (!FrameworkOptions.evaluationOnly)

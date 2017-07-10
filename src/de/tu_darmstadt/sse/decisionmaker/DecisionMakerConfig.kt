@@ -46,62 +46,62 @@ class DecisionMakerConfig {
 
     private fun registerFuzzyAnalyses(): Boolean {
         val registeredAnalyses = analysesNames
-        for (registeredAnalysisClassName in registeredAnalyses)
-            if (!registeredAnalysisClassName.startsWith("%")) {
-                try {
-                    val analysisClass = Class.forName(registeredAnalysisClassName)
-                    val defaultConstructor = analysisClass.getConstructor()
-                    defaultConstructor.isAccessible
-                    val constructorObject = defaultConstructor.newInstance() as? FuzzyAnalysis ?: throw RuntimeException("There is a problem with the registered analysis in the files/analysesNames.txt file!")
-                    val analysis = constructorObject
+        registeredAnalyses
+                .filterNot { it.startsWith("%") }
+                .forEach {
+                    try {
+                        val analysisClass = Class.forName(it)
+                        val defaultConstructor = analysisClass.getConstructor()
+                        defaultConstructor.isAccessible
+                        val constructorObject = defaultConstructor.newInstance() as? FuzzyAnalysis ?: throw RuntimeException("There is a problem with the registered analysis in the files/analysesNames.txt file!")
+                        val analysis = constructorObject
 
-                    allAnalyses!!.add(analysis)
-                    nameToAnalysis!!.put(analysis.getAnalysisName(), analysis)
-                    LoggerHelper.logEvent(MyLevel.ANALYSIS, "[ANALYSIS-TYPE] " + registeredAnalysisClassName)
-                } catch (ex: Exception) {
-                    LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
-                    ex.printStackTrace()
-                    return false
+                        allAnalyses.add(analysis)
+                        nameToAnalysis.put(analysis.getAnalysisName(), analysis)
+                        LoggerHelper.logEvent(MyLevel.ANALYSIS, "[ANALYSIS-TYPE] " + it)
+                    } catch (ex: Exception) {
+                        LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                        ex.printStackTrace()
+                        return false
+                    }
                 }
-
-            }
         return true
     }
 
 
     private fun registerProgressMetrics(): Boolean {
         val registeredMetrics = progressMetricNames
-        for (registeredMetricsClassName in registeredMetrics)
-            if (!registeredMetricsClassName.startsWith("%")) {
-                try {
-                    val metricClass = Class.forName(registeredMetricsClassName)
-                    val defaultConstructor = metricClass.getConstructor(Collection::class.java, InfoflowCFG::class.java)
-                    defaultConstructor.isAccessible
-                    val constructorObject = defaultConstructor.newInstance(allTargetLocations, backwardsCFG) as? IProgressMetric ?: throw RuntimeException("There is a problem with the registered metric in the files/metricsNames.txt file!")
-                    val metric = constructorObject
-                    LoggerHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + registeredMetricsClassName)
+        registeredMetrics
+                .filterNot { it.startsWith("%") }
+                .forEach {
+                    try {
+                        val metricClass = Class.forName(it)
+                        val defaultConstructor = metricClass.getConstructor(Collection::class.java, InfoflowCFG::class.java)
+                        defaultConstructor.isAccessible
+                        val constructorObject = defaultConstructor.newInstance(allTargetLocations, backwardsCFG) as? IProgressMetric ?: throw RuntimeException("There is a problem with the registered metric in the files/metricsNames.txt file!")
+                        val metric = constructorObject
+                        LoggerHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + it)
 
-                    //currently, there can be only a single target
-                    if (allTargetLocations!!.size != 1)
-                        throw RuntimeException("There can be only 1 target location per run")
-                    val target = allTargetLocations!!.iterator().next()
-                    if (backwardsCFG!!.getMethodOf(target) != null) {
-                        metric.setCurrentTargetLocation(target)
+                        //currently, there can be only a single target
+                        if (allTargetLocations.size != 1)
+                            throw RuntimeException("There can be only 1 target location per run")
+                        val target = allTargetLocations.iterator().next()
+                        if (backwardsCFG.getMethodOf(target) != null) {
+                            metric.setCurrentTargetLocation(target)
 
-                        //initialize the metric, otherwise it is empty!
-                        metric.initialize()
-                        progressMetrics!!.add(metric)
-                    } else {
-                        LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
-                        return false
+                            //initialize the metric, otherwise it is empty!
+                            metric.initialize()
+                            progressMetrics.add(metric)
+                        } else {
+                            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+                            return false
+                        }
+                    } catch (ex: Exception) {
+                        LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                        ex.printStackTrace()
+                        System.exit(-1)
                     }
-                } catch (ex: Exception) {
-                    LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
-                    ex.printStackTrace()
-                    System.exit(-1)
                 }
-
-            }
         return true
     }
 

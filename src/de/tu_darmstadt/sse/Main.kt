@@ -287,9 +287,7 @@ class Main private constructor() {
 
 		// dex files to merge
 		for (dexFile in currentTask.dexFilesToMerge) {
-			if (dexFile.localFileName != null
-					&& !dexFile.localFileName.isEmpty()
-					&& File(dexFile.localFileName).exists())
+			if (!dexFile.localFileName.isEmpty() && File(dexFile.localFileName).exists())
 				processDir.add(dexFile.localFileName)
 			else
 				throw RuntimeException("Could not find local dex file")

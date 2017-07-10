@@ -217,12 +217,12 @@ class FrameworkOptions {
 	}
 
 	companion object {
-//      val homeDir = "/home/zhenhao"
+//		val homeDir = "/home/zhenhao"
 		val homeDir = "/Users/tom"
 
         // default
-        var androidJarPath = homeDir + "/Library/Android/sdk/platforms"
-        var resultsDir = homeDir + "/Workspaces/FuzzDroid/results"
+        var androidJarPath = homeDir + "/Work/Android/Sdk/platforms"
+        var resultsDir = homeDir + "/Work/FuzzDroid/results"
         var frameworkDir = homeDir + "/IdeaProjects/FuzzDroid"
         var devicePort = "5555"
 
@@ -232,19 +232,19 @@ class FrameworkOptions {
 		var apkMD5 = ""
 
 		var nbSeeds = 1
-		var forceTimeout = 10       //60
-		var inactivityTimeout = 5   //40
-		var maxRestarts = 2         //5
+		var forceTimeout = 20       //60
+		var inactivityTimeout = 10   //40
+		var maxRestarts = 3         //5
 
-		var uninstallWaitingTime = 3000
-		var tryStartAppWaitingTime = 2000
+		var uninstallWaitingTime = 5000
+		var tryStartAppWaitingTime = 3000
 
-		var KEYSTORE_PATH = homeDir + "/zhenhao.keystore"
+		var KEYSTORE_PATH = homeDir + "/keystores/zhenhao.keystore"
 		var KEYSTORE_NAME = "zhenhao"
 		var KEYSTORE_PASSWORD = "pursuits23"
-		var BUILD_TOOLS = homeDir + "/Library/Android/sdk/build-tools/25.0.3/"
-		var PLATFORM_TOOLS = homeDir + "/Library/Android/sdk/platform-tools"
-		var Z3SCRIPT_LOCATION = homeDir + "/Workspaces/Z3-str-master/Z3-str.py"
+		var BUILD_TOOLS = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
+		var PLATFORM_TOOLS = homeDir + "/Library/Android/Sdk/platform-tools"
+		var Z3SCRIPT_LOCATION = homeDir + "/Work/Z3-str-master/Z3-str.py"
 
 		var deployApp = true
 		var recordPathExecution = false

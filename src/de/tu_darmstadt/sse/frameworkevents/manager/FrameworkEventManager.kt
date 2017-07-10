@@ -172,8 +172,9 @@ class FrameworkEventManager {
                                             val actionName = children2.getAttribute("name").value as String
                                             actions.add(actionName)
                                         } else if (children2.tag == "data") {
-                                            val mimeType = children2.getAttribute("mimeType").value as String
-                                            mimeTypes.add(mimeType)
+                                            val attr = children2.getAttribute("mimeType")
+                                            if (attr != null)
+                                                mimeTypes.add(attr.value as String)
                                         }
                                     }
 
