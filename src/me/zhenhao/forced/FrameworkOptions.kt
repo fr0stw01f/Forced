@@ -220,15 +220,12 @@ class FrameworkOptions {
 //		val homeDir = "/home/zhenhao"
 		val homeDir = "/Users/tom"
 
-        // default
         var androidJarPath = homeDir + "/Work/Android/Sdk/platforms"
         var resultsDir = homeDir + "/Work/FuzzDroid/results"
         var frameworkDir = homeDir + "/IdeaProjects/FuzzDroid"
         var devicePort = "5555"
 
 		var apkPath = ""
-		//if there is an apk that needs a pre-analysis with Harvester, we need to store the original apk somehow (integrity check)
-		var apkPathOriginalAPK = ""
 		var apkMD5 = ""
 
 		var nbSeeds = 1

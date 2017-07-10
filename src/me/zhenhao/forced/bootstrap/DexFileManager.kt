@@ -9,7 +9,7 @@ class DexFileManager {
     private val dexFiles = ConcurrentHashMap<DexFile, DexFile>()
 
     fun add(dexFile: DexFile): DexFile {
-        val ret = (dexFiles as java.util.Map<DexFile, DexFile>).putIfAbsent(dexFile, dexFile)
+        val ret = (dexFiles as MutableMap<DexFile, DexFile>).putIfAbsent(dexFile, dexFile)
         return ret ?: dexFile
     }
 

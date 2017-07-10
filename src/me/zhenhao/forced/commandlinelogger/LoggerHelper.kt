@@ -31,7 +31,7 @@ object LoggerHelper {
             fh!!.flush()
     }
 
-    fun initialize(apkPath: String) {
+    fun initialize() {
         log.useParentHandlers = false
         val conHdlr = ConsoleHandler()
         conHdlr.formatter = object : Formatter() {

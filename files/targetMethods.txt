@@ -1,1 +1,5 @@
 <*: int onStartCommand(android.content.Intent, int, int)>
+<android.webkit.WebView: void loadUrl(java.lang.String)>
+<android.webkit.WebView: void loadUrl(java.lang.String, java.util.Map<java.langString, java.lang.String>)>
+<android.webkit.WebView: void setJavaScriptEnabled(boolean)>
+<android.telephony.SmsManager: void sendTextMessage(java.lang.String, java.lang.String, java.lang.String, android.app.PendingIntent, android.app.PendingIntent)>

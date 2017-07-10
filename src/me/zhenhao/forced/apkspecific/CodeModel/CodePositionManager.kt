@@ -45,7 +45,7 @@ class CodePositionManager private constructor() {
     }
 
     internal fun getMethodOffset(methodSignature: String): Int {
-        return (this.methodToOffset as java.util.Map<String, Int>).computeIfAbsent(methodSignature) { k -> lastOffset++ * methodOffsetMultiplier }
+        return (this.methodToOffset as MutableMap<String, Int>).computeIfAbsent(methodSignature) { lastOffset++ * methodOffsetMultiplier }
     }
 
     internal val methodsWithCodePositions: Set<String>

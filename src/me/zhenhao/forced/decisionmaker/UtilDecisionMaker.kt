@@ -62,10 +62,6 @@ object UtilDecisionMaker {
                                     val invExpr = statement.invokeExpr
                                     val invokeExprMethodSignature = invExpr.method.signature
 
-                                    // for test only
-                                    if (invokeExprMethodSignature.contains("loadUrl"))
-                                        allTargetLocations.add(curUnit)
-
                                     for (targetLocation in targetLocationsTmp) {
                                         //we accept all classes
                                         if (targetLocation.startsWith("<*:")) {

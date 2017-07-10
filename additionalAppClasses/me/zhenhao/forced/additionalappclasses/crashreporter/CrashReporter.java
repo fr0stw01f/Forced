@@ -32,9 +32,8 @@ public class CrashReporter {
 			BytecodeLogger.dumpTracingDataSynchronous();
 			
 			// Send the crash report
-			CrashReportItem ci = new CrashReportItem(arg1.getMessage(),
-					BytecodeLogger.getLastExecutedStatement());
-			communicator.send(Collections.<IClientRequest>singleton(ci), true);
+			CrashReportItem ci = new CrashReportItem(arg1.getMessage(), BytecodeLogger.getLastExecutedStatement());
+			communicator.send(Collections.singleton(ci), true);
 		}
 		
 	};

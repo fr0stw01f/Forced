@@ -9,7 +9,7 @@ import soot.jimple.Jimple
 import java.util.*
 
 
-class ConditionTracking : AbstractInstrumentationTransformer() {
+class BranchTracking : AbstractInstrumentationTransformer() {
 
     private val branchTargetStmt = HashSet<String>()
 
@@ -31,10 +31,8 @@ class ConditionTracking : AbstractInstrumentationTransformer() {
 
     }
 
-
     private fun instrumentEachBranchAccess(body: Body, unit: Unit) {
-        val sootClass = Scene.v().getSootClass(
-                UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
+        val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
 
         // Create the method invocation
         val createAndAdd = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
@@ -57,7 +55,6 @@ class ConditionTracking : AbstractInstrumentationTransformer() {
             body.units.insertBeforeNoRedirect(nop, targetStmt)
             body.units.insertBeforeNoRedirect(gotoNop, sieThenUnit)
         }
-
 
         //treatment of "else"-branch
         body.units.insertAfter(sieElseUnit, unit)

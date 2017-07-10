@@ -44,7 +44,7 @@ class Main private constructor() {
 	private fun run(args: Array<String>): Set<EnvironmentResult>? {
 		val frameworkOptions = FrameworkOptions()
 		frameworkOptions.parse(args)
-		LoggerHelper.initialize(FrameworkOptions.apkPath)
+		LoggerHelper.initialize()
 		LoggerHelper.logEvent(MyLevel.APKPATH, FrameworkOptions.apkPath)
 		LoggerHelper.logEvent(MyLevel.ANALYSIS,
 				String.format("Force timeout: %d || Inactivity timeout: %d || Max restarts: %d",
@@ -218,7 +218,7 @@ class Main private constructor() {
 				// Ignore statements that were added by an instrumenter
 				if (!u.hasTag(InstrumentedCodeTag.name))
 					if (lineNum == codePos.lineNumber)
-						if (codePos.statement == null || u.toString() == codePos.statement) {
+						if (u.toString() == codePos.statement) {
 							unitIt.remove()
 							break
 						}
@@ -240,8 +240,8 @@ class Main private constructor() {
 		LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_STOP, "")
 
 		if (FrameworkOptions.deployApp) {
-			UtilApk.jarsigner(FrameworkOptions.getApkName())
-			UtilApk.zipalign(FrameworkOptions.getApkName())
+			UtilApk.jarsigner()
+			UtilApk.zipalign()
 		}
 	}
 

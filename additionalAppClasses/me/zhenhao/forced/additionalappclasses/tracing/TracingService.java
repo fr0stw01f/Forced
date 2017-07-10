@@ -28,19 +28,19 @@ public class TracingService extends Service {
 	
 	private boolean DUMPER_STARTED = false;
 	
-	public final static String ACTION_ENQUEUE_TRACE_ITEM = "enqueueTraceItem";
-	public final static String ACTION_DUMP_QUEUE = "dumpQueue";
-	public final static String ACTION_DUMP_QUEUE_SYNCHRONOUS = "dumpQueueSynchronous";
-	public final static String ACTION_NULL = "null";
+	final static String ACTION_ENQUEUE_TRACE_ITEM = "enqueueTraceItem";
+	final static String ACTION_DUMP_QUEUE = "dumpQueue";
+	private final static String ACTION_DUMP_QUEUE_SYNCHRONOUS = "dumpQueueSynchronous";
+	final static String ACTION_NULL = "null";
 	
-	public final static String EXTRA_ITEM_TYPE = "itemType";
-	public final static String EXTRA_TRACE_ITEM = "traceItem";
+	final static String EXTRA_ITEM_TYPE = "itemType";
+	final static String EXTRA_TRACE_ITEM = "traceItem";
 	
-	public final static String ITEM_TYPE_PATH_TRACKING = "pathTrackingItem";
+	final static String ITEM_TYPE_PATH_TRACKING = "pathTrackingItem";
 	
 	private final Queue<TraceItem> traceQueue = new LinkedBlockingQueue<>();
 	
-	protected HandlerDumpQueue handlerDumpQueue;
+	private HandlerDumpQueue handlerDumpQueue;
 	
 	private ServerCommunicator communicator = new ServerCommunicator(this);
 	
@@ -74,13 +74,13 @@ public class TracingService extends Service {
 		}
 		else if (intent.getAction().equals(ACTION_DUMP_QUEUE))
 			new Thread(new Runnable() {
-				
+
 				@Override
 				public void run() {
 					Log.i(SharedClassesSettings.TAG, "Flushing queue, explicit request...");
 					dumpQueue();
 				}
-				
+
 			}).start();
 		else if (intent.getAction().equals(ACTION_DUMP_QUEUE_SYNCHRONOUS)) {
 			Log.i(SharedClassesSettings.TAG_TS, "Flushing queue (blocking mode), "
@@ -119,7 +119,7 @@ public class TracingService extends Service {
 			
 		};
 		
-		public HandlerDumpQueue(Looper looper) {
+		HandlerDumpQueue(Looper looper) {
 			super(looper);
 			postDelayed(dumpRunnable, DUMP_TIMEOUT);
 		}

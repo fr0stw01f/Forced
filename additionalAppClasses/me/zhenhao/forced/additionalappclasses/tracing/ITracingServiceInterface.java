@@ -4,11 +4,9 @@ import me.zhenhao.forced.sharedclasses.tracing.TraceItem;
 
 
 interface ITracingServiceInterface {
+
+	void dumpQueue();
 	
-	
-	public void dumpQueue();
-	
-	
-	public void enqueueTraceItem(TraceItem ti);
+	void enqueueTraceItem(TraceItem ti);
 	
 }

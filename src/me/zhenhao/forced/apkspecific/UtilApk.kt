@@ -17,7 +17,7 @@ object UtilApk {
     private val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
     private var manifest: ProcessManifest? = null
 
-    fun jarsigner(appName: String) {
+    fun jarsigner() {
         LoggerHelper.logInfo("Started jarsigner...")
         val command = arrayOfNulls<String>(14)
 
@@ -59,7 +59,7 @@ object UtilApk {
         LoggerHelper.logInfo("Finished jarsigner...")
     }
 
-    fun zipalign(appName: String) {
+    fun zipalign() {
         LoggerHelper.logInfo("Started zipalign...")
         val command = arrayOfNulls<String>(5)
 

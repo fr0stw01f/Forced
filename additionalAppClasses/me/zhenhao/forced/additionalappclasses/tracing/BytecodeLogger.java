@@ -1,15 +1,5 @@
 package me.zhenhao.forced.additionalappclasses.tracing;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.util.Pair;
 import me.zhenhao.forced.additionalappclasses.hooking.Hooker;
 import me.zhenhao.forced.sharedclasses.SharedClassesSettings;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodCallItem;
@@ -25,17 +16,21 @@ import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodLeaveItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodReturnItem;
 import me.zhenhao.forced.sharedclasses.networkconnection.IClientRequest;
 import me.zhenhao.forced.sharedclasses.networkconnection.ServerCommunicator;
-import me.zhenhao.forced.sharedclasses.tracing.DexFileTransferTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.DynamicIntValueTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.DynamicStringValueTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.FileBasedTracingUtils;
-import me.zhenhao.forced.sharedclasses.tracing.PathTrackingTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.TargetReachedTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.TimingBombTraceItem;
-import me.zhenhao.forced.sharedclasses.tracing.TraceItem;
+import me.zhenhao.forced.sharedclasses.tracing.*;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class BytecodeLogger {
+
+	//private static final Map<Integer, Boolean> branchTracking = new TreeMap<>();
+	private static final List<Pair<Integer, Boolean>> branchTracking = new ArrayList<>();
+	private static int counter = 0;
 	
 	private static final Queue<TraceItem> bootupQueue = new LinkedBlockingQueue<>();
 	private static ITracingServiceInterface tracingService = null;
@@ -59,8 +54,7 @@ public class BytecodeLogger {
 				tracingService = ((TracingService.TracingServiceBinder) serviceBinder).getService();
 			}
 			catch (RuntimeException ex) {
-				Log.e(SharedClassesSettings.TAG, "Could not get tracing service: "
-						+ ex.getMessage());	
+				Log.e(SharedClassesSettings.TAG, "Could not get tracing service: " + ex.getMessage());
 			}
 		}
 		
@@ -76,7 +70,7 @@ public class BytecodeLogger {
 		// Start the service in its own thread to avoid an ANR
 		if (tracingService == null) {
 			Thread initThread = new Thread() {
-				
+
 				@Override
 				public void run() {
 					if (tracingService == null) {
@@ -90,19 +84,19 @@ public class BytecodeLogger {
 							Log.i(SharedClassesSettings.TAG, "bindService() returned false.");
 					}
 				}
-				
+
 			};
 			initThread.start();
 		}
 	}
 	
 	private static ThreadLocal<Integer> lastExecutedStatement = new ThreadLocal<Integer>() {
-		
+
 		@Override
 		protected Integer initialValue() {
 			return -1;
 		}
-		
+
 	};
 	
 	
@@ -144,32 +138,52 @@ public class BytecodeLogger {
 	
 	
 	public static void reportConditionOutcome(boolean decision) {
+		Log.i(SharedClassesSettings.TAG, "Sending condition outcome...");
 		reportConditionOutcome(decision, getAppContext());
 	}
-	
-	
-	public static void reportConditionOutcome(boolean decision, Context context) {			
+
+
+	private static void reportConditionOutcome(boolean decision, Context context) {
 		Intent serviceIntent = new Intent(context, TracingService.class);
 		serviceIntent.setAction(TracingService.ACTION_ENQUEUE_TRACE_ITEM);
-		serviceIntent.putExtra(TracingService.EXTRA_ITEM_TYPE,
-				TracingService.ITEM_TYPE_PATH_TRACKING);
+		serviceIntent.putExtra(TracingService.EXTRA_ITEM_TYPE, TracingService.ITEM_TYPE_PATH_TRACKING);
 		serviceIntent.putExtra(TracingService.EXTRA_TRACE_ITEM, (Parcelable)
 				new PathTrackingTraceItem(getLastExecutedStatement(), decision));
 		context.startService(serviceIntent);
 	}
-	
+
 	
 	public static void reportConditionOutcomeSynchronous(boolean decision) {
+		Log.i(SharedClassesSettings.TAG, "Sending condition outcome synchronously...");
 		reportConditionOutcomeSynchronous(decision, getAppContext());
 	}
 	
 	
-	public static void reportConditionOutcomeSynchronous(boolean decision,
-			Context context) {
+	private static void reportConditionOutcomeSynchronous(boolean decision, Context context) {
 		// Create the trace item to be enqueued
-		TraceItem traceItem = new PathTrackingTraceItem(
-				getLastExecutedStatement(), decision);
+		TraceItem traceItem = new PathTrackingTraceItem(getLastExecutedStatement(), decision);
+		Log.i("BranchTracking", getLastExecutedStatement() + " " + decision);
+		branchTracking.add(new Pair<>(getLastExecutedStatement(), decision));
+		if (counter++ == 1000) {
+			dumpToFile();
+		}
 		sendTraceItemSynchronous(context, traceItem);
+	}
+
+	private static void dumpToFile() {
+		FileWriter fw;
+		BufferedWriter out;
+		try {
+			fw = new FileWriter("/sdcard/branch_tracking.txt");
+			out = new BufferedWriter(fw);
+
+			for (Pair<Integer, Boolean> pair : branchTracking) {
+				out.write(pair.first + " " + pair.second + "\n");
+			}
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -196,7 +210,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void dumpTracingData(Context context) {
+	private static void dumpTracingData(Context context) {
 		Log.i(SharedClassesSettings.TAG, "Sending an intent to dump tracing data...");
 		Intent serviceIntent = new Intent(context, TracingService.class);
 		serviceIntent.setAction(TracingService.ACTION_DUMP_QUEUE);
@@ -210,7 +224,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void dumpTracingDataSynchronous(Context context) {
+	private static void dumpTracingDataSynchronous(Context context) {
 		// If we don't have a service connection yet, we must directly send the
 		// contents of our boot-up queue
 		if (tracingService == null && !bootupQueue.isEmpty()) {
@@ -251,7 +265,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportMethodCallSynchronous(int codePosition, Context context) {
+	private static void reportMethodCallSynchronous(int codePosition, Context context) {
 		sendTraceItemSynchronous(context, new MethodCallItem(codePosition));
 	}
 	
@@ -261,7 +275,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportMethodReturnSynchronous(int codePosition, Context context) {			
+	private static void reportMethodReturnSynchronous(int codePosition, Context context) {
 		sendTraceItemSynchronous(context, new MethodReturnItem(codePosition));
 	}
 	
@@ -271,7 +285,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportMethodEnterSynchronous(int codePosition, Context context) {			
+	private static void reportMethodEnterSynchronous(int codePosition, Context context) {
 		sendTraceItemSynchronous(context, new MethodEnterItem(codePosition));
 	}
 	
@@ -281,7 +295,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportMethodLeaveSynchronous(int codePosition, Context context) {
+	private static void reportMethodLeaveSynchronous(int codePosition, Context context) {
 		sendTraceItemSynchronous(context, new MethodLeaveItem(codePosition));
 	}
 	
@@ -291,11 +305,10 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportTargetReachedSynchronous(Context context) {			
+	private static void reportTargetReachedSynchronous(Context context) {
 		Log.i(SharedClassesSettings.TAG, "Target location has been reached.");
 		
-		sendTraceItemSynchronous(context, new TargetReachedTraceItem(
-				getLastExecutedStatement()));
+		sendTraceItemSynchronous(context, new TargetReachedTraceItem(getLastExecutedStatement()));
 		
 		// This is usually the end of the analysis, so make sure to get our
 		// data out
@@ -308,7 +321,7 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void sendDexFileToServer(String dexFileName, byte[] dexFile, Context context) {
+	private static void sendDexFileToServer(String dexFileName, byte[] dexFile, Context context) {
 		// Since dex files can be large and we need to make sure that they are
 		// sent even if the app crashes afterwards, we write them to disk. The
 		// separate watchdog app will pick them up there.
@@ -361,8 +374,8 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportDynamicValue(Context context, String dynamicValue,
-			int paramIdx) {
+	private static void reportDynamicValue(Context context, String dynamicValue,
+										   int paramIdx) {
 		if (dynamicValue != null && dynamicValue.length() > 0) {
 			sendTraceItemSynchronous(context, new DynamicStringValueTraceItem(
 					dynamicValue, paramIdx, getLastExecutedStatement()));
@@ -375,8 +388,8 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportDynamicValue(Context context, int dynamicValue,
-			int paramIdx) {
+	private static void reportDynamicValue(Context context, int dynamicValue,
+										   int paramIdx) {
 		sendTraceItemSynchronous(context, new DynamicIntValueTraceItem(
 				dynamicValue, paramIdx, getLastExecutedStatement()));
 	}
@@ -387,13 +400,12 @@ public class BytecodeLogger {
 	}
 	
 	
-	public static void reportTimingBomb(Context context, long originalValue, long newValue) {
+	private static void reportTimingBomb(Context context, long originalValue, long newValue) {
 		sendTraceItemSynchronous(context, new TimingBombTraceItem(originalValue, newValue));		
 	}
 	
 	
-	public static void sendTraceItemSynchronous(Context context,
-			TraceItem traceItem) {
+	private static void sendTraceItemSynchronous(Context context, TraceItem traceItem) {
 		// If we don't have a service connection yet, we use our own boot-up
 		// queue
 		if (tracingService == null) {
@@ -410,8 +422,7 @@ public class BytecodeLogger {
 			tracingService.enqueueTraceItem(traceItem);
 		}
 		catch (RuntimeException ex) {
-			Log.e(SharedClassesSettings.TAG, "Binder communication failed: "
-					+ ex.getMessage());
+			Log.e(SharedClassesSettings.TAG, "Binder communication failed: " + ex.getMessage());
 		}
 	}
 	

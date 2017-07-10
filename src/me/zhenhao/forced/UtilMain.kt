@@ -105,7 +105,7 @@ object UtilMain {
 
     fun writeToFile(fileName: String, content: String) {
         val outputFile = File(fileName)
-        var fw: FileWriter? = null
+        var fw: FileWriter?
         var bw: BufferedWriter? = null
         try {
             if (!outputFile.exists()) {

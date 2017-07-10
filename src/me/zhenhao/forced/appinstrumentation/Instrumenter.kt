@@ -160,7 +160,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 .map { "<$it: void <init>()>" }
                 .toSet()
 
-        val conditionTracking = ConditionTracking()
+        val conditionTracking = BranchTracking()
         val codePositionTracking = CodePositionTracking(codePositionManager)
         val dynamicCallGraphTracking = DynamicCallGraphTracking(codePositionManager)
         val pathExecutionTransformer = PathExecutionTransformer()
@@ -191,7 +191,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                     }
                     classLoaders.transform(body)
 
-                    body.validate()
+//                  body.validate()
                 }
         //todo PAPER-EVAL ONLY
         if (!FrameworkOptions.evaluationOnly)

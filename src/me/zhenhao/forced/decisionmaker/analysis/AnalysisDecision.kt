@@ -47,7 +47,7 @@ class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
     override fun hashCode(): Int {
         val prime = 31
         var result = 1
-        result = prime * result + if (analysisName == null) 0 else analysisName!!.hashCode()
+        result = prime * result + analysisName.hashCode()
         result = prime * result + if (isDecisionUsed) 1231 else 1237
         result = prime * result + decisionWeight
         result = prime * result + eventTaskList.hashCode()
@@ -62,11 +62,9 @@ class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
             return false
         if (javaClass != obj.javaClass)
             return false
+
         val other = obj as AnalysisDecision?
-        if (analysisName == null) {
-            if (other!!.analysisName != null)
-                return false
-        } else if (analysisName != other!!.analysisName)
+        if (analysisName != other!!.analysisName)
             return false
         if (isDecisionUsed != other.isDecisionUsed)
             return false

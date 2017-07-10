@@ -43,7 +43,6 @@ import me.zhenhao.forced.sharedclasses.util.NetworkSettings
 class SocketServer private constructor(private val decisionMaker: DecisionMaker) {
     private var executor: CountingThreadPoolExecutor? = null
 
-
     var lastRequestProcessed = System.currentTimeMillis()
         private set
 

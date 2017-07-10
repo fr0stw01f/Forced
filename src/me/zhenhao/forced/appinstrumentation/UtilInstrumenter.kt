@@ -31,7 +31,6 @@ object UtilInstrumenter {
 	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "/additionalAppClassesBin"
 	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "/sharedClassesBin"
 
-//	val HOOKING_LIBRARY = FrameworkOptions.frameworkDir + "/libs/zhook.jar"
 	val HOOKING_LIBRARY_ARM = FrameworkOptions.frameworkDir + "/hooking/armeabi/libZHook.so"
 	val HOOKING_LIBRARY_X86 = FrameworkOptions.frameworkDir + "/hooking/x86/libZHook.so"
 
@@ -211,7 +210,7 @@ object UtilInstrumenter {
 			} else
 				throw RuntimeException("Ooops, something went all wonky!")
 		} else
-		//just return the value, there is nothing to box
+			//just return the value, there is nothing to box
 			return value
 	}
 

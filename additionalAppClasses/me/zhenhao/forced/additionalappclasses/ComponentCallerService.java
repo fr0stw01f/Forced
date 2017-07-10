@@ -16,7 +16,7 @@ import android.view.View;
 import me.zhenhao.forced.additionalappclasses.util.UtilAddContact;
 
 
-public class ComponentCallerService extends Service{
+public class ComponentCallerService extends Service {
 
 	private static Map<Class<?>, Object> globalInstances = new HashMap<>();
 	
@@ -44,7 +44,7 @@ public class ComponentCallerService extends Service{
 		if(intent.hasExtra("action"))
 			action = intent.getStringExtra("action");
 		if(intent.hasExtra("mimeType"))
-			mimeType = intent.getStringExtra("mimeType");								
+			mimeType = intent.getStringExtra("mimeType");
 		
 		try {
 			Class<?> className = null;

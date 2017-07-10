@@ -8,7 +8,7 @@ sootOutput
 lib
 plot
 android-jars
-hooking
+/hooking
 mainException.txt
 noLoggingPoint.txt
 .gitignore
