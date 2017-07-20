@@ -11,8 +11,7 @@ import soot.jimple.Jimple
 
 class CrashReporterInjection(private val methodsToInstrument: Set<String>) : SceneTransformer() {
 
-    override fun internalTransform(phaseName: String,
-                                   options: Map<String, String>) {
+    override fun internalTransform(phaseName: String, options: Map<String, String>) {
         // Make a reference to the registration method
         val ref = Scene.v().makeMethodRef(
                 Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CRASH_REPORTING),
@@ -25,8 +24,7 @@ class CrashReporterInjection(private val methodsToInstrument: Set<String>) : Sce
             try {
                 val sm = Scene.v().grabMethod(sig) ?: continue
 
-                val unitIt = sm.activeBody.units
-                        .snapshotIterator()
+                val unitIt = sm.activeBody.units.snapshotIterator()
                 while (unitIt.hasNext()) {
                     val curUnit = unitIt.next()
 

@@ -175,19 +175,19 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 if (sm.isConcrete) {
                     val body = sm.activeBody
                     //todo PAPER-EVAL ONLY
-                    codePositionTracking.transform(body)
                     if (!FrameworkOptions.evaluationOnly) {
                         conditionTracking.transform(body)
-                        dynamicCallGraphTracking.transform(body)
+                        //dynamicCallGraphTracking.transform(body)
                     }
-                    if (FrameworkOptions.recordPathExecution)
-                        pathExecutionTransformer.transform(body)
-                    goalReachedTracking.transform(body)
+                    codePositionTracking.transform(body)
+                    //if (FrameworkOptions.recordPathExecution)
+                        //pathExecutionTransformer.transform(body)
+                    //goalReachedTracking.transform(body)
                     //todo PAPER-EVAL ONLY
                     if (!FrameworkOptions.evaluationOnly) {
-                        timingBombs.transform(body)
-                        dummyMethods.transform(body)
-                        dynamicValues.transform(body)
+                        //timingBombs.transform(body)
+                        //dummyMethods.transform(body)
+                        //dynamicValues.transform(body)
                     }
                     classLoaders.transform(body)
 

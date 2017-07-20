@@ -9,8 +9,7 @@ import soot.jimple.*
 
 class DynamicCallGraphTracking(private val codePositionManager: CodePositionManager) : AbstractInstrumentationTransformer() {
 
-    override fun internalTransform(b: Body, phaseName: String,
-                                   options: Map<String, String>) {
+    override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
         // Do not instrument methods in framework classes
         if (!canInstrumentMethod(b.method))
             return
@@ -69,17 +68,14 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
             if (stmt.containsInvokeExpr()
                     || firstNonIdentity
                     || stmtLeavesMethod) {
-                codePos = codePositionManager.getCodePositionForUnit(stmt,
-                        b.method.signature,
-                        lineNum,
+                codePos = codePositionManager.getCodePositionForUnit(stmt, b.method.signature, lineNum,
                         stmt.javaSourceStartLineNumber)
             }
 
             // Record method enters
             if (firstNonIdentity) {
                 val onEnterStmt = Jimple.v().newInvokeStmt(
-                        Jimple.v().newStaticInvokeExpr(enterMethodRef,
-                                IntConstant.v(codePos!!.id)))
+                        Jimple.v().newStaticInvokeExpr(enterMethodRef, IntConstant.v(codePos!!.id)))
                 onEnterStmt.addTag(InstrumentedCodeTag)
                 b.units.insertBefore(onEnterStmt, stmt)
             }
@@ -87,14 +83,12 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
             // Check for method calls
             if (stmt.containsInvokeExpr()) {
                 val onCallStmt = Jimple.v().newInvokeStmt(
-                        Jimple.v().newStaticInvokeExpr(callMethodRef,
-                                IntConstant.v(codePos!!.id)))
+                        Jimple.v().newStaticInvokeExpr(callMethodRef, IntConstant.v(codePos!!.id)))
                 onCallStmt.addTag(InstrumentedCodeTag)
                 b.units.insertBefore(onCallStmt, stmt)
 
                 val onReturnStmt = Jimple.v().newInvokeStmt(
-                        Jimple.v().newStaticInvokeExpr(returnMethodRef,
-                                IntConstant.v(codePos.id)))
+                        Jimple.v().newStaticInvokeExpr(returnMethodRef, IntConstant.v(codePos.id)))
                 onReturnStmt.addTag(InstrumentedCodeTag)
                 b.units.insertAfter(onReturnStmt, stmt)
             }
@@ -102,8 +96,7 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
             // Record method leaves
             if (stmtLeavesMethod) {
                 val onLeaveStmt = Jimple.v().newInvokeStmt(
-                        Jimple.v().newStaticInvokeExpr(leaveMethodRef,
-                                IntConstant.v(codePos!!.id)))
+                        Jimple.v().newStaticInvokeExpr(leaveMethodRef, IntConstant.v(codePos!!.id)))
                 onLeaveStmt.addTag(InstrumentedCodeTag)
                 b.units.insertBefore(onLeaveStmt, stmt)
             }

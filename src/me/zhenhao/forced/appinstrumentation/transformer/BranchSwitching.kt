@@ -1,11 +1,14 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
 import soot.Body
+import soot.Unit
 import soot.Value
 import soot.jimple.IfStmt
 import soot.jimple.IntConstant
 import soot.jimple.Jimple
+import soot.jimple.Stmt
 import java.util.*
+import kotlin.collections.HashSet
 
 
 class BranchSwitching : AbstractInstrumentationTransformer() {
@@ -17,6 +20,8 @@ class BranchSwitching : AbstractInstrumentationTransformer() {
     val negatives  = ArrayList<Int>()
     val switches   = ArrayList<Int>()
     var counter    = 0
+
+    val executed   = HashSet<Stmt>()
 
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
         // Do not instrument methods in framework classes
@@ -35,8 +40,10 @@ class BranchSwitching : AbstractInstrumentationTransformer() {
                 var condition: Value = unit.condition
                 if (positives.contains(counter)) {
                     condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(0))
+                    executed.add(unit.target)
                 } else if (negatives.contains(counter)) {
                     condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(1))
+                    executed.add(getUnitAfter(body, unit))
                 } else if (switches.contains(counter)) {
                     // todo nothing for now
                 }
@@ -57,6 +64,15 @@ class BranchSwitching : AbstractInstrumentationTransformer() {
 
     private fun switchBranch(ifStmt: IfStmt, condition: Value) {
         ifStmt.condition = condition
+    }
+
+    private fun getUnitAfter(body: Body, unit: Unit): Stmt {
+        var u = body.units.first
+        while (u != unit)
+            u = body.units.getSuccOf(u)
+
+        val unitAfter = body.units.getSuccOf(unit)
+        return unitAfter as Stmt
     }
 
 }

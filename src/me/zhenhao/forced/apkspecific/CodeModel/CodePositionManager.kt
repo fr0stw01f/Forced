@@ -18,15 +18,13 @@ class CodePositionManager private constructor() {
         return unitToCodePosition[u]!!
     }
 
-    fun getCodePositionForUnit(u: Unit, methodSignature: String,
-                               lineNumber: Int, sourceLineNumber: Int): CodePosition {
+    fun getCodePositionForUnit(u: Unit, methodSignature: String, lineNumber: Int, sourceLineNumber: Int): CodePosition {
         var codePos: CodePosition? = unitToCodePosition[u]
         if (codePos == null) {
             val offset = getMethodOffset(methodSignature)
             val lastCodePos = getAndIncrementLastCodePosition(methodSignature)
 
-            codePos = CodePosition(offset + lastCodePos, methodSignature,
-                    lineNumber, sourceLineNumber)
+            codePos = CodePosition(offset + lastCodePos, methodSignature, lineNumber, sourceLineNumber)
             unitToCodePosition.put(u, codePos)
             codePositionToUnit.put(codePos, u)
             idToCodePosition.put(codePos.id, codePos)
@@ -45,7 +43,8 @@ class CodePositionManager private constructor() {
     }
 
     internal fun getMethodOffset(methodSignature: String): Int {
-        return (this.methodToOffset as MutableMap<String, Int>).computeIfAbsent(methodSignature) { lastOffset++ * methodOffsetMultiplier }
+        return (this.methodToOffset as MutableMap<String, Int>).computeIfAbsent(methodSignature) {
+            lastOffset++ * methodOffsetMultiplier }
     }
 
     internal val methodsWithCodePositions: Set<String>

@@ -35,29 +35,30 @@ class BranchTracking : AbstractInstrumentationTransformer() {
         val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
 
         // Create the method invocation
-        val createAndAdd = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
-        val sieThen = Jimple.v().newStaticInvokeExpr(createAndAdd.makeRef(), IntConstant.v(1))
-        val sieElse = Jimple.v().newStaticInvokeExpr(createAndAdd.makeRef(), IntConstant.v(0))
-        val sieThenUnit = Jimple.v().newInvokeStmt(sieThen)
-        sieThenUnit.addTag(InstrumentedCodeTag)
-        val sieElseUnit = Jimple.v().newInvokeStmt(sieElse)
-        sieElseUnit.addTag(InstrumentedCodeTag)
+        //val reportMethod = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
+        val reportMethod = sootClass.getMethod("reportConditionOutcome", listOf<Type>(BooleanType.v()))
+        val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(1)) //then -> true
+        val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(0)) //else -> false
+        val sieThenStmt = Jimple.v().newInvokeStmt(sieThenExpr)
+        sieThenStmt.addTag(InstrumentedCodeTag)
+        val sieElseStmt = Jimple.v().newInvokeStmt(sieElseExpr)
+        sieElseStmt.addTag(InstrumentedCodeTag)
 
         //treatment of target statement ("true"-branch)
         val ifStmt = unit as IfStmt
         val targetStmt = ifStmt.target
         if (!branchTargetStmt.contains(targetStmt.toString())) {
-            branchTargetStmt.add(sieThenUnit.toString())
-            body.units.insertBefore(sieThenUnit, targetStmt)
+            branchTargetStmt.add(sieThenStmt.toString())
+            body.units.insertBefore(sieThenStmt, targetStmt)
 
             val nop = Jimple.v().newNopStmt()
             val gotoNop = Jimple.v().newGotoStmt(nop)
             body.units.insertBeforeNoRedirect(nop, targetStmt)
-            body.units.insertBeforeNoRedirect(gotoNop, sieThenUnit)
+            body.units.insertBeforeNoRedirect(gotoNop, sieThenStmt)
         }
 
         //treatment of "else"-branch
-        body.units.insertAfter(sieElseUnit, unit)
+        body.units.insertAfter(sieElseStmt, unit)
     }
 
 }

@@ -74,12 +74,28 @@ class FrameworkEventManager {
         sendEvent(UninstallAppEvent(packageName))
     }
 
-    fun pushFiles(dirPath: String) {
-        sendEvent(PushFilesEvent(dirPath))
+    fun pushFuzzyFiles(dirPath: String) {
+        sendEvent(PushFuzzyFilesEvent(dirPath))
+    }
+
+    fun pullFile(src: String, dst: String) {
+        sendEvent(PullFileEvent(src, dst))
+    }
+
+    fun pushFile(src: String, dst: String) {
+        sendEvent(PushFileEvent(src, dst))
+    }
+
+    fun removeFile(fileName: String) {
+        sendEvent(RemoveFileEvent(fileName))
+    }
+
+    fun removeFilesByPattern(pattern: String) {
+        sendEvent(RemoveFilesByPatternEvent(pattern))
     }
 
     fun addContacts(packageName: String) {
-        sendEvent(AddContactEvent(packageName))
+        //sendEvent(AddContactEvent(packageName))
     }
 
     fun extractInitalEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG, manifest: ProcessManifest): Set<FrameworkEvent> {

@@ -9,7 +9,7 @@ import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.sharedclasses.SharedClassesSettings
 
 
-class PushFilesEvent(private val dirPath: String) : FrameworkEvent() {
+class PushFuzzyFilesEvent(private val dirPath: String) : FrameworkEvent() {
 
     override fun onEventReceived(device: IDevice): Any? {
         val fileDir = File(dirPath)

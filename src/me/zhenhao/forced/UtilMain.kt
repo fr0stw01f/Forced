@@ -15,6 +15,8 @@ import soot.jimple.infoflow.solver.cfg.InfoflowCFG
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
+import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
+import me.zhenhao.forced.sharedclasses.SharedClassesSettings
 
 
 object UtilMain {
@@ -125,5 +127,24 @@ object UtilMain {
             }
 
         }
+    }
+
+    fun initAndCleanBranchTrackingFiles() {
+        try {
+            val remoteFile = SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "file_counter.txt"
+            val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
+
+            val file = File(localFile)
+
+            val bw = file.bufferedWriter()
+            bw.write(0.toString())
+
+            bw.close()
+
+            FrameworkEventManager.eventManager.pushFile(localFile, remoteFile)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        FrameworkEventManager.eventManager.removeFilesByPattern(SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_*")
     }
 }

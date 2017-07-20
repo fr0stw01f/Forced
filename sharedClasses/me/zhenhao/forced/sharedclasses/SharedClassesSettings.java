@@ -17,4 +17,6 @@ public class SharedClassesSettings {
 	public final static String RETURN_LABEL = "[return]";
 	
 	public final static String FUZZY_FILES_DIR_PATH = "/sdcard/fuzzy_files/";
+
+	public final static String BRANCH_TRACKING_DIR_PATH = "/sdcard/branch_tracking/";
 }

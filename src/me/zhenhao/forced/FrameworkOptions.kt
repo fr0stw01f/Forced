@@ -220,9 +220,9 @@ class FrameworkOptions {
 //		val homeDir = "/home/zhenhao"
 		val homeDir = "/Users/tom"
 
-        var androidJarPath = homeDir + "/Work/Android/Sdk/platforms"
-        var resultsDir = homeDir + "/Work/FuzzDroid/results"
-        var frameworkDir = homeDir + "/IdeaProjects/FuzzDroid"
+        var androidJarPath = homeDir + "/Work/Android/Sdk/platforms/"
+        var resultsDir = homeDir + "/Work/FuzzDroid/"
+        var frameworkDir = homeDir + "/IdeaProjects/Forced/"
         var devicePort = "5555"
 
 		var apkPath = ""
@@ -231,7 +231,7 @@ class FrameworkOptions {
 		var nbSeeds = 1
 		var forceTimeout = 20       //60
 		var inactivityTimeout = 10   //40
-		var maxRestarts = 3         //5
+		var maxRestarts = 1         //5
 
 		var uninstallWaitingTime = 5000
 		var tryStartAppWaitingTime = 3000
@@ -240,7 +240,7 @@ class FrameworkOptions {
 		var KEYSTORE_NAME = "zhenhao"
 		var KEYSTORE_PASSWORD = "pursuits23"
 		var BUILD_TOOLS = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
-		var PLATFORM_TOOLS = homeDir + "/Library/Android/Sdk/platform-tools"
+		var PLATFORM_TOOLS = homeDir + "/Library/Android/Sdk/platform-tools/"
 		var Z3SCRIPT_LOCATION = homeDir + "/Work/Z3-str-master/Z3-str.py"
 
 		var deployApp = true

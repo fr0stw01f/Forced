@@ -17,6 +17,7 @@ import me.zhenhao.forced.decisionmaker.DeterministicRandom
 import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
+import me.zhenhao.forced.sharedclasses.SharedClassesSettings
 import org.apache.commons.io.FileUtils
 import org.xmlpull.v1.XmlPullParserException
 import soot.PackManager
@@ -55,148 +56,162 @@ class Main private constructor() {
 
 		val blacklistedAPKs = UtilMain.blacklistedAPKs
 
-		if (!blacklistedAPKs.contains(FrameworkOptions.apkPath)) {
-			val dexFileManager = DexFileManager()
+		if (blacklistedAPKs.contains(FrameworkOptions.apkPath))
+			return null
 
-			// Schedule the initial analysis task
-			// Task manager is passed to SocketServer to enqueue new tasks by handleDexFileReceived(DexFileTransferTraceItem)
-			val analysisTaskManager = AnalysisTaskManager()
-			analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
+		val dexFileManager = DexFileManager()
 
-			// Execute all of our analysis tasks
-			val results = HashSet<EnvironmentResult>()
-			var currentTask: AnalysisTask? = analysisTaskManager.scheduleNextTask()
-			var taskId = 0
-			while (currentTask != null) {
-				LoggerHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
-						taskId++, currentTask.dexFilesToMerge.size))
-				try {
-					//needed for the extractAllTargetLocations method
+		// Schedule the initial analysis task
+		// Task manager is passed to SocketServer to enqueue new tasks by handleDexFileReceived(DexFileTransferTraceItem)
+		val analysisTaskManager = AnalysisTaskManager()
+		analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
+
+		// Init and clean remote branch tracking files
+		UtilMain.initAndCleanBranchTrackingFiles()
+
+		// Execute all of our analysis tasks
+		val results = HashSet<EnvironmentResult>()
+		var currentTask: AnalysisTask? = analysisTaskManager.scheduleNextTask()
+		var taskId = 0
+		while (currentTask != null) {
+			LoggerHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
+					taskId++, currentTask.dexFilesToMerge.size))
+			try {
+				//needed for the extractAllTargetLocations method
+				initializeSoot(currentTask)
+			} catch (ex: Exception) {
+				System.err.println("Could not initialize Soot, skipping analysis task: " + ex.message)
+				ex.printStackTrace()
+				continue
+			}
+
+			// The DecisionMaker configuration needs to initialize the metrics.
+			// Therefore, it requires a running Soot instance.
+			var config = DecisionMakerConfig()
+			config.initializeCFG()
+
+			//extract all target locations
+			val allTargetLocations = UtilDecisionMaker.extractAllTargetLocations()
+			if (allTargetLocations.isEmpty()) {
+				LoggerHelper.logEvent(MyLevel.NO_TARGETS, "There are no reachable target locations")
+				UtilMain.writeToFile("noLoggingPoint.txt", FrameworkOptions.apkPath + "\n")
+			}
+
+			//we have to do this hack due to a reset of soot. This step is necessary otherwise, we will not get a clean apk for each logging point
+			val targetsAsCodePos = UtilMain.convertUnitsToIndependentCodePosition(allTargetLocations, config.backwardsCFG)
+			var firstRun = true
+
+			//treat each target location individually
+			for (singleTargetAsPos in targetsAsCodePos) {
+
+				//todo Not sure why we need to re-initialize soot for different targets of the same analysis task
+				if (!firstRun)
 					initializeSoot(currentTask)
-				} catch (ex: Exception) {
-					System.err.println("Could not initialize Soot, skipping analysis task: " + ex.message)
-					ex.printStackTrace()
+				firstRun = false
+
+				//we need to do this step, because we reset soot
+				val singleTarget = UtilMain.convertIndependentCodePositionToUnits(singleTargetAsPos)
+				if (singleTarget == null) {
+					LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
 					continue
 				}
 
-				// The DecisionMaker configuration needs to initialize the metrics.
-				// Therefore, it requires a running Soot instance.
-				var config = DecisionMakerConfig()
+				val singleTargetLocation = setOf(singleTarget)
+
+				// We may need to remove some statements before running the analysis
+				removeStatementsForAnalysis(currentTask)
+
+				// needs to be re-initialized due to soot-reset
+				config = DecisionMakerConfig()
 				config.initializeCFG()
 
-				//extract all target locations
-				val allTargetLocations = UtilDecisionMaker.extractAllTargetLocations()
-				if (allTargetLocations.isEmpty()) {
-					LoggerHelper.logEvent(MyLevel.NO_TARGETS, "There are no reachable target locations")
-					UtilMain.writeToFile("noLoggingPoint.txt", FrameworkOptions.apkPath + "\n")
+				//now we have access to the CFG
+				//check if target is reachable:
+				if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
+					LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+					continue
 				}
 
-				//we have to do this hack due to a reset of soot. This step is necessary otherwise, we will not get a clean apk for each logging point
-				val targetsAsCodePos = UtilMain.convertUnitsToIndependentCodePosition(allTargetLocations, config.backwardsCFG)
-				var firstRun = true
+				// register fuzzy analyses for the single target
+				val successfulInitialization = config.initialize(singleTargetLocation)
 
-				//treat each target location individually
-				for (singleTargetAsPos in targetsAsCodePos) {
-
-					//todo Not sure why we need to re-initialize soot for different targets of the same analysis task
-					if (!firstRun)
-						initializeSoot(currentTask)
-					firstRun = false
-
-					//we need to do this step, because we reset soot
-					val singleTarget = UtilMain.convertIndependentCodePositionToUnits(singleTargetAsPos)
-					if (singleTarget == null) {
-						LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
-						continue
+				if (successfulInitialization) {
+					//get potential Android event which trigger the initial code section for reaching the logging point
+					val events: MutableSet<FrameworkEvent?>
+					//todo PAPER-EVAL ONLY
+					if (FrameworkOptions.evaluationJustStartApp) {
+						events = HashSet()
+						events.add(null)
+					} else
+						events = getFrameworkEvents(singleTarget, config.backwardsCFG) as MutableSet
+					if (events.isEmpty()) {
+						LoggerHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
+						events.add(null)
 					}
 
-					val singleTargetLocation = setOf(singleTarget)
+					val decisionMaker = DecisionMaker(config, dexFileManager, analysisTaskManager)
+					val codePositionManager = CodePositionManager.codePositionManagerInstance
 
-					// We may need to remove some statements before running the analysis
-					removeStatementsForAnalysis(currentTask)
+					// instrumentation, sign and align
+					appPreparationPhase(codePositionManager, config)
 
-					// needs to be re-initialized due to soot-reset
-					config = DecisionMakerConfig()
-					config.initializeCFG()
+					val totalEvents = events.size
+					var currentEvent = 0
+					val resultsPerApp = HashSet<EnvironmentResult>()
 
-					//now we have access to the CFG
-					//check if target is reachable:
-					if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
-						LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
-						continue
-					}
+					// trigger all the events for a specific target
+					for (event in events) {
+						try {
+							currentEvent += 1
 
-					// register fuzzy analyses for the single target
-					val successfulInitialization = config.initialize(singleTargetLocation)
+							//todo PAPER-EVAL ONLY
+							if (!FrameworkOptions.evaluationOnly)
+								// do fuzzy analyses
+								decisionMaker.runPreAnalysisPhase()
 
-					if (successfulInitialization) {
-						//get potential Android event which trigger the initial code section for reaching the logging point
-						val events: MutableSet<FrameworkEvent?>
-						//todo PAPER-EVAL ONLY
-						if (FrameworkOptions.evaluationJustStartApp) {
-							events = HashSet()
-							events.add(null)
-						} else
-							events = getFrameworkEvents(singleTarget, config.backwardsCFG) as MutableSet
-						if (events.isEmpty()) {
-							LoggerHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
-							events.add(null)
+							//after the pre-analysis, we are able to get access to the code positions
+							//let's log the code position
+							val codePos = codePositionManager.getCodePositionForUnit(singleTarget)
+							val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, singleTarget.toString())
+							LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
+
+							if (events.isEmpty())
+								LoggerHelper.logEvent(Level.INFO, String.format("%s: 0/0 events sent", codePos.id))
+							else
+								LoggerHelper.logEvent(Level.INFO, String.format("%s: %s/%s events (%s) ready for process", codePos.id, currentEvent, totalEvents, event))
+
+							LoggerHelper.logEvent(MyLevel.EXECUTION_START, "")
+							repeatedlyExecuteAnalysis(decisionMaker, resultsPerApp, event)
+							LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
+
+							// If we have reached the goal, there is no need to try the other events
+							for (result in resultsPerApp)
+								if (result.isTargetReached)
+									break
+						} catch (ex: Exception) {
+							LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
+							ex.printStackTrace()
 						}
 
-						val decisionMaker = DecisionMaker(config, dexFileManager, analysisTaskManager)
-						val codePositionManager = CodePositionManager.codePositionManagerInstance
-
-						// instrumentation, sign and align
-						appPreparationPhase(codePositionManager, config)
-
-						val totalEvents = events.size
-						var currentEvent = 0
-						val resultsPerApp = HashSet<EnvironmentResult>()
-
-						// trigger all the events for a specific target
-						for (event in events) {
-							try {
-								currentEvent += 1
-
-								//todo PAPER-EVAL ONLY
-								if (!FrameworkOptions.evaluationOnly)
-									// do fuzzy analyses
-									decisionMaker.runPreAnalysisPhase()
-
-								//after the pre-analysis, we are able to get access to the code positions
-								//let's log the code position
-								val codePos = codePositionManager.getCodePositionForUnit(singleTarget)
-								val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, singleTarget.toString())
-								LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
-
-								if (events.isEmpty())
-									LoggerHelper.logEvent(Level.INFO, String.format("%s: 0/0 events sent", codePos.id))
-								else
-									LoggerHelper.logEvent(Level.INFO, String.format("%s: %s/%s events (%s) ready for process", codePos.id, currentEvent, totalEvents, event))
-
-								LoggerHelper.logEvent(MyLevel.EXECUTION_START, "")
-								repeatedlyExecuteAnalysis(decisionMaker, resultsPerApp, event)
-								LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
-
-								// If we have reached the goal, there is no need to try the other events
-								for (result in resultsPerApp)
-									if (result.isTargetReached)
-										break
-							} catch (ex: Exception) {
-								LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
-								ex.printStackTrace()
-							}
-
-						}
-
-						results.addAll(resultsPerApp)
 					}
+
+					results.addAll(resultsPerApp)
 				}
-				currentTask = analysisTaskManager.scheduleNextTask()
 			}
-			return results
+			currentTask = analysisTaskManager.scheduleNextTask()
 		}
-		return null
+
+		val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
+
+		val file = File(localFile)
+
+		val br = file.bufferedReader()
+		val fileCounter = br.readLine().toInt()
+
+		(0..fileCounter)
+				.map { SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"+ String.format("%06d", it) + ".txt" }
+				.forEach { FrameworkEventManager.eventManager.pullFile(it,FrameworkOptions.resultsDir + "branch_tracking/") }
+		return results
 	}
 
 

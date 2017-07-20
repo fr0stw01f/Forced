@@ -42,7 +42,7 @@ public class ServerCommunicator{
 	
 	
 	public void send(final Collection<IClientRequest> request, final boolean waitForResponse) {
-		Log.i(SharedClassesSettings.TAG, "Server communicator ending request...");
+		Log.i(SharedClassesSettings.TAG, "Server communicator sending request...");
 
 		Thread thread = new Thread(new Runnable() {
 			
@@ -55,7 +55,11 @@ public class ServerCommunicator{
 				ObjectOutputStream oos;
 				ObjectInputStream ois;
 				try {
-					try (Socket socket = new Socket(NetworkSettings.SERVER_IP, NetworkSettings.SERVERPORT_OBJECT_TRANSFER)) {
+					Log.i(SharedClassesSettings.TAG,
+							"Establishing socket connection to " + NetworkSettings.SERVER_IP + " " +
+									NetworkSettings.SERVERPORT_OBJECT_TRANSFER);
+					try (Socket socket = new Socket(NetworkSettings.SERVER_IP,
+							NetworkSettings.SERVERPORT_OBJECT_TRANSFER)) {
 						if (!socket.isConnected()) {
 							socket.close();
 							throw new RuntimeException("Socket is not established");
@@ -97,8 +101,8 @@ public class ServerCommunicator{
 							ois.readObject();
 							Log.i(SharedClassesSettings.TAG, "Confirmation received.");
 							// We close the socket anyway
-							//						if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
-							//							socket.shutdownInput();
+							// if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
+							// socket.shutdownInput();
 
 							Log.i(SharedClassesSettings.TAG, "OK, request handling done");
 						}
@@ -151,6 +155,9 @@ public class ServerCommunicator{
 			ObjectOutputStream oos;
 			ObjectInputStream ois;
 			try {
+				Log.i(SharedClassesSettings.TAG,
+					"Establishing socket connection to " + NetworkSettings.SERVER_IP + " " +
+							NetworkSettings.SERVERPORT_OBJECT_TRANSFER);
 				try (Socket socket = new Socket(NetworkSettings.SERVER_IP, NetworkSettings.SERVERPORT_OBJECT_TRANSFER)) {
 					if (!socket.isConnected()) {
 						socket.close();

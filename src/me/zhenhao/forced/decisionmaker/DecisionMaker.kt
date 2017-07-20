@@ -21,12 +21,11 @@ import me.zhenhao.forced.dynamiccfg.DynamicCallgraphBuilder
 import me.zhenhao.forced.dynamiccfg.utils.MapUtils
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
+import me.zhenhao.forced.sharedclasses.SharedClassesSettings
 import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
 import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
 import soot.jimple.infoflow.android.manifest.ProcessManifest
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.Map.Entry
@@ -311,7 +310,8 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         //client handling...
         if (!FrameworkOptions.testServer) {
             //pull files onto device
-            eventManager.pushFiles(FileFuzzer.FUZZY_FILES_DIR)
+            eventManager.pushFuzzyFiles(FileFuzzer.FUZZY_FILES_DIR)
+//          eventManager.removeFile("/sdcard/branch_tracking.txt")
             eventManager.installApp(manifest!!.packageName)
 
             //add contacts onto device
@@ -578,6 +578,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
 
     private fun tryStartingApp() {
+
+        eventManager.removeFile("/sdcard/branch_tracking.txt")
+
         val hasLaunchableActivity = manifest!!.launchableActivities.size > 0
         val packageName = manifest!!.packageName
         if (hasLaunchableActivity) {
@@ -595,6 +598,31 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         } else
             throw RuntimeException("we are not able to start the application")//if there is no launchable activity and no activity at all, we try calling the first service in manifest
         //if there is no launchable activity, we try calling the first activity in manifest
+
+        updateBranchTrackingFileCounter()
+    }
+
+    fun updateBranchTrackingFileCounter() {
+        try {
+            val remoteFile = SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "file_counter.txt"
+            val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
+            FrameworkEventManager.eventManager.pullFile(remoteFile, localFile)
+
+            val file = File(localFile)
+
+            val br = file.bufferedReader()
+            val fileCounter = br.readLine()
+            br.close()
+
+            val bw = file.bufferedWriter()
+            bw.write((fileCounter.toInt()+1).toString())
+
+            bw.close()
+
+            FrameworkEventManager.eventManager.pushFile(localFile, remoteFile)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
 

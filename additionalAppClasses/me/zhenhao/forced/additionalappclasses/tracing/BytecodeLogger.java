@@ -20,17 +20,16 @@ import me.zhenhao.forced.sharedclasses.tracing.*;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class BytecodeLogger {
 
 	//private static final Map<Integer, Boolean> branchTracking = new TreeMap<>();
-	private static final List<Pair<Integer, Boolean>> branchTracking = new ArrayList<>();
-	private static int counter = 0;
+	//private static final List<Pair<Integer, Boolean>> branchTracking = new ArrayList<>();
+	private static final Set<Integer> executedStatements = new HashSet<>();
+	//private static int fileCounter = 0;
 	
 	private static final Queue<TraceItem> bootupQueue = new LinkedBlockingQueue<>();
 	private static ITracingServiceInterface tracingService = null;
@@ -110,7 +109,9 @@ public class BytecodeLogger {
 	
 	
 	public static int getLastExecutedStatement() {
-		return lastExecutedStatement.get();
+		int last = lastExecutedStatement.get();
+		executedStatements.add(last);
+		return last;
 	}
 	
 	
@@ -118,8 +119,7 @@ public class BytecodeLogger {
 		if(Hooker.applicationContext != null)
 			return Hooker.applicationContext;
 		try {
-		    Class<?> activityThreadClass =
-		            Class.forName("android.app.ActivityThread");
+		    Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
 		    Method method = activityThreadClass.getMethod("currentApplication");
 		    Context app = (Context) method.invoke(null, (Object[]) null);
 			
@@ -138,7 +138,6 @@ public class BytecodeLogger {
 	
 	
 	public static void reportConditionOutcome(boolean decision) {
-		Log.i(SharedClassesSettings.TAG, "Sending condition outcome...");
 		reportConditionOutcome(decision, getAppContext());
 	}
 
@@ -154,33 +153,45 @@ public class BytecodeLogger {
 
 	
 	public static void reportConditionOutcomeSynchronous(boolean decision) {
-		Log.i(SharedClassesSettings.TAG, "Sending condition outcome synchronously...");
 		reportConditionOutcomeSynchronous(decision, getAppContext());
 	}
 	
 	
 	private static void reportConditionOutcomeSynchronous(boolean decision, Context context) {
 		// Create the trace item to be enqueued
-		TraceItem traceItem = new PathTrackingTraceItem(getLastExecutedStatement(), decision);
-		Log.i("BranchTracking", getLastExecutedStatement() + " " + decision);
-		branchTracking.add(new Pair<>(getLastExecutedStatement(), decision));
-		if (counter++ == 1000) {
-			dumpToFile();
-		}
+		int lastStmt = getLastExecutedStatement();
+
+		Log.i("BranchTracking", lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
+		//branchTracking.add(new Pair<>(lastStmt, decision));
+		dumpConditionOutcomeToFile(lastStmt, decision);
+
+		TraceItem traceItem = new PathTrackingTraceItem(lastStmt, decision);
 		sendTraceItemSynchronous(context, traceItem);
 	}
 
-	private static void dumpToFile() {
-		FileWriter fw;
-		BufferedWriter out;
+	private static void dumpConditionOutcomeToFile(int lastStmt, boolean decision) {
+		String fileCounter = "";
 		try {
-			fw = new FileWriter("/sdcard/branch_tracking.txt");
-			out = new BufferedWriter(fw);
+			FileReader fr = new FileReader(SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "file_counter.txt");
+			BufferedReader br = new BufferedReader(fr);
+			fileCounter = br.readLine();
 
-			for (Pair<Integer, Boolean> pair : branchTracking) {
-				out.write(pair.first + " " + pair.second + "\n");
-			}
-			out.close();
+			br.close();
+			fr.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		String fileName = SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"
+				+ String.format ("%06d", Integer.valueOf(fileCounter)) + ".txt";
+		try {
+			FileWriter fw = new FileWriter(fileName, true);
+			BufferedWriter bw = new BufferedWriter(fw);
+
+			bw.write(lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision + "\n");
+
+			bw.close();
+			fw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
