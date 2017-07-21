@@ -579,8 +579,6 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
     private fun tryStartingApp() {
 
-        eventManager.removeFile("/sdcard/branch_tracking.txt")
-
         val hasLaunchableActivity = manifest!!.launchableActivities.size > 0
         val packageName = manifest!!.packageName
         if (hasLaunchableActivity) {
@@ -599,7 +597,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             throw RuntimeException("we are not able to start the application")//if there is no launchable activity and no activity at all, we try calling the first service in manifest
         //if there is no launchable activity, we try calling the first activity in manifest
 
-        updateBranchTrackingFileCounter()
+        //updateBranchTrackingFileCounter()
     }
 
     fun updateBranchTrackingFileCounter() {

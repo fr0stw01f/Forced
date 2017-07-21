@@ -67,7 +67,7 @@ class Main private constructor() {
 		analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
 
 		// Init and clean remote branch tracking files
-		UtilMain.initAndCleanBranchTrackingFiles()
+		//UtilMain.initAndCleanBranchTrackingFiles()
 
 		// Execute all of our analysis tasks
 		val results = HashSet<EnvironmentResult>()
@@ -201,16 +201,16 @@ class Main private constructor() {
 			currentTask = analysisTaskManager.scheduleNextTask()
 		}
 
-		val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
-
-		val file = File(localFile)
-
-		val br = file.bufferedReader()
-		val fileCounter = br.readLine().toInt()
-
-		(0..fileCounter)
-				.map { SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"+ String.format("%06d", it) + ".txt" }
-				.forEach { FrameworkEventManager.eventManager.pullFile(it,FrameworkOptions.resultsDir + "branch_tracking/") }
+//		val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
+//
+//		val file = File(localFile)
+//
+//		val br = file.bufferedReader()
+//		val fileCounter = br.readLine().toInt()
+//
+//		(0..fileCounter)
+//				.map { SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"+ String.format("%06d", it) + ".txt" }
+//				.forEach { FrameworkEventManager.eventManager.pullFile(it,FrameworkOptions.resultsDir + "branch_tracking/") }
 		return results
 	}
 
@@ -275,6 +275,20 @@ class Main private constructor() {
 			else
 				LoggerHelper.logEvent(MyLevel.RUNTIME, "NO target was reached")
 		}
+
+		// print branch tracking info
+		val mgr = decisionMaker.initializeHistory()
+		if (mgr != null) {
+			val currentClientHistory = mgr.getNewestClientHistory()
+			val pathTrace = currentClientHistory?.getPathTrace()
+			val codePosMgr = decisionMaker.codePositionManager
+			if (pathTrace != null)
+				for ((unit, decision) in pathTrace) {
+					val codePos = codePosMgr.getCodePositionForUnit(unit)
+					println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+				}
+		}
+
 		decisionMaker.tearDown()
 	}
 

@@ -5,6 +5,8 @@ package me.zhenhao.forced.sharedclasses;
 public class SharedClassesSettings {
 	
 	public final static String TAG = "SSE";
+
+	public final static String TAG_FORCED = "FORCED";
 	
 	public final static String TAG_TS = "TRACING";
 	

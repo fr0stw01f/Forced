@@ -100,7 +100,7 @@ object UtilApk {
 
     fun manipulateAndroidManifest(androidManifest: ProcessManifest) {
         // process old manifest
-        //addHookingHelperAsApplicationIfNecessary(androidManifest);
+        addHookingHelperAsApplicationIfNecessary(androidManifest)
         addInternetPermissionIfNecessary(androidManifest)
         addTracingService(androidManifest)
         addComponentCallerService(androidManifest)
@@ -161,7 +161,7 @@ object UtilApk {
     private fun addHookingHelperAsApplicationIfNecessary(androidManifest: ProcessManifest) {
         val application = androidManifest.application
         if (!application.hasAttribute("name")) {
-            val nameAttribute = AXmlAttribute("name", UtilInstrumenter.HELPER_APPLICATION_FOR_HOOKING, ANDROID_NAMESPACE)
+            val nameAttribute = AXmlAttribute("name", UtilInstrumenter.HELPER_APPLICATION_FOR_BYTECODELOGGER, ANDROID_NAMESPACE)
             application.addAttribute(nameAttribute)
         }
     }

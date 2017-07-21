@@ -83,18 +83,15 @@ public class TracingService extends Service {
 
 			}).start();
 		else if (intent.getAction().equals(ACTION_DUMP_QUEUE_SYNCHRONOUS)) {
-			Log.i(SharedClassesSettings.TAG_TS, "Flushing queue (blocking mode), "
-					+ "explicit request...");
+			Log.i(SharedClassesSettings.TAG_TS, "Flushing queue (blocking mode), explicit request...");
 			dumpQueue(true);
 		}
 		else if (intent.getAction().equals(ACTION_NULL)) {
-			// Do nothing. This action is mainly used for later binding to the
-			// service.
+			// Do nothing. This action is mainly used for later binding to the service.
 			Log.i(SharedClassesSettings.TAG_TS, "Starting TracingService...");
 		}
 		else
-			Log.e(SharedClassesSettings.TAG_TS, String.format("Invalid action: %s",
-					intent.getAction()));
+			Log.e(SharedClassesSettings.TAG_TS, String.format("Invalid action: %s", intent.getAction()));
 		
 		Log.i(SharedClassesSettings.TAG_TS, "TracingService action done.");
 		return START_STICKY;
@@ -128,8 +125,7 @@ public class TracingService extends Service {
 	
 	
 	private void startDumper() {
-		HandlerThread thread = new HandlerThread("ServiceDumpTraceQueue",
-				THREAD_PRIORITY_BACKGROUND);
+		HandlerThread thread = new HandlerThread("ServiceDumpTraceQueue", THREAD_PRIORITY_BACKGROUND);
 		thread.start();
 		handlerDumpQueue = new HandlerDumpQueue(thread.getLooper());
 	}
@@ -157,15 +153,13 @@ public class TracingService extends Service {
 	
 	
 	class TracingServiceBinder extends Binder {
-		
-		
-		public ITracingServiceInterface getService() {
+
+		ITracingServiceInterface getService() {
 			return new ITracingServiceInterface() {
 				
 				@Override
 				public void dumpQueue() {
-					Log.i(SharedClassesSettings.TAG_TS, "Flushing queue, explicit request "
-							+ "through binder...");
+					Log.i(SharedClassesSettings.TAG_TS, "Flushing queue, explicit request through binder...");
 					TracingService.this.dumpQueue(true);
 				}
 				
@@ -192,7 +186,7 @@ public class TracingService extends Service {
 	}
 	
 	
-	public void enqueueTraceItem(TraceItem item) {
+	private void enqueueTraceItem(TraceItem item) {
 		traceQueue.add(item);
 	}
 

@@ -1,7 +1,5 @@
 package me.zhenhao.forced.additionalappclasses.util;
 
-import java.util.ArrayList;
-
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.Context;
@@ -12,13 +10,15 @@ import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
-import me.zhenhao.forced.additionalappclasses.hooking.Hooker;
+import me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger;
+
+import java.util.ArrayList;
 
 public class UtilAddContact {
 	
 	public static void writePhoneContact(String displayName, String number)
 	{
-		Context context 	= Hooker.applicationContext; //Application's context or Activity's context
+		Context context 	= BytecodeLogger.applicationContext; //Application's context or Activity's context
 		String strDisplayName 	=  displayName; // Name of the Person to add
 		String strNumber 	=  number; //number of the person to add with the Contact
 			

@@ -7,14 +7,13 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
-import android.util.Pair;
-import me.zhenhao.forced.additionalappclasses.hooking.Hooker;
 import me.zhenhao.forced.sharedclasses.SharedClassesSettings;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodCallItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodEnterItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodLeaveItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodReturnItem;
 import me.zhenhao.forced.sharedclasses.networkconnection.IClientRequest;
+import me.zhenhao.forced.sharedclasses.networkconnection.NetworkConnectionInitiator;
 import me.zhenhao.forced.sharedclasses.networkconnection.ServerCommunicator;
 import me.zhenhao.forced.sharedclasses.tracing.*;
 
@@ -25,6 +24,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class BytecodeLogger {
+
+	public static Context applicationContext;
 
 	//private static final Map<Integer, Boolean> branchTracking = new TreeMap<>();
 	//private static final List<Pair<Integer, Boolean>> branchTracking = new ArrayList<>();
@@ -66,6 +67,10 @@ public class BytecodeLogger {
 	
 	
 	public static void initialize(final Context context) {
+		Log.i(SharedClassesSettings.TAG_FORCED, "Initialize bytecode logger...");
+		applicationContext = context;
+		NetworkConnectionInitiator.initNetworkConnection();
+
 		// Start the service in its own thread to avoid an ANR
 		if (tracingService == null) {
 			Thread initThread = new Thread() {
@@ -73,20 +78,21 @@ public class BytecodeLogger {
 				@Override
 				public void run() {
 					if (tracingService == null) {
-						Log.i(SharedClassesSettings.TAG, "Binding to tracing service...");
+						Log.i(SharedClassesSettings.TAG_FORCED, "Binding to tracing service...");
 						Intent serviceIntent = new Intent(context, TracingService.class);
 						serviceIntent.setAction(TracingService.ACTION_NULL);
 						context.startService(serviceIntent);
 						if (context.bindService(serviceIntent, tracingConnection, Context.BIND_AUTO_CREATE))
-							Log.i(SharedClassesSettings.TAG, "Tracing service bound.");
+							Log.i(SharedClassesSettings.TAG_FORCED, "Tracing service bound.");
 						else
-							Log.i(SharedClassesSettings.TAG, "bindService() returned false.");
+							Log.i(SharedClassesSettings.TAG_FORCED, "bindService() returned false.");
 					}
 				}
 
 			};
 			initThread.start();
 		}
+		Log.i(SharedClassesSettings.TAG_FORCED, "Bytecode logger ready...");
 	}
 	
 	private static ThreadLocal<Integer> lastExecutedStatement = new ThreadLocal<Integer>() {
@@ -116,8 +122,8 @@ public class BytecodeLogger {
 	
 	
 	private static Context getAppContext() {
-		if(Hooker.applicationContext != null)
-			return Hooker.applicationContext;
+		if(applicationContext != null)
+			return applicationContext;
 		try {
 		    Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
 		    Method method = activityThreadClass.getMethod("currentApplication");
@@ -161,9 +167,9 @@ public class BytecodeLogger {
 		// Create the trace item to be enqueued
 		int lastStmt = getLastExecutedStatement();
 
-		Log.i("BranchTracking", lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
+		Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
 		//branchTracking.add(new Pair<>(lastStmt, decision));
-		dumpConditionOutcomeToFile(lastStmt, decision);
+		//dumpConditionOutcomeToFile(lastStmt, decision);
 
 		TraceItem traceItem = new PathTrackingTraceItem(lastStmt, decision);
 		sendTraceItemSynchronous(context, traceItem);
@@ -417,6 +423,7 @@ public class BytecodeLogger {
 	
 	
 	private static void sendTraceItemSynchronous(Context context, TraceItem traceItem) {
+		Log.i(SharedClassesSettings.TAG_FORCED, "Sending trace item " + traceItem.toString());
 		// If we don't have a service connection yet, we use our own boot-up
 		// queue
 		if (tracingService == null) {

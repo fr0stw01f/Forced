@@ -16,17 +16,19 @@ import java.util.*
 object UtilInstrumenter {
 
 	val JAVA_CLASS_FOR_PATH_INSTRUMENTATION = "me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger"
-	val JAVA_CLASS_FOR_CODE_POSITIONS = "me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger"
+	val JAVA_CLASS_FOR_CODE_POSITIONS = JAVA_CLASS_FOR_PATH_INSTRUMENTATION
 	val JAVA_CLASS_FOR_CRASH_REPORTING = "me.zhenhao.forced.additionalappclasses.crashreporter.CrashReporter"
 	val JAVA_CLASS_FOR_PATH_EXECUTION = "me.zhenhao.forced.additionalappclasses.pathexecution.PathExecutor"
 
 	val ROOT_PACKAGE_OF_INSTRUMENTED_CODE = "me.zhenhao.forced."
 	val PACKAGE_FOR_HOOKER = "com.morgoo.hook."
 
+	val HELPER_APPLICATION_FOR_BYTECODELOGGER = "me.zhenhao.forced.additionalappclasses.BytecodeLoggerHelperApplication"
+
 	val HELPER_APPLICATION_FOR_HOOKING = "me.zhenhao.forced.additionalappclasses.HookingHelperApplication"
 	val HELPER_SERVICE_FOR_PATH_TRACKING = "me.zhenhao.forced.additionalappclasses.tracing.TracingService"
 	val COMPONENT_CALLER_SERVICE_HELPER = "me.zhenhao.forced.additionalappclasses.ComponentCallerService"
-	val HOOKER_CLASS = "me.zhenhao.forced.additionalappclasses.Hooker"
+	val HOOKER_CLASS = "me.zhenhao.forced.additionalappclasses.hooking.Hooker"
 
 	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "/additionalAppClassesBin"
 	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "/sharedClassesBin"
@@ -36,7 +38,8 @@ object UtilInstrumenter {
 
 	val SOOT_OUTPUT = FrameworkOptions.frameworkDir + "/sootOutput"
 	val SOOT_OUTPUT_APK = SOOT_OUTPUT + File.separator + File(FrameworkOptions.getApkName()).name + ".apk"
-	val SOOT_OUTPUT_DEPLOYED_APK = SOOT_OUTPUT + File.separator + File(FrameworkOptions.getApkName()).name + "_deployed.apk"
+	val SOOT_OUTPUT_DEPLOYED_APK = SOOT_OUTPUT + File.separator +
+			File(FrameworkOptions.getApkName()).name + "_deployed.apk"
 
 
 	fun isApiCall(invokeExpr: InvokeExpr): Boolean {

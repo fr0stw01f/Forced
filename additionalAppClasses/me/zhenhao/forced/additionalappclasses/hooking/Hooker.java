@@ -53,8 +53,6 @@ public class Hooker {
     		else if (info instanceof FieldHookInfo)
     			doFieldHooking((FieldHookInfo)info);
     	}
-    		
-    	
     }
     	
     private static void doMethodHooking(final MethodHookInfo info) {

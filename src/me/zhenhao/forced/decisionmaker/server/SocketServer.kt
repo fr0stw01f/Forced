@@ -101,7 +101,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
                         break
                 }
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in the client-server communication " + ex.message)
+                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
+                        "There is a problem in the client-server communication " + ex.message)
 
                 ex.printStackTrace()
             } finally {
@@ -120,19 +121,17 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
         @Throws(IOException::class)
-        private fun handleClientRequests(oos: ObjectOutputStream,
-                                         clientRequest: Any): Int {
+        private fun handleClientRequests(oos: ObjectOutputStream, clientRequest: Any): Int {
             var numAcks = 0
             if (clientRequest is PathTrackingTraceItem) {
-                //						System.out.println("Received a PathTrackingTraceItem");
+                println("Received a PathTrackingTraceItem");
                 handlePathTracking(clientRequest)
                 numAcks++
             } else if (clientRequest is DecisionRequest) {
-//there will be a hook in the dalvik part
+                //there will be a hook in the dalvik part
                 if (clientRequest.codePosition != -1) {
                     println("Received a DecisionRequest")
-                    handleDecisionRequest(
-                            clientRequest, oos)
+                    handleDecisionRequest(clientRequest, oos)
                 }
             } else if (clientRequest is CloseConnectionRequest) {
                 println("Received a CloseConnectionRequest")
@@ -145,7 +144,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
             } else if (clientRequest is CrashReportItem) {
                 val crash = clientRequest
                 handleCrash(crash)
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, String.format("%s | %s", crash.lastExecutedStatement, crash.exceptionMessage))
+                LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, String.format("%s | %s", crash.lastExecutedStatement,
+                        crash.exceptionMessage))
                 numAcks++
             } else if (clientRequest is DexFileTransferTraceItem) {
                 LoggerHelper.logInfo("received DexFileTransferTraceItem")
@@ -197,11 +197,11 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
             // Wait for new incoming client connections
             while (!stopped) {
-                println("waiting for client-app request...")
+                println("Waiting for client-app request...")
                 try {
                     val socket = objectListener!!.accept()
                     lastRequestProcessed = System.currentTimeMillis()
-                    println("got client-app request...")
+                    println("Got client-app request...")
                     executor!!.execute(ClientHandlerObjectThread(socket))
                 } catch (e: SocketException) {
                     // expected: another thread has called listener.close() to stop the server
@@ -210,7 +210,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
             }
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in startSocketServerObjectTransfer: " + e.message)
+            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
+                    "There is a problem in startSocketServerObjectTransfer: " + e.message)
             e.printStackTrace()
         } finally {
             try {
@@ -237,8 +238,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     @Throws(IOException::class)
-    private fun handleDecisionRequest(decisionRequest: DecisionRequest,
-                                      oos: ObjectOutputStream) {
+    private fun handleDecisionRequest(decisionRequest: DecisionRequest, oos: ObjectOutputStream) {
         // Run the analyses
         val response = decisionMaker.resolveRequest(decisionRequest)
         val logMessage = String.format("[DECISION_REQUEST] %s \n [DECISION_RESPONSE] %s", decisionRequest, response)
@@ -250,14 +250,14 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handlePathTracking(pathTrackigTrace: PathTrackingTraceItem) {
-        val codePostionUnit = decisionMaker.codePositionManager
+        val codePositionUnit = decisionMaker.codePositionManager
                 .getUnitForCodePosition(pathTrackigTrace.lastExecutedStatement)
         val decision = pathTrackigTrace.lastConditionalResult
         val mgr = decisionMaker.initializeHistory()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
-            if (codePostionUnit != null)
-                currentClientHistory?.addPathTrace(codePostionUnit, decision)
+            if (codePositionUnit != null)
+                currentClientHistory?.addPathTrace(codePositionUnit, decision)
         }
     }
 
@@ -292,7 +292,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
             val filePath = String.format("%s/dexFiles/%d_dexfile.dex", UtilInstrumenter.SOOT_OUTPUT, timestamp)
             println(String.format("Dex-File: %s (code position: %d)", filePath,
                     dexFileRequest.lastExecutedStatement))
-            LoggerHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex-file %s/dexFiles/%d_dexfile.dex", UtilInstrumenter.SOOT_OUTPUT, timestamp))
+            LoggerHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex-file %s/dexFiles/%d_dexfile.dex",
+                    UtilInstrumenter.SOOT_OUTPUT, timestamp))
             Files.write(Paths.get(filePath), dexFile)
 
             // We need to remove the statements that load the external code,
@@ -308,8 +309,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
                     codePos.lineNumber, codePosUnit.toString()))
 
             // Register the new dex file and spawn an analysis task for it
-            val dexFileObj = decisionMaker.dexFileManager.add(DexFile(
-                    dexFileRequest.fileName, filePath, dexFile))
+            val dexFileObj = decisionMaker.dexFileManager.add(DexFile(dexFileRequest.fileName, filePath, dexFile))
             val taskManager = decisionMaker.analysisTaskManager
             val currentTask = taskManager.currentTask
             if (currentTask != null)

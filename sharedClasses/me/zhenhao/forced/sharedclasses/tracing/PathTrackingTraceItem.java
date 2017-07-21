@@ -32,13 +32,16 @@ public class PathTrackingTraceItem extends TraceItem {
 	}
 
 	
-	public PathTrackingTraceItem(int lastExecutedStatement,
-			boolean lastConditionResult) {
+	public PathTrackingTraceItem(int lastExecutedStatement, boolean lastConditionResult) {
 		super(lastExecutedStatement);
 		this.lastConditionResult = lastConditionResult;
 	}
 
-	
+	@Override
+	public String toString() {
+		return "PathTrackingTraceItem(" + getLastExecutedStatement() + "->" + getLastConditionalResult() + ")";
+	}
+
 	public boolean getLastConditionalResult() {
 		return this.lastConditionResult;
 	}

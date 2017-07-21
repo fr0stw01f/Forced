@@ -130,8 +130,8 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
 
         executeTransformers(manifest)
         //todo PAPER-EVAL ONLY
-        //		if(!FrameworkOptions.evaluationOnly)
-        //			initializeHooking(manifest);
+        if(!FrameworkOptions.evaluationOnly)
+            initializeBytecodeLogger(manifest)
 
         PackManager.v().writeOutput()
 
@@ -199,18 +199,19 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         GlobalInstanceTransformer().transform()
     }
 
-
-    private fun initializeHooking(manifest: ProcessManifest) {
+    private fun initializeBytecodeLogger(manifest: ProcessManifest) {
         var applicationName: String? = manifest.applicationName
         //case 1
         if (applicationName != null) {
             if (applicationName.startsWith(".")) {
-                val packageName = manifest.packageName ?: throw RuntimeException("There is a problem with the package name")
+                val packageName = manifest.packageName ?:
+                        throw RuntimeException("There is a problem with the package name")
                 applicationName = packageName + applicationName
             }
             val applicationSootClass = Scene.v().getSootClass(applicationName)
             if (applicationSootClass != null) {
-                var attachMethodName = String.format("<%s: void attachBaseContext(android.content.Context)>", applicationName)
+                var attachMethodName = String.format("<%s: void attachBaseContext(android.content.Context)>",
+                        applicationName)
                 var attachMethod: SootMethod? = Scene.v().grabMethod(attachMethodName)
                 //case 1
                 if (attachMethod != null) {
@@ -218,20 +219,26 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                     val contextParam = body.getParameterLocal(0)
 
                     val unitsToInstrument = ArrayList<Unit>()
-                    val hookingHelperApplicationClassAttachMethodName = String.format("<%s: void initializeHooking(android.content.Context)>", UtilInstrumenter.HOOKER_CLASS)
-                    val hookingHelperApplicationClassAttachMethod = Scene.v().getMethod(hookingHelperApplicationClassAttachMethodName) ?: throw RuntimeException("this should not happen")
+                    val hookingHelperApplicationClassAttachMethodName =
+                            String.format("<%s: void initialize(android.content.Context)>",
+                                    UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
+                    val hookingHelperApplicationClassAttachMethod = Scene.v().
+                            getMethod(hookingHelperApplicationClassAttachMethodName) ?:
+                            throw RuntimeException("this should not happen")
                     val ref = hookingHelperApplicationClassAttachMethod.makeRef()
                     val invExpr = Jimple.v().newStaticInvokeExpr(ref, contextParam)
                     unitsToInstrument.add(Jimple.v().newInvokeStmt(invExpr))
 
 
                     val instrumentAfterUnit: Unit = body.units
-                            .firstOrNull { it is InvokeStmt && it.invokeExpr.method.subSignature == "void attachBaseContext(android.content.Context)" }
+                            .firstOrNull { it is InvokeStmt && it.invokeExpr.method.subSignature ==
+                                    "void attachBaseContext(android.content.Context)" }
                             ?: throw RuntimeException("this should not happen")
 
                     body.units.insertAfter(unitsToInstrument, instrumentAfterUnit)
                 } else {
-                    attachMethodName = String.format("<%s: void attachBaseContext(android.content.Context)>", UtilInstrumenter.HELPER_APPLICATION_FOR_HOOKING)
+                    attachMethodName = String.format("<%s: void attachBaseContext(android.content.Context)>",
+                            UtilInstrumenter.HELPER_APPLICATION_FOR_BYTECODELOGGER)
                     attachMethod = Scene.v().grabMethod(attachMethodName)
                     if (attachMethod == null)
                         throw RuntimeException("this should not happen")
@@ -246,7 +253,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 }//case 2
 
                 //there is no need for our Application class
-                Scene.v().getSootClass(UtilInstrumenter.HELPER_APPLICATION_FOR_HOOKING).setLibraryClass()
+                Scene.v().getSootClass(UtilInstrumenter.HELPER_APPLICATION_FOR_BYTECODELOGGER).setLibraryClass()
             } else {
                 throw RuntimeException("There is a problem with the Application class!")
             }

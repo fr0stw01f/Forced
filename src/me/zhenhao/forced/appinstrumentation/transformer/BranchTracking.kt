@@ -35,8 +35,8 @@ class BranchTracking : AbstractInstrumentationTransformer() {
         val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
 
         // Create the method invocation
-        //val reportMethod = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
-        val reportMethod = sootClass.getMethod("reportConditionOutcome", listOf<Type>(BooleanType.v()))
+        val reportMethod = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
+        //val reportMethod = sootClass.getMethod("reportConditionOutcome", listOf<Type>(BooleanType.v()))
         val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(1)) //then -> true
         val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(0)) //else -> false
         val sieThenStmt = Jimple.v().newInvokeStmt(sieThenExpr)
