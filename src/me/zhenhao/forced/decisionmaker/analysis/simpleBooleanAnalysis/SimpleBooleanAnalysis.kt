@@ -17,18 +17,20 @@ class SimpleBooleanAnalysis : FuzzyAnalysis() {
     private val seenCodePositions = HashSet<Int>()
 
     override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
-        //No pre-analysis required
+        // do nothing
     }
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val decisions = ArrayList<AnalysisDecision>()
 
         if (seenCodePositions.contains(clientRequest.codePosition))
             return ArrayList()
 
-        if (clientRequest.loggingPointSignature == "<android.app.SharedPreferencesImpl: boolean getBoolean(java.lang.String, boolean)>"
-                || clientRequest.loggingPointSignature == "<android.app.admin.DevicePolicyManager: boolean isAdminActive(android.content.ComponentName)>") {
+        if (clientRequest.loggingPointSignature ==
+                "<android.app.SharedPreferencesImpl: boolean getBoolean(java.lang.String, boolean)>"
+                || clientRequest.loggingPointSignature ==
+                "<android.app.admin.DevicePolicyManager: boolean isAdminActive(android.content.ComponentName)>") {
             seenCodePositions.add(clientRequest.codePosition)
             val responseTrue = ServerResponse()
             responseTrue.analysisName = getAnalysisName()
@@ -56,7 +58,7 @@ class SimpleBooleanAnalysis : FuzzyAnalysis() {
     }
 
     override fun reset() {
-        // no reset requried
+        // do nothing
     }
 
     override fun getAnalysisName(): String {

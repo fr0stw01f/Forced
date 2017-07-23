@@ -17,7 +17,7 @@ class SimpleRandomFuzzer : FuzzyAnalysis() {
     override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {}
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val finalDecistion = AnalysisDecision()
         finalDecistion.decisionWeight = 3
         finalDecistion.analysisName = getAnalysisName()

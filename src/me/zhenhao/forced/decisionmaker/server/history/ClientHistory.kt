@@ -13,15 +13,13 @@ import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
 
 class ClientHistory : Cloneable {
 
-    private val codePositions = ArrayList<Unit>()
+    val codePositions = ArrayList<Unit>()
 
-    private val pathTrace = ArrayList<Pair<Unit, Boolean>>()
+    val pathTrace = ArrayList<Pair<Unit, Boolean>>()
 
-    private val decisionAndResponse = ArrayList<Pair<DecisionRequest, AnalysisDecision>>()
+    val decisionAndResponse = ArrayList<Pair<DecisionRequest, AnalysisDecision>>()
 
     var callgraph = Callgraph()
-
-    private val progressMetrics = HashMap<String, Int>()
 
     var isShadowTrace = false
 
@@ -29,6 +27,8 @@ class ClientHistory : Cloneable {
 
     var dynamicValues = DynamicValueContainer()
         get
+
+    private val progressMetrics = HashMap<String, Int>()
 
     constructor()
 
@@ -44,15 +44,15 @@ class ClientHistory : Cloneable {
     }
 
 
-    fun addCodePosition(codePostion: Unit) {
+    fun addCodePosition(codePosition: Unit) {
         // The client might notify us of the same code position several times
-        if (codePositions.isEmpty() || codePositions[codePositions.size - 1] !== codePostion)
-            codePositions.add(codePostion)
+        if (codePositions.isEmpty() || codePositions[codePositions.size - 1] !== codePosition)
+            codePositions.add(codePosition)
     }
 
 
-    fun addCodePosition(codePostion: Int, manager: CodePositionManager) {
-        val unit = manager.getUnitForCodePosition(codePostion)
+    fun addCodePosition(codePosition: Int, manager: CodePositionManager) {
+        val unit = manager.getUnitForCodePosition(codePosition)
         if (unit != null)
             addCodePosition(unit)
     }
@@ -67,16 +67,6 @@ class ClientHistory : Cloneable {
         decisionAndResponse.add(Pair(request, response))
     }
 
-    val codePostions: List<Unit>
-        get() = codePositions
-
-    fun getPathTrace(): List<Pair<Unit, Boolean>> {
-        return pathTrace
-    }
-
-    fun getDecisionAndResponse(): List<Pair<DecisionRequest, AnalysisDecision>> {
-        return decisionAndResponse
-    }
 
     fun setProgressValue(metric: String, value: Int) {
         // We always take the best value we have seen so far
@@ -89,14 +79,14 @@ class ClientHistory : Cloneable {
 
 
     fun getProgressValue(metric: String): Int {
-        val `val` = progressMetrics[metric]
-        return `val` ?: Integer.MAX_VALUE
+        val value = progressMetrics[metric]
+        return value ?: Integer.MAX_VALUE
     }
 
 
     fun getResponseForRequest(request: DecisionRequest): AnalysisDecision? {
-        return getDecisionAndResponse()
-                .firstOrNull { it.first == request && it.second.serverResponse!!.doesResponseExist() }
+        return decisionAndResponse
+                .firstOrNull { it.first == request && it.second.serverResponse.doesResponseExist() }
                 ?.second
     }
 
@@ -104,7 +94,7 @@ class ClientHistory : Cloneable {
     fun hasOnlyEmptyDecisions(): Boolean {
         if (decisionAndResponse.isEmpty())
             return false
-        return decisionAndResponse.none { it.second.serverResponse!!.doesResponseExist() }
+        return decisionAndResponse.none { it.second.serverResponse.doesResponseExist() }
     }
 
     override fun hashCode(): Int {

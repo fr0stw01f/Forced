@@ -278,13 +278,13 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
         runAnalysis(targetUnits)
     }
 
-    override fun resolveRequest(clientRequest: DecisionRequest, completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+    override fun resolveRequest(clientRequest: DecisionRequest, threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val decisions = ArrayList<AnalysisDecision>()
         var codePosition = clientRequest.codePosition
         //Todo: why is there an 1 offset?
         codePosition += 1
 
-        val history = completeHistory.getLastClientHistory()
+        val history = threadTraceManager.getLastClientHistory()
         val dynValueCheckNecessary = areNewDynValuesOfHistory(history)
 
         //are there dynamic values available? static values are sent for the first request (so decision maker has all static values already)

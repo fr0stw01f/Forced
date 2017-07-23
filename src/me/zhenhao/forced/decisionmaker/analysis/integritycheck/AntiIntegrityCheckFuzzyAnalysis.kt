@@ -28,7 +28,7 @@ class AntiIntegrityCheckFuzzyAnalysis : FuzzyAnalysis() {
     }
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val decisions = ArrayList<AnalysisDecision>()
         if (clientRequest.loggingPointSignature == "<DummyWrapper: android.content.pm.PackageInfo dummyWrapper_getPackageInfo(android.content.pm.PackageManager,java.lang.String,int)>") {
             for (encodedCertificate in certificates) {

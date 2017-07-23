@@ -233,7 +233,7 @@ class FrameworkOptions {
 		var inactivityTimeout = 10   //40
 		var maxRestarts = 1         //5
 
-		var uninstallWaitingTime = 5000
+		var uninstallWaitingTime = 3000
 		var tryStartAppWaitingTime = 3000
 
 		var KEYSTORE_PATH = homeDir + "/keystores/zhenhao.keystore"
@@ -253,7 +253,7 @@ class FrameworkOptions {
 		var evaluationStartAppAndSimpleEvent = false
 		var evaluationOnly = false
 
-		var enableLogcatViewer = false
+		var enableLogcatViewer = true
 		var traceConstructionMode = TraceConstructionMode.Genetic
 
 

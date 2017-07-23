@@ -15,22 +15,21 @@ import me.zhenhao.forced.sharedclasses.util.Pair
 
 class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val cfg: InfoflowCFG) : IProgressMetric {
 
-    private val targetBasedDistancemap = HashBasedTable.create<Unit, Unit, Int>()
+    private val targetBasedDistanceMap = HashBasedTable.create<Unit, Unit, Int>()
 
     private var bestSoFar: Int? = Integer.MAX_VALUE
 
     private var currentTargetLocation: Unit? = null
 
-    private inner class ApproachLevelItem(val currentUnit: Unit, val approachLevel: Int)
+    private data class ApproachLevelItem(val currentUnit: Unit, val approachLevel: Int)
 
     override fun initialize() {
         if (currentTargetLocation == null)
             throw RuntimeException("we have to have a target!")
+
         //we have to do this for every target unit
         for (singleTarget in targetUnits) {
-            //			DefaultHashMap<Unit, Integer> distanceMap = new DefaultHashMap<Unit, Integer>(Integer.MAX_VALUE);
-
-            //check if this method is reachable; otherwise we can not create an inter-procedurarl CFG
+            //check if this method is reachable; otherwise we can not create an inter-procedural CFG
             if (!cfg.isReachable(singleTarget))
                 continue
 
@@ -52,8 +51,8 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
 
                 // If we already have a better approach level from another path, do not
                 // continue here
-                if (targetBasedDistancemap.contains(singleTarget, currentUnit)) {
-                    val oldMetricValue = targetBasedDistancemap.get(singleTarget, currentUnit)
+                if (targetBasedDistanceMap.contains(singleTarget, currentUnit)) {
+                    val oldMetricValue = targetBasedDistanceMap.get(singleTarget, currentUnit)
                     if (oldMetricValue > currentMetricValue)
                         continue
                 }
@@ -61,15 +60,15 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
                 // We decrease the approach level for every statement that we travel farther
                 // away from the target location
                 currentMetricValue--
-                targetBasedDistancemap.put(singleTarget, currentUnit, currentMetricValue)
+                targetBasedDistanceMap.put(singleTarget, currentUnit, currentMetricValue)
 
                 //in case we reached the start of the method (vice verse in backward analysis)
                 if (cfg.isStartPoint(currentUnit)) {
                     val sm = cfg.getMethodOf(currentUnit)
                     val callers = cfg.getCallersOf(sm)
-                    for (caller in callers)
-                        for (callerPred in cfg.getPredsOf(caller))
-                            worklist.add(ApproachLevelItem(callerPred, currentMetricValue))
+                    callers
+                            .flatMap { cfg.getPredsOf(it) }
+                            .mapTo(worklist) { ApproachLevelItem(it, currentMetricValue) }
                 }
                 if (cfg.isExitStmt(currentUnit)) {
                     val sm = cfg.getMethodOf(currentUnit)
@@ -78,7 +77,7 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
                     for (caller in callers) {
                         for (retSite in cfg.getReturnSitesOfCallAt(caller)) {
                             //second: add distance info to all callers
-                            targetBasedDistancemap.put(singleTarget, retSite, currentMetricValue)
+                            targetBasedDistanceMap.put(singleTarget, retSite, currentMetricValue)
                             //third get the predecessors (aka succs of cfg) of the callers and add them to the worklist
                             worklist.add(ApproachLevelItem(retSite, currentMetricValue))
                         }
@@ -92,23 +91,21 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
                         if (UtilInstrumenter.isAppDeveloperCode(clazzOfInvoke)) {
                             //get all return statements
                             val returnStmts = cfg.getStartPointsOf(callee)
-                            for (returnStmt in returnStmts) {
-                                //We have to do this, since SPARK has a well known issue with
-                                //iterators for instance where the correct building of a call graph is NOT possible.
-                                //changing to CHA would solve the issue, but would blow up the call graph
-                                if (cfg.getMethodOf(returnStmt) != null) {
-                                    worklist.add(ApproachLevelItem(returnStmt, currentMetricValue))
-                                }
-                            }
+                            returnStmts
+                                    .filter {
+                                        //We have to do this, since SPARK has a well known issue with
+                                        //iterators for instance where the correct building of a call graph is NOT possible.
+                                        //changing to CHA would solve the issue, but would blow up the call graph
+                                        cfg.getMethodOf(it) != null
+                                    }
+                                    .mapTo(worklist) { ApproachLevelItem(it, currentMetricValue) }
                             continue
                         }
                     }
                 }//in case of a non-api call
 
                 val nextUnits = cfg.getPredsOf(currentUnit)
-                for (unit in nextUnits) {
-                    worklist.add(ApproachLevelItem(unit, currentMetricValue))
-                }
+                nextUnits.mapTo(worklist) { ApproachLevelItem(it, currentMetricValue) }
             }
         }
     }
@@ -116,10 +113,9 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
     private fun getBestApproachLevel(path: Collection<Unit>): Pair<Unit, Int> {
         val retval = Pair<Unit, Int>(null, Integer.MAX_VALUE)
         for (unit in path) {
-            val distance = targetBasedDistancemap.get(currentTargetLocation, unit)
+            val distance = targetBasedDistanceMap.get(currentTargetLocation, unit)
             //in case we are not able to extract the the distance information, we take the old one
             if (distance == null) {
-                //				LoggerHelper.logWarning("not able to extract the distance information for: " + unit);
                 retval.first = unit
                 retval.setSecond(retval.second)
             } else if (distance < retval.second) {
@@ -132,7 +128,7 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
     }
 
     override fun update(history: ClientHistory): Int {
-        val value = getBestApproachLevel(history.codePostions).second
+        val value = getBestApproachLevel(history.codePositions).second
         bestSoFar = java.lang.Math.min(bestSoFar!!, value)
         // Set progress value
         history.setProgressValue(getMetricIdentifier(), value)

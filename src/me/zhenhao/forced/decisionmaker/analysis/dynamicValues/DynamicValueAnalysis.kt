@@ -27,7 +27,7 @@ class DynamicValueAnalysis : FuzzyAnalysis() {
     }
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val s = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as Stmt
         if (!s.containsInvokeExpr())
             return emptyList()
@@ -35,7 +35,7 @@ class DynamicValueAnalysis : FuzzyAnalysis() {
         val stringType = RefType.v("java.lang.String")
 
         // Return the dynamically-obtained values
-        val runtimeValues = completeHistory.getNewestClientHistory()?.dynamicValues?.getValues() ?: return emptyList()
+        val runtimeValues = threadTraceManager.getNewestClientHistory()?.dynamicValues?.getValues() ?: return emptyList()
         val decisions = ArrayList<AnalysisDecision>(runtimeValues.size)
         for (value in runtimeValues) {
             val serverResponse = ServerResponse()

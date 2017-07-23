@@ -8,18 +8,20 @@ import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
 
 class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
 
+    val eventTaskList = ArrayList<FrameworkEvent>()
+    var serverResponse: ServerResponse
+    var analysisName: String
     var decisionWeight = 0
-    var serverResponse: ServerResponse? = null
-    private val eventTaskList = ArrayList<FrameworkEvent>()
-    lateinit var analysisName: String
     var isDecisionUsed = false
-        private set
 
-    constructor()
+    constructor() {
+        serverResponse = ServerResponse.getEmptyResponse()
+        analysisName = "EMPTY_ANALYSIS_NAME"
+    }
 
-    constructor(original: AnalysisDecision) {
+    private constructor(original: AnalysisDecision) {
         this.decisionWeight = original.decisionWeight
-        this.serverResponse = original.serverResponse!!.clone()
+        this.serverResponse = original.serverResponse.clone()
         this.eventTaskList.addAll(original.eventTaskList)
         this.analysisName = original.analysisName
 
@@ -27,17 +29,8 @@ class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
         // explicitly.
     }
 
-    fun getEventTaskList(): List<FrameworkEvent> {
-        return eventTaskList
-    }
-
     fun addNewEvent(event: FrameworkEvent) {
         eventTaskList.add(event)
-    }
-
-
-    fun setDecisionUsed() {
-        this.isDecisionUsed = true
     }
 
     override fun compareTo(other: AnalysisDecision): Int {
@@ -51,7 +44,7 @@ class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
         result = prime * result + if (isDecisionUsed) 1231 else 1237
         result = prime * result + decisionWeight
         result = prime * result + eventTaskList.hashCode()
-        result = prime * result + if (serverResponse == null) 0 else serverResponse!!.hashCode()
+        result = prime * result + serverResponse.hashCode()
         return result
     }
 
@@ -72,10 +65,7 @@ class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {
             return false
         if (eventTaskList != other.eventTaskList)
             return false
-        if (serverResponse == null) {
-            if (other.serverResponse != null)
-                return false
-        } else if (serverResponse != other.serverResponse)
+        if (serverResponse != other.serverResponse)
             return false
         return true
     }

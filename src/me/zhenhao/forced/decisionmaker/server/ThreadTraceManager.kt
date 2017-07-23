@@ -10,8 +10,8 @@ import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
 
 
 class ThreadTraceManager(val threadID: Long) {
-    private val clientHistories = ArrayList<ClientHistory>()
-    private val shadowHistories = ArrayList<ClientHistory>()
+    val clientHistories = ArrayList<ClientHistory>()
+    val shadowHistories = ArrayList<ClientHistory>()
     private val onCreateHandlers = HashSet<ClientHistoryCreatedHandler>()
 
 
@@ -19,7 +19,7 @@ class ThreadTraceManager(val threadID: Long) {
         if (clientHistories.size >= size)
             return false
 
-        for (i in clientHistories.size..size - 1) {
+        for (i in 0..size-clientHistories.size-1) {
             val dummyHistory = ClientHistory()
             clientHistories.add(dummyHistory)
             for (handler in onCreateHandlers)
@@ -38,55 +38,39 @@ class ThreadTraceManager(val threadID: Long) {
     }
 
 
-    fun getHistories(): List<ClientHistory> {
-        return this.clientHistories
-    }
-
-
     fun getNewestClientHistory(): ClientHistory?{
         if (this.clientHistories.isEmpty())
             return null
-        return this.clientHistories[this.clientHistories.size - 1]
+        return this.clientHistories[this.clientHistories.size-1]
     }
 
 
     fun getLastClientHistory(): ClientHistory? {
         if (this.clientHistories.size < 2)
             return null
-        return this.clientHistories[this.clientHistories.size - 2]
+        return this.clientHistories[this.clientHistories.size-2]
     }
 
 
     fun addShadowHistory(history: ClientHistory) {
         // Do not add a shadow history that is a prefix of an existing history or
         // shadow history
-        for (existingHistory in clientHistories)
-            if (history.isPrefixOf(existingHistory))
-                return
-        for (existingHistory in shadowHistories)
-            if (history.isPrefixOf(existingHistory))
-                return
+        if (clientHistories.any { history.isPrefixOf(it) } || shadowHistories.any { history.isPrefixOf(it) })
+            return
 
         // Add the new shadow history
         shadowHistories.add(history)
 
-        // Notify our handlers
-        for (handler in onCreateHandlers)
-            handler.onClientHistoryCreated(history)
-    }
-
-
-    fun getShadowHistories(): List<ClientHistory> {
-        return this.shadowHistories
+        onCreateHandlers.forEach { it.onClientHistoryCreated(history) }
     }
 
 
     fun addOnCreateHandler(handler: ClientHistoryCreatedHandler) {
-        this.onCreateHandlers.add(handler)
+        onCreateHandlers.add(handler)
     }
 
 
-    val historyAndShadowCount: Int
+    val historyPlusShadowCount: Int
         get() = clientHistories.size + shadowHistories.size
 
 
@@ -102,7 +86,7 @@ class ThreadTraceManager(val threadID: Long) {
             val score = history.getProgressValue("ApproachLevel")
             if (score > bestScore) {
                 val decision = history.getResponseForRequest(request)
-                if (decision != null && decision.serverResponse!!.doesResponseExist()) {
+                if (decision != null && decision.serverResponse.doesResponseExist()) {
                     bestDecision = decision
                     bestScore = score
                 }

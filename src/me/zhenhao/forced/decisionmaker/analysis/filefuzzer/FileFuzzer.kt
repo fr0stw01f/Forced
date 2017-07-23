@@ -36,7 +36,7 @@ class FileFuzzer : FuzzyAnalysis() {
     }
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val decisions = ArrayList<AnalysisDecision>()
 
         var codePosID = clientRequest.codePosition

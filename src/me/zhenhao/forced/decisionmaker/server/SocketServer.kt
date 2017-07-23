@@ -41,46 +41,38 @@ import me.zhenhao.forced.sharedclasses.util.NetworkSettings
 
 
 class SocketServer private constructor(private val decisionMaker: DecisionMaker) {
+
     private var executor: CountingThreadPoolExecutor? = null
+
+    @Volatile private var objectListener: ServerSocket? = null
+
+    @Volatile private var stopped = false
 
     var lastRequestProcessed = System.currentTimeMillis()
         private set
 
-    @Volatile private var stopped = false
-    @Volatile private var objectListener: ServerSocket? = null
-
     private inner class ClientHandlerObjectThread(private val socket: Socket) : Runnable {
 
         override fun run() {
-            val ois: ObjectInputStream
-            val oos: ObjectOutputStream
-
             try {
                 var numAcks = 0
 
                 // Only create the streams once for the full lifetime of the socket
-                ois = ObjectInputStream(this.socket.getInputStream())
-                oos = ObjectOutputStream(this.socket.getOutputStream())
+                val ois = ObjectInputStream(this.socket.getInputStream())
+                val oos = ObjectOutputStream(this.socket.getOutputStream())
 
                 while (!socket.isClosed) {
                     val clientRequest = ois.readObject()
 
-                    // For every trace item, register the last position
-                    if (clientRequest is TraceItem) {
-                        val manager = decisionMaker.initializeHistory()
-                        if (manager != null) {
-                            val currentClientHistory = manager.getNewestClientHistory()
-                            if (currentClientHistory != null) {
-                                currentClientHistory.addCodePosition(clientRequest.lastExecutedStatement,
-                                        decisionMaker.codePositionManager)
-
-                                // Make sure that our metrics are up to date
-                                for (metric in decisionMaker.config.getProgressMetrics()) {
-                                    metric.update(currentClientHistory)
-                                }
-                            }
-                        }
+                    // Terminate the connection if requested
+                    if (clientRequest is CloseConnectionRequest) {
+                        println("Received a CloseConnectionRequest")
+                        break
                     }
+
+                    // For every trace item, register the last position
+                    if (clientRequest is TraceItem)
+                        handleTraceItem(clientRequest)
 
                     numAcks += handleClientRequests(oos, clientRequest)
 
@@ -95,15 +87,10 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
                     // Make sure we send out all our data
                     oos.flush()
-
-                    // Terminate the connection if requested
-                    if (clientRequest is CloseConnectionRequest)
-                        break
                 }
             } catch (ex: Exception) {
                 LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
                         "There is a problem in the client-server communication " + ex.message)
-
                 ex.printStackTrace()
             } finally {
                 try {
@@ -119,69 +106,64 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
             }
         }
 
+        fun handleTraceItem(clientRequest: TraceItem) {
+            val manager = decisionMaker.initializeHistory()
+            if (manager != null) {
+                val currentClientHistory = manager.getNewestClientHistory()
+                if (currentClientHistory != null) {
+                    currentClientHistory.addCodePosition(clientRequest.lastExecutedStatement,
+                            decisionMaker.codePositionManager)
 
-        @Throws(IOException::class)
+                    // Make sure that our metrics are up to date
+                    for (metric in decisionMaker.config.progressMetrics) {
+                        metric.update(currentClientHistory)
+                    }
+                }
+            }
+        }
+
+
         private fun handleClientRequests(oos: ObjectOutputStream, clientRequest: Any): Int {
-            var numAcks = 0
-            if (clientRequest is PathTrackingTraceItem) {
-                println("Received a PathTrackingTraceItem");
-                handlePathTracking(clientRequest)
-                numAcks++
-            } else if (clientRequest is DecisionRequest) {
-                //there will be a hook in the dalvik part
-                if (clientRequest.codePosition != -1) {
-                    println("Received a DecisionRequest")
-                    handleDecisionRequest(clientRequest, oos)
-                }
-            } else if (clientRequest is CloseConnectionRequest) {
-                println("Received a CloseConnectionRequest")
-            } else if (clientRequest is AbstractDynamicCFGItem) {
-                handleDynamicCallgraph(clientRequest)
-                numAcks++
-            } else if (clientRequest is TargetReachedTraceItem) {
-                handleGoalReached(clientRequest)
-                numAcks++
-            } else if (clientRequest is CrashReportItem) {
-                val crash = clientRequest
-                handleCrash(crash)
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, String.format("%s | %s", crash.lastExecutedStatement,
-                        crash.exceptionMessage))
-                numAcks++
-            } else if (clientRequest is DexFileTransferTraceItem) {
-                LoggerHelper.logInfo("received DexFileTransferTraceItem")
-                handleDexFileReceived(clientRequest)
-                numAcks++
-            } else if (clientRequest is DynamicValueTraceItem) {
-                handleDynamicValueReceived(clientRequest)
-                numAcks++
-            } else if (clientRequest is TimingBombTraceItem) {
-                handleTimingBombReceived(clientRequest)
-                numAcks++
-            } else if (clientRequest is BinarySerializableObject) {
-                // Deserialize the contents of the binary object and recursively
-                // process the request within.
-                var bais: ByteArrayInputStream? = null
-                var ois: ObjectInputStream? = null
-                var innerRequest: Any? = null
-                try {
-                    bais = ByteArrayInputStream(clientRequest.binaryData)
-                    ois = ObjectInputStream(bais)
-                    innerRequest = ois.readObject()
-                } catch (e: ClassNotFoundException) {
-                    System.err.println("Could not de-serialize inner request object")
-                    e.printStackTrace()
-                } finally {
-                    if (bais != null)
-                        bais.close()
-                    if (ois != null)
-                        ois.close()
-                }
-                if (innerRequest != null)
-                    handleClientRequests(oos, innerRequest)
-                numAcks++
-            } else
-                throw RuntimeException("Received an unknown data item from the app")
-            return numAcks
+
+            if (clientRequest is DecisionRequest) {
+                handleDecisionRequest(clientRequest, oos)
+                return 0
+            }
+
+            when (clientRequest) {
+                is PathTrackingTraceItem -> handlePathTracking(clientRequest)
+                is AbstractDynamicCFGItem -> handleDynamicCallgraph(clientRequest)
+                is TargetReachedTraceItem -> handleGoalReached(clientRequest)
+                is DynamicValueTraceItem -> handleDynamicValueReceived(clientRequest)
+                is TimingBombTraceItem -> handleTimingBombReceived(clientRequest)
+                is DexFileTransferTraceItem -> handleDexFileReceived(clientRequest)
+                is CrashReportItem -> handleCrash(clientRequest)
+                is BinarySerializableObject -> handleBinary(oos, clientRequest)
+                else -> throw RuntimeException("Received an unknown data item from the app")
+            }
+
+            return 1
+        }
+
+        private fun handleBinary(oos: ObjectOutputStream, clientRequest: BinarySerializableObject) {
+            var bais: ByteArrayInputStream? = null
+            var ois: ObjectInputStream? = null
+            var innerRequest: Any? = null
+            try {
+                bais = ByteArrayInputStream(clientRequest.binaryData)
+                ois = ObjectInputStream(bais)
+                innerRequest = ois.readObject()
+            } catch (e: ClassNotFoundException) {
+                System.err.println("Could not de-serialize inner request object")
+                e.printStackTrace()
+            } finally {
+                if (bais != null)
+                    bais.close()
+                if (ois != null)
+                    ois.close()
+            }
+            if (innerRequest != null)
+                handleClientRequests(oos, innerRequest)
         }
     }
 
@@ -232,13 +214,16 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     private fun sendResponse(out: ObjectOutputStream, response: Any) {
         out.writeObject(response)
         out.flush()
-        println("sending response to client-app...")
+        println("Sending response to client-app...")
         println(response)
     }
 
 
     @Throws(IOException::class)
     private fun handleDecisionRequest(decisionRequest: DecisionRequest, oos: ObjectOutputStream) {
+        if (decisionRequest.codePosition == -1)
+            return
+        println("Received a DecisionRequest")
         // Run the analyses
         val response = decisionMaker.resolveRequest(decisionRequest)
         val logMessage = String.format("[DECISION_REQUEST] %s \n [DECISION_RESPONSE] %s", decisionRequest, response)
@@ -249,10 +234,11 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     }
 
 
-    private fun handlePathTracking(pathTrackigTrace: PathTrackingTraceItem) {
+    private fun handlePathTracking(traceItem: PathTrackingTraceItem) {
+        println("Received a PathTrackingTraceItem")
         val codePositionUnit = decisionMaker.codePositionManager
-                .getUnitForCodePosition(pathTrackigTrace.lastExecutedStatement)
-        val decision = pathTrackigTrace.lastConditionalResult
+                .getUnitForCodePosition(traceItem.lastExecutedStatement)
+        val decision = traceItem.lastConditionalResult
         val mgr = decisionMaker.initializeHistory()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
@@ -263,6 +249,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleCrash(crash: CrashReportItem) {
+        LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME,
+            String.format("%s | %s", crash.lastExecutedStatement, crash.exceptionMessage))
         val mgr = decisionMaker.initializeHistory()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
@@ -281,6 +269,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleDexFileReceived(dexFileRequest: DexFileTransferTraceItem) {
+        LoggerHelper.logInfo("Received DexFileTransferTraceItem")
         val dexFile = dexFileRequest.dexFile
         try {
             // Write the received dex file to disk for debugging

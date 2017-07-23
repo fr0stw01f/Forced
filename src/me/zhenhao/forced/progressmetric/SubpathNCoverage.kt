@@ -7,8 +7,7 @@ import soot.jimple.infoflow.solver.cfg.InfoflowCFG
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
 
 
-class SubpathNCoverage(targetUnits: Collection<Unit>,
-                       val fragmentLength: Int) : IProgressMetric {
+class SubpathNCoverage(val targetUnits: Collection<Unit>, val fragmentLength: Int) : IProgressMetric {
 
     private val coveredPathFragment = HashSet<List<Pair<Unit, Boolean>>>()
 
@@ -19,11 +18,12 @@ class SubpathNCoverage(targetUnits: Collection<Unit>,
     }
 
     override fun update(history: ClientHistory): Int {
-        val trace = history.getPathTrace()
+        val trace = history.pathTrace
         var retval = 0
 
-        if (fragmentLength > 0 && trace.size > fragmentLength) { //coverage of path fragments of length = fragmentLength
-            (0..trace.size - fragmentLength - 1)
+        //coverage of path fragments of length = fragmentLength
+        if (fragmentLength > 0 && trace.size > fragmentLength) {
+            (0..trace.size-fragmentLength-1)
                     .filter { update(trace.subList(it, it + fragmentLength)) }
                     .forEach { retval++ }
         } else if (update(trace)) { //path coverage
@@ -41,7 +41,6 @@ class SubpathNCoverage(targetUnits: Collection<Unit>,
         }
         return retval
     }
-
 
     fun getNumCovered(): Int {
         return coveredPathFragment.size

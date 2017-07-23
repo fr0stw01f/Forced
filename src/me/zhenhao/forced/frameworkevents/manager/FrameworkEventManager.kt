@@ -95,10 +95,10 @@ class FrameworkEventManager {
     }
 
     fun addContacts(packageName: String) {
-        //sendEvent(AddContactEvent(packageName))
+        sendEvent(AddContactEvent(packageName))
     }
 
-    fun extractInitalEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG, manifest: ProcessManifest): Set<FrameworkEvent> {
+    fun extractInitialEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG, manifest: ProcessManifest): Set<FrameworkEvent> {
         val headUnits = getAllInitalMethodCalls(targetLocation, backwardsCFG)
         val androidEvents = getAndroidEventsFromManifest(backwardsCFG, headUnits, manifest)
         return androidEvents
@@ -498,8 +498,7 @@ class FrameworkEventManager {
             for (lcmsg in msgList) {
                 val msg = lcmsg.message
 
-                if (/*msg.contains("Shutting down VM") ||*/
-                msg.contains("VFY:"))
+                if (/*msg.contains("Shutting down VM") ||*/msg.contains("VFY:"))
                     LoggerHelper.logEvent(MyLevel.VMCRASH, String.format("############### VM CRASHED ###############\n%s", lcmsg.toString()))
             }
         }

@@ -72,29 +72,6 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
 
         convertSets2Arrays()
 
-        // debug output to show found strings
-        //		for (String className : doubleContainer.getArrayMap().keySet()) {
-        //			System.out.println("SourceConstantFuzzer: Classname: " + className);
-        //			Object[] valuesString = stringContainer.getArrayMap().get(className);
-        //
-        //			Object[] valuesInt = intContainer.getArrayMap().get(className);
-        //			Object[] valuesLong = longContainer.getArrayMap().get(className);
-        //			Object[] valuesDouble = doubleContainer.getArrayMap().get(className);
-        //			Object[] valuesFloat = floatContainer.getArrayMap().get(className);
-        //			Object[] valuesBoolean = stringContainer.getArrayMap().get(className); //TODO!
-        //
-        //			if(null != valuesString)
-        //			{
-        //				for (Object o : valuesString) {
-        //					System.out.println("\tFound String: " + o);
-        //				}
-        //			}
-        //			else
-        //			{
-        //				System.out.println("###No Strings in this class###");
-        //			}
-        //		}
-
         println("#Constants in App including dummy values")
         println("#Strings in App: " + stringContainer.allValues.size)
         println("#Integers in App: " + intContainer.allValues.size)
@@ -202,7 +179,8 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
 
     }
 
-    override fun resolveRequest(clientRequest: DecisionRequest, completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+    override fun resolveRequest(clientRequest: DecisionRequest,
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
 
         // We only model "after"-style hooks
         if (!clientRequest.isHookAfter) {
@@ -217,7 +195,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
             return ArrayList()
         }
 
-        //store codeposition
+        //store code position
         val codePosition = clientRequest.codePosition
 
         // by default we return the original value for types we do not
@@ -227,9 +205,9 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
         response.analysisName = getAnalysisName()
 
         // from the 3rd attempt compare metrics of last and lastlast value
-        if (completeHistory.getHistories().size > 1) {
-            val bdLast = completeHistory.getNewestClientHistory()?.getProgressValue("ApproachLevel")
-            val bdLastLast = completeHistory.getLastClientHistory()?.getProgressValue("ApproachLevel")
+        if (threadTraceManager.clientHistories.size > 1) {
+            val bdLast = threadTraceManager.getNewestClientHistory()?.getProgressValue("ApproachLevel")
+            val bdLastLast = threadTraceManager.getLastClientHistory()?.getProgressValue("ApproachLevel")
             var improvedOverLastRun: Boolean = false
             if (bdLast != null && bdLastLast != null && bdLast < bdLastLast)
                 improvedOverLastRun = true
@@ -247,7 +225,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
                 finalDecision.serverResponse = pinnedResponse
                 return listOf(finalDecision)
             } else if (improvedOverLastRun) {
-                val lastHistory = completeHistory.getLastClientHistory()
+                val lastHistory = threadTraceManager.getLastClientHistory()
                 if (lastHistory != null) {
                     // return the last value and stick to it for the future
                     val decision = lastHistory.getResponseForRequest(
@@ -459,13 +437,12 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
 
         var newValue: Any?
 
-        // if we do not have any constant values for the requested type, we
-        // return null
+        // if we do not have any constant values for the requested type, we return null
         if (null == allValues || allValues.isEmpty()) {
             return null
         }
 
-        // if we havent used any values, just pick one
+        // if we haven't used any values, just pick one
         if (null == usedValues || usedValues.size == 0) {
             newValue = allValues[DeterministicRandom.theRandom.nextInt(allValues.size)]
         } else {
@@ -489,7 +466,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
     }
 
     private fun extractReturnType(methodSignature: String): String {
-        return methodSignature.split(": ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
+        return methodSignature.split(": ")[1].split(" ")[0]
     }
 
     override fun getAnalysisName(): String {

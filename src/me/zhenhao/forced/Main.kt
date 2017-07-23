@@ -9,6 +9,7 @@ import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
 import me.zhenhao.forced.bootstrap.DexFileManager
+import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
@@ -17,7 +18,6 @@ import me.zhenhao.forced.decisionmaker.DeterministicRandom
 import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
 import org.apache.commons.io.FileUtils
 import org.xmlpull.v1.XmlPullParserException
 import soot.PackManager
@@ -40,8 +40,6 @@ import java.util.logging.Level
 
 class Main private constructor() {
 
-
-	@Throws(IOException::class, XmlPullParserException::class)
 	private fun run(args: Array<String>): Set<EnvironmentResult>? {
 		val frameworkOptions = FrameworkOptions()
 		frameworkOptions.parse(args)
@@ -185,9 +183,8 @@ class Main private constructor() {
 							LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
 
 							// If we have reached the goal, there is no need to try the other events
-							for (result in resultsPerApp)
-								if (result.isTargetReached)
-									break
+							if (resultsPerApp.any { it.isTargetReached })
+								break
 						} catch (ex: Exception) {
 							LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
 							ex.printStackTrace()
@@ -201,16 +198,6 @@ class Main private constructor() {
 			currentTask = analysisTaskManager.scheduleNextTask()
 		}
 
-//		val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
-//
-//		val file = File(localFile)
-//
-//		val br = file.bufferedReader()
-//		val fileCounter = br.readLine().toInt()
-//
-//		(0..fileCounter)
-//				.map { SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"+ String.format("%06d", it) + ".txt" }
-//				.forEach { FrameworkEventManager.eventManager.pullFile(it,FrameworkOptions.resultsDir + "branch_tracking/") }
 		return results
 	}
 
@@ -276,24 +263,22 @@ class Main private constructor() {
 				LoggerHelper.logEvent(MyLevel.RUNTIME, "NO target was reached")
 		}
 
-		// print branch tracking info
-		val mgr = decisionMaker.initializeHistory()
-		if (mgr != null) {
-			val currentClientHistory = mgr.getNewestClientHistory()
-			val pathTrace = currentClientHistory?.getPathTrace()
+		// print branch tracking info of all traces
+		val threadTraceManager = decisionMaker.getManagerForThreadId(-1)
+		for (clientHistory in threadTraceManager.clientHistories) {
+			val pathTrace = clientHistory.pathTrace
 			val codePosMgr = decisionMaker.codePositionManager
-			if (pathTrace != null)
-				for ((unit, decision) in pathTrace) {
-					val codePos = codePosMgr.getCodePositionForUnit(unit)
-					println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
-				}
+			for ((unit, decision) in pathTrace) {
+				val codePos = codePosMgr.getCodePositionForUnit(unit)
+				println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+			}
 		}
+
 
 		decisionMaker.tearDown()
 	}
 
 
-	@Throws(IOException::class, XmlPullParserException::class)
 	private fun initializeSoot(currentTask: AnalysisTask) {
 		val app = SetupApplication(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
 		app.calculateSourcesSinksEntrypoints(NullSourceSinkDefinitionProvider())
@@ -322,12 +307,9 @@ class Main private constructor() {
 				throw RuntimeException("Could not find local dex file")
 		}
 
-		//val binPath = FrameworkOptions.frameworkDir + "/bin"
-		//hooking specific
-		//processDir.add(UtilInstrumenter.HOOKING_LIBRARY)
+		// app code bin
 		processDir.add(UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN)
 		processDir.add(UtilInstrumenter.SHARED_CLASSES_BIN)
-		//processDir.add(binPath)
 		Options.v().set_process_dir(processDir)
 
 		Options.v().set_android_jars(FrameworkOptions.androidJarPath)
@@ -335,10 +317,9 @@ class Main private constructor() {
 
 		//the bin folder has to be added to the classpath in order to
 		//use the Java part for the instrumentation (JavaClassForInstrumentation)
-		val androidJar = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
+		val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
 		val sootClassPath = UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
-				UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJar
-		//val sootClassPath = binPath + File.pathSeparator + androidJar
+				UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
 		Options.v().set_soot_classpath(sootClassPath)
 
 		Scene.v().loadNecessaryClasses()
@@ -370,12 +351,11 @@ class Main private constructor() {
 		val eventManager = FrameworkEventManager.eventManager
 		val manifest = UtilApk.getManifest()
 		if (manifest != null)
-			return eventManager.extractInitalEventsForReachingTarget(targetLocation, cfg, manifest)
+			return eventManager.extractInitialEventsForReachingTarget(targetLocation, cfg, manifest)
 		return emptySet()
 	}
 
 	companion object {
-
 		private val SINGLETON = Main()
 
 		fun v(): Main {
@@ -395,8 +375,7 @@ class Main private constructor() {
 
 
 		@JvmStatic fun main(args: Array<String>) {
-			val timer = Timer()
-			timer.schedule(object : TimerTask() {
+			Timer().schedule(object : TimerTask() {
 				override fun run() {
 					LoggerHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
 					System.exit(0)

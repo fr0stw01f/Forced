@@ -16,18 +16,21 @@ import me.zhenhao.forced.progressmetric.IProgressMetric
 
 class DecisionMakerConfig {
 
-    private val ANALYSES_FILENAME = "." + File.separator + "files" + File.separator + "analysesNames.txt"
-    private val METRICS_FILENAME = "." + File.separator + "files" + File.separator + "metricsNames.txt"
+    val analysesNames = FileUtils.textFileToLineSet(ANALYSES_FILENAME)
 
-    private var allAnalyses: MutableSet<FuzzyAnalysis> = HashSet()
-    private var nameToAnalysis: MutableMap<String, FuzzyAnalysis> = HashMap()
+    val progressMetricNames = FileUtils.textFileToLineSet(METRICS_FILENAME)
 
-    private var progressMetrics: MutableSet<IProgressMetric> = HashSet()
+    val allAnalyses: MutableSet<FuzzyAnalysis> = HashSet()
 
-    var allTargetLocations: MutableSet<Unit> = HashSet()
+    private val nameToAnalysis: MutableMap<String, FuzzyAnalysis> = HashMap()
+
+    val progressMetrics: MutableSet<IProgressMetric> = HashSet()
+
+    val allTargetLocations: MutableSet<Unit> = HashSet()
 
     lateinit var backwardsCFG: BackwardsInfoflowCFG
         private set
+
 
     fun initialize(targetLocations: Set<Unit>): Boolean {
         var successful = registerFuzzyAnalyses()
@@ -53,7 +56,8 @@ class DecisionMakerConfig {
                         val analysisClass = Class.forName(it)
                         val defaultConstructor = analysisClass.getConstructor()
                         defaultConstructor.isAccessible
-                        val constructorObject = defaultConstructor.newInstance() as? FuzzyAnalysis ?: throw RuntimeException("There is a problem with the registered analysis in the files/analysesNames.txt file!")
+                        val constructorObject = defaultConstructor.newInstance() as? FuzzyAnalysis ?:
+                                throw RuntimeException("There is a problem in files/analysesNames.txt!")
                         val analysis = constructorObject
 
                         allAnalyses.add(analysis)
@@ -76,9 +80,12 @@ class DecisionMakerConfig {
                 .forEach {
                     try {
                         val metricClass = Class.forName(it)
-                        val defaultConstructor = metricClass.getConstructor(Collection::class.java, InfoflowCFG::class.java)
+                        val defaultConstructor = metricClass.getConstructor(
+                                Collection::class.java, InfoflowCFG::class.java)
                         defaultConstructor.isAccessible
-                        val constructorObject = defaultConstructor.newInstance(allTargetLocations, backwardsCFG) as? IProgressMetric ?: throw RuntimeException("There is a problem with the registered metric in the files/metricsNames.txt file!")
+                        val constructorObject = defaultConstructor.newInstance(allTargetLocations, backwardsCFG)
+                                as? IProgressMetric ?:
+                                throw RuntimeException("There is a problem in the files/metricsNames.txt file!")
                         val metric = constructorObject
                         LoggerHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + it)
 
@@ -106,95 +113,13 @@ class DecisionMakerConfig {
     }
 
 
-    private val analysesNames: Set<String>
-        get() = FileUtils.textFileToLineSet(ANALYSES_FILENAME)
-
-
-    private val progressMetricNames: Set<String>
-        get() = FileUtils.textFileToLineSet(METRICS_FILENAME)
-
-    //
-    //	private void extractAllTargetLocations() {
-    //		//extract all logging points from file
-    //		Set<String> targetLocationsTmp = new HashSet<String>();
-    //
-    //		try{
-    //			BufferedReader br = new BufferedReader(new FileReader(TARGET_METHODS_FILENAME));
-    //		    try {
-    //		        String line;
-    //		        while ((line = br.readLine()) != null) {
-    //		        	targetLocationsTmp.add(line);
-    //		        }
-    //		    } finally {
-    //		        br.close();
-    //		    }
-    //		}catch(Exception ex) {
-    //			ex.printStackTrace();
-    //			System.exit(-1);
-    //		}
-    //
-    //		targetMethods.addAll(targetLocationsTmp);
-    //
-    //		if(!targetLocationsTmp.isEmpty()) {
-    //
-    //			Chain<SootClass> applicationClasses = Scene.v().getApplicationClasses();
-    //			for(SootClass clazz : applicationClasses) {
-    //				//no need to look into our code
-    //				if (!UtilInstrumenter.isAppDeveloperCode(clazz))
-    //					continue;
-    //
-    //				for(SootMethod method : clazz.getMethods()) {
-    //					if(method.hasActiveBody()) {
-    //						Body body = method.retrieveActiveBody();
-    //						for (Iterator<Unit> unitIt = body.getUnits().iterator(); unitIt.hasNext(); ) {
-    //							Unit curUnit = unitIt.next();
-    //							if(curUnit instanceof Stmt) {
-    //								Stmt statement = (Stmt)curUnit;
-    //
-    //								if(statement.containsInvokeExpr()){
-    //									InvokeExpr invExpr = statement.getInvokeExpr();
-    //									String invokeExprMethodSignature = invExpr.getMethod().getSignature();
-    //
-    //									for(String targetLocation : targetLocationsTmp) {
-    //										//we accept all classes
-    //										if(targetLocation.startsWith("<*:")) {
-    //											String pattern = "<.:\\s(.*)\\s(.*)\\((.*)\\)>";
-    //										      Pattern r = Pattern.compile(pattern);
-    //
-    //										      Matcher m = r.matcher(targetLocation);
-    //										      if (m.find()) {
-    //										    	  if(m.group(1).equals(invExpr.getMethod().getReturnType().toString()) &&
-    //										    		  m.group(2).equals(invExpr.getMethod().getName()))
-    //										    		  this.allTargetLocations.add(curUnit);
-    //										      }
-    //										}
-    //										else if(targetLocation.equals(invokeExprMethodSignature))
-    //											this.allTargetLocations.add(curUnit);
-    //									}
-    //								}
-    //							}
-    //						}
-    //					}
-    //				}
-    //			}
-    //		}
-    //		if(this.allTargetLocations.size() == 0) {
-    //			LoggerHelper.logWarning("There are no reachable target locations");
-    //			System.exit(0);
-    //		}
-    //
-    //	}
-
-    fun getAllAnalyses(): Set<FuzzyAnalysis> {
-        return allAnalyses
-    }
-
-    fun getProgressMetrics(): Set<IProgressMetric> {
-        return progressMetrics
-    }
-
     fun getAnalysisByName(name: String): FuzzyAnalysis? {
         return nameToAnalysis[name]
+    }
+
+    companion object {
+        private val ANALYSES_FILENAME = "." + File.separator + "files" + File.separator + "analysesNames.txt"
+        private val METRICS_FILENAME = "." + File.separator + "files" + File.separator + "metricsNames.txt"
     }
 
 }

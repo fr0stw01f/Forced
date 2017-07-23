@@ -37,12 +37,11 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     lateinit private var result: EnvironmentResult
 
     private var manifest: ProcessManifest? = null
+
     private var socketServer: SocketServer? = null
+
     lateinit private var eventManager: FrameworkEventManager
-    var dynamicCallgraph: DynamicCallgraphBuilder? = null
-        private set
-    lateinit var codePositionManager: CodePositionManager
-        private set
+
     lateinit private var codeIndexer: StaticCodeIndexer
 
     private val traceManager = TraceManager()
@@ -50,6 +49,12 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     lateinit private var logFileProgressName: String
 
     private var geneticOnlyMode = false
+
+    var dynamicCallgraph: DynamicCallgraphBuilder? = null
+        private set
+
+    lateinit var codePositionManager: CodePositionManager
+        private set
 
     fun runPreAnalysisPhase() {
         logProgressMetricsInit()
@@ -63,7 +68,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         try {
             logFileProgressName = "plot" + File.separator + "logProgress-" + dateFormat.format(date) + ".data"
             logFileProgress = FileWriter(logFileProgressName, true)
-            config.getProgressMetrics()
+            config.progressMetrics
                     .map { it.javaClass.name }
                     .forEach {
                         logFileProgress.write(it.substring(it.lastIndexOf('.') + 1) + '\t')
@@ -78,9 +83,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
 
     private fun startAllPreAnalysis() {
-        //		if(config.getAllAnalyses().size() == 0)
-        //			throw new RuntimeException("There should be at least one analysis registered!");
-        for (analysis in config.getAllAnalyses()) {
+        for (analysis in config.allAnalyses) {
             LoggerHelper.logEvent(MyLevel.PRE_ANALYSIS_START, analysis.getAnalysisName())
             analysis.doPreAnalysis(config.allTargetLocations, traceManager)
             LoggerHelper.logEvent(MyLevel.PRE_ANALYSIS_STOP, analysis.getAnalysisName())
@@ -88,34 +91,31 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     }
 
 
-    private fun computeResponse(request: DecisionRequest,
-                                currentManager: ThreadTraceManager): ServerResponse {
-        // If we already have a decision for that request in the current
-        // history, we take it
+    private fun computeResponse(request: DecisionRequest, currentManager: ThreadTraceManager): ServerResponse {
+        // If we already have a decision for that request in the current history, we take it
         run {
             val response = currentManager.getNewestClientHistory()?.getResponseForRequest(request)
-            if (response != null && response.serverResponse!!.doesResponseExist()) {
-                response.setDecisionUsed()
+            if (response != null && response.serverResponse.doesResponseExist()) {
+                response.isDecisionUsed = true
                 LoggerHelper.logEvent(MyLevel.ANALYSIS_NAME, response.analysisName)
-                return response.serverResponse!!
+                return response.serverResponse
             }
         }
 
         // Compute the analyses for the current request
-        val allDecisions = config.getAllAnalyses()
+        val allDecisions = config.allAnalyses
                 .map {
-                    it.resolveRequest(request, currentManager)
-                    // We only add decisions that actually value values
+                    it.resolveRequest(request, currentManager)  // We only add decisions that actually value values
                 }
                 .flatMap { it }
-                .filter { it.serverResponse!!.doesResponseExist() }
+                .filter { it.serverResponse.doesResponseExist() }
                 .toMutableList()
 
         // If we are in genetic-only mode and don't have a response in the
         // current trace, we try to get something from an older trace
         if (geneticOnlyMode && allDecisions.isEmpty()) {
             val decision = currentManager.getBestResponse(request)
-            if (decision != null && decision.serverResponse!!.doesResponseExist())
+            if (decision != null && decision.serverResponse.doesResponseExist())
                 allDecisions.add(decision)
         }
 
@@ -132,7 +132,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             allDecisions.add(decision)
 
             if (geneticOnlyMode)
-                System.err.println("We're in genetic-only mode, but don't have a value for the " + "request. **playing sad music**")
+                System.err.println("We're in genetic-only mode, but don't have a value for the request.")
         }
 
         // Apply penalties (if any) to the decisions
@@ -151,12 +151,11 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         val finalDecision = getFinalDecision(allDecisions)
 
         // If the analysis gave us lots of choices, we need to feed them into
-        // the trace set to make them available to the genetic algorithm in
-        // future runs
+        // the trace set to make them available to the genetic algorithm in future runs
         val currentHistory = currentManager.getNewestClientHistory()
         if (currentHistory != null && allDecisions.size > 1) {
             for (nonPickedDecision in allDecisions)
-                if (nonPickedDecision !== finalDecision && nonPickedDecision.serverResponse!!.doesResponseExist()) {
+                if (nonPickedDecision !== finalDecision && nonPickedDecision.serverResponse.doesResponseExist()) {
                     val shadow = currentHistory.clone()
                     shadow.addDecisionRequestAndResponse(request, nonPickedDecision)
                     shadow.isShadowTrace = true
@@ -168,16 +167,15 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         if (finalDecision == null)
             return ServerResponse.getEmptyResponse()
         else
-            finalDecision.setDecisionUsed()
+            finalDecision.isDecisionUsed = true
 
-        // Extract the server response to send back to the app and add it to the
-        // current trace
+        // Extract the server response to send back to the app and add it to the current trace
         currentHistory?.addDecisionRequestAndResponse(request, finalDecision)
 
         // If we have a shadow that is a prefix of the decision we have taken anyway,
         // there is no need to keep the shadow around for further testing.
         var removedCount = 0
-        val shadowIt = (currentManager.getShadowHistories() as MutableList).iterator()
+        val shadowIt = currentManager.shadowHistories.iterator()
         while (shadowIt.hasNext()) {
             val shadow = shadowIt.next()
             if (currentHistory != null && shadow.isPrefixOf(currentHistory)) {
@@ -190,7 +188,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     + "were prefixes of the decision we are trying now.")
 
         val serverResponse = finalDecision.serverResponse
-        serverResponse!!.analysisName = finalDecision.analysisName
+        serverResponse.analysisName = finalDecision.analysisName
         return serverResponse
     }
 
@@ -205,11 +203,10 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         currentManager.getNewestClientHistory()?.addCodePosition(request.codePosition, codePositionManager)
 
         // Make sure that we have updated the dynamic callgraph
-        if (dynamicCallgraph != null)
-            dynamicCallgraph!!.updateCFG()
+        dynamicCallgraph?.updateCFG()
 
         // Make sure that our metrics are up to date
-        for (metric in config.getProgressMetrics()) {
+        for (metric in config.progressMetrics) {
             val clientHistory = currentManager.getNewestClientHistory()
             if (clientHistory != null)
                 metric.update(clientHistory)
@@ -225,7 +222,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         val logFileProgress: FileWriter
         try {
             logFileProgress = FileWriter(logFileProgressName, true)
-            for (metric in config.getProgressMetrics()) {
+            for (metric in config.progressMetrics) {
                 val clientHistory = currentManager.getNewestClientHistory()
                 if (clientHistory != null) {
                     val newlyCovered = metric.update(clientHistory)
@@ -254,15 +251,17 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         for (decision in decisions) {
             if (decision.decisionWeight == highestWeight)
                 finalDecisions.add(decision)
-            else if (DeterministicRandom.theRandom.nextInt(GENETIC_RANDOM_OFFSET) < GENETIC_RANDOM_OFFSET * GENETIC_PICK_BAD_DECISION_PROBABILITY)
-                finalDecisions.add(decision)// with a certain (low) probability, we also pick a decision with lower
-            // confidence
+            else if (DeterministicRandom.theRandom.nextInt(GENETIC_RANDOM_OFFSET) <
+                    GENETIC_RANDOM_OFFSET * GENETIC_PICK_BAD_DECISION_PROBABILITY)
+                // with a certain (low) probability, we also pick a decision with lower
+                // confidence
+                finalDecisions.add(decision)
         }
 
         //random pick
-        val amountOfDecisons = finalDecisions.size
-        if (amountOfDecisons > 1) {
-            val randomPick = DeterministicRandom.theRandom.nextInt(amountOfDecisons)
+        val amountOfDecisions = finalDecisions.size
+        if (amountOfDecisions > 1) {
+            val randomPick = DeterministicRandom.theRandom.nextInt(amountOfDecisions)
             return finalDecisions[randomPick]
         } else
             return finalDecisions[0]
@@ -270,9 +269,6 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
     fun initialize() {
         this.manifest = UtilApk.getManifest()
-
-        // set up event manager
-        eventManager = FrameworkEventManager.eventManager
 
         // Get a code model
         codePositionManager = CodePositionManager.codePositionManagerInstance
@@ -299,8 +295,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         result = EnvironmentResult()
 
         // Reset all analyses
-        for (analysis in config.getAllAnalyses())
-            analysis.reset()
+        config.allAnalyses.forEach { it.reset() }
     }
 
     fun executeDecisionMaker(event: FrameworkEvent?): EnvironmentResult {
@@ -311,7 +306,6 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         if (!FrameworkOptions.testServer) {
             //pull files onto device
             eventManager.pushFuzzyFiles(FileFuzzer.FUZZY_FILES_DIR)
-//          eventManager.removeFile("/sdcard/branch_tracking.txt")
             eventManager.installApp(manifest!!.packageName)
 
             //add contacts onto device
@@ -340,11 +334,14 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 val timeDiff = currentTime - socketServer!!.lastRequestProcessed
 
                 // we do a complete (clean) re-install of the app
-                if (timeDiff > FrameworkOptions.inactivityTimeout * 1000 || currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
+                if (timeDiff > FrameworkOptions.inactivityTimeout * 1000
+                        || currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
 
                     if (result.restartCount < FrameworkOptions.maxRestarts || FrameworkOptions.maxRestarts == -1) {
-                        LoggerHelper.logEvent(MyLevel.RESTART, String.format("Restarted app due to timeout: %d", result.restartCount + 1))
-                        LoggerHelper.logEvent(MyLevel.RESTART, String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
+                        LoggerHelper.logEvent(MyLevel.RESTART,
+                                String.format("Restarted app due to timeout: %d", result.restartCount + 1))
+                        LoggerHelper.logEvent(MyLevel.RESTART,
+                                String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
 
                         eventManager.killAppProcess(manifest!!.packageName)
                         eventManager.uninstallAppProcess(manifest!!.packageName)
@@ -387,15 +384,6 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 }
             }
 
-            // Wait for the next task to arrive. We only need this is the app
-            // sends really large dex files
-            //			try {
-            //				Thread.sleep(60000);
-            //			} catch (InterruptedException e) {
-            //				// TODO Auto-generated catch block
-            //				e.printStackTrace();
-            //			}
-
             // Make sure to clean up after ourselves
             eventManager.killAppProcess(manifest!!.packageName)
             eventManager.uninstallAppProcess(manifest!!.packageName)
@@ -409,9 +397,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
 
     private fun cleanUpUnusedDecisions() {
-        for (ttm in traceManager.getAllThreadTraceManagers()) {
-            ttm.getNewestClientHistory()?.removeUnusedDecisions()
-        }
+        traceManager.getAllThreadTraceManagers().forEach { it.getNewestClientHistory()?.removeUnusedDecisions() }
     }
 
 
@@ -419,7 +405,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         var historyCount = 0
         val analysisToBestScore = HashMap<String, Int>()
         for (tm in traceManager.getAllThreadTraceManagers()) {
-            for (hist in tm.getHistories()) {
+            for (hist in tm.clientHistories) {
                 historyCount++
                 val progressVal = hist.getProgressValue("ApproachLevel")
                 for (pair in hist.allDecisionRequestsAndResponses) {
@@ -432,7 +418,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         }
 
         // We only judge analyses if have some data
-        if (historyCount < PENALYZE_ANALYSES_MIN_HISTORY_COUNT || analysisToBestScore.size < 2)
+        if (historyCount < PENALIZE_ANALYSES_MIN_HISTORY_COUNT || analysisToBestScore.size < 2)
             return
 
         // Check if we have an analysis that is  10 times worse than the next
@@ -448,7 +434,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             }
 
             // Is this entry 10 times worse than the previous one?
-            if (entry.value * PENALYZE_ANALYSES_FACTOR < lastEntry.value) {
+            if (entry.value * PENALIZE_ANALYSES_FACTOR < lastEntry.value) {
                 val analysis = config.getAnalysisByName(entry.key)
                 analysis?.penaltyRank = penaltyRank++
             }
@@ -461,26 +447,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         socketServer!!.stop()
     }
 
-    //
-    //	private String getLaunchableActivity(ProcessManifest manifest) {
-    //		Set<AXmlNode> allLaunchableActivities = manifest.getLaunchableActivities();
-    //		if(allLaunchableActivities.size() == 0) {
-    //			throw new RuntimeException("we do not support apps yet that do not have a launchable activitiy (e.g., just services)");
-    //		}
-    //		else if(allLaunchableActivities.size() > 1)
-    //			LoggerHelper.logWarning("This app contains more than one activity that is launchable! Taking the first one which is defined in the manifest...");
-    //		else {
-    //			AXmlNode node = allLaunchableActivities.iterator().next();
-    //			return (String)node.getAttribute("name").getValue();
-    //		}
-    //		return null;
-    //	}
-
 
     fun getManagerForThreadId(threadId: Long): ThreadTraceManager {
-        val manager = traceManager.getThreadTraceManager(threadId)
-
-        return manager
+        return traceManager.getThreadTraceManager(threadId)
     }
 
 
@@ -489,23 +458,23 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
         // Only perform genetic recombination when actually generating new traces
         var forceGenetic: Boolean
-        if (manager.getHistories().size < result.restartCount + 1) {
+        if (manager.clientHistories.size <= result.restartCount) {
             // Are we in genetic-only mode?
             forceGenetic = geneticOnlyMode
 
             // If we did not get any new values in the last run, the analyses have
-            // run out of values. In that case, we can only rely on genetic
-            // recombination.
+            // run out of values. In that case, we can only rely on genetic recombination.
             if (!forceGenetic) {
                 // We can only make this decision if we have already had one complete run
-                if (manager.getHistories().size > 1 && manager.getLastClientHistory() != null
+                if (manager.clientHistories.size > 1 && manager.getLastClientHistory() != null
                         && manager.getLastClientHistory()!!.hasOnlyEmptyDecisions()) {
-                    if (manager.historyAndShadowCount >= 2) {
+                    if (manager.historyPlusShadowCount >= 2) {
                         forceGenetic = true
                         geneticOnlyMode = true
                         LoggerHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
                     } else {
-                        System.err.println("It's all empty now, but we don't have enough histories " + "to combine. Looks like we're seriously out of luck.")
+                        System.err.println("It's all empty now, but we don't have enough histories to combine. " +
+                                "Looks like we're seriously out of luck.")
                         return null
                     }
                 }
@@ -513,8 +482,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
             // If we have a couple of histories, we do genetic recombination
             if (!forceGenetic) {
-                if (manager.getHistories().size > GENETIC_MIN_GENE_POOL_SIZE) {
-                    if (DeterministicRandom.theRandom.nextInt(GENETIC_RANDOM_OFFSET) < GENETIC_GENE_POOL_EXTENSION_PROBABILITY * GENETIC_RANDOM_OFFSET) {
+                if (manager.clientHistories.size > GENETIC_MIN_GENE_POOL_SIZE) {
+                    if (DeterministicRandom.theRandom.nextInt(GENETIC_RANDOM_OFFSET) <
+                            GENETIC_GENE_POOL_EXTENSION_PROBABILITY * GENETIC_RANDOM_OFFSET) {
                         forceGenetic = true
                         LoggerHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
                     }
@@ -528,14 +498,14 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 // We also need to take the shadow histories into account. We take histories
                 // from all threads in case we are not on the main thread
                 val histories = HashSet<ClientHistory>()
-                for (tmanager in traceManager.getAllThreadTraceManagers()) {
-                    histories.addAll(tmanager.getHistories())
-                    histories.addAll(tmanager.getShadowHistories())
+
+                traceManager.getAllThreadTraceManagers().forEach {
+                    histories.addAll(it.clientHistories)
+                    histories.addAll(it.shadowHistories)
                 }
 
                 // Do the genetic combination
-                val combination = GeneticCombination()
-                val combinedHistory = combination.combineGenetically(histories)
+                val combinedHistory = GeneticCombination.combineGenetically(histories)
                 if (combinedHistory == null) {
                     LoggerHelper.logWarning("Genetic recombination failed.")
                     return null
@@ -544,10 +514,8 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 manager.ensureHistorySize(result.restartCount + 1, combinedHistory)
 
                 // Create the dynamic callgraph
-                this.dynamicCallgraph = DynamicCallgraphBuilder(
-                        manager.getNewestClientHistory()?.callgraph!!,
-                        codePositionManager,
-                        codeIndexer)
+                this.dynamicCallgraph = DynamicCallgraphBuilder(manager.getNewestClientHistory()?.callgraph!!,
+                        codePositionManager, codeIndexer)
                 return manager
             } else if (manager.ensureHistorySize(result.restartCount + 1)) {
                 // Check it
@@ -556,16 +524,15 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
                 // Create the new trace
                 LoggerHelper.logInfo("Creating a new empty trace...")
-                this.dynamicCallgraph = DynamicCallgraphBuilder(
-                        manager.getNewestClientHistory()?.callgraph!!,
-                        codePositionManager,
-                        codeIndexer)
+                this.dynamicCallgraph = DynamicCallgraphBuilder(manager.getNewestClientHistory()?.callgraph!!,
+                        codePositionManager, codeIndexer)
             }// If we actually created a new trace, we must re-initialize the
             // factories
 
             // We need a dynamic callgraph
             if (this.dynamicCallgraph == null)
-                throw RuntimeException("This should never happen. There is no such exception. " + "It's all just an illusion. Move along.")
+                throw RuntimeException("This should never happen. There is no such exception. " +
+                        "It's all just an illusion. Move along.")
         }
 
         return manager
@@ -578,7 +545,6 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
 
     private fun tryStartingApp() {
-
         val hasLaunchableActivity = manifest!!.launchableActivities.size > 0
         val packageName = manifest!!.packageName
         if (hasLaunchableActivity) {
@@ -594,33 +560,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
             eventManager.startService(packageName, serviceName)
         } else
-            throw RuntimeException("we are not able to start the application")//if there is no launchable activity and no activity at all, we try calling the first service in manifest
-        //if there is no launchable activity, we try calling the first activity in manifest
-
-        //updateBranchTrackingFileCounter()
-    }
-
-    fun updateBranchTrackingFileCounter() {
-        try {
-            val remoteFile = SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "file_counter.txt"
-            val localFile = FrameworkOptions.resultsDir + "file_counter.txt"
-            FrameworkEventManager.eventManager.pullFile(remoteFile, localFile)
-
-            val file = File(localFile)
-
-            val br = file.bufferedReader()
-            val fileCounter = br.readLine()
-            br.close()
-
-            val bw = file.bufferedWriter()
-            bw.write((fileCounter.toInt()+1).toString())
-
-            bw.close()
-
-            FrameworkEventManager.eventManager.pushFile(localFile, remoteFile)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
+            //if there is no launchable activity and no activity at all, we try calling the first service in manifest
+            throw RuntimeException("we are not able to start the application")
+            //if there is no launchable activity, we try calling the first activity in manifest
     }
 
 
@@ -645,11 +587,14 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             val timeDiff = currentTime - socketServer!!.lastRequestProcessed
 
             // we do a complete (clean) re-install of the app
-            if (timeDiff > FrameworkOptions.inactivityTimeout * 1000 || currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
+            if (timeDiff > FrameworkOptions.inactivityTimeout * 1000 ||
+                    currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
 
                 if (result.restartCount < FrameworkOptions.maxRestarts || FrameworkOptions.maxRestarts == -1) {
-                    LoggerHelper.logEvent(MyLevel.RESTART, String.format("Restarted app due to timeout: %d", result.restartCount + 1))
-                    LoggerHelper.logEvent(MyLevel.RESTART, String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
+                    LoggerHelper.logEvent(MyLevel.RESTART,
+                            String.format("Restarted app due to timeout: %d", result.restartCount + 1))
+                    LoggerHelper.logEvent(MyLevel.RESTART,
+                            String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
 
                     eventManager.killAppProcess(manifest!!.packageName)
                     eventManager.uninstallAppProcess(manifest!!.packageName)
@@ -694,13 +639,12 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     }
 
     companion object {
-
         private val GENETIC_MIN_GENE_POOL_SIZE = 5
         private val GENETIC_RANDOM_OFFSET = 10000
         private val GENETIC_GENE_POOL_EXTENSION_PROBABILITY = 0.25f
         private val GENETIC_PICK_BAD_DECISION_PROBABILITY = 0.10f
-        private val PENALYZE_ANALYSES_MIN_HISTORY_COUNT = 5
-        private val PENALYZE_ANALYSES_FACTOR = 2.0f
+        private val PENALIZE_ANALYSES_MIN_HISTORY_COUNT = 5
+        private val PENALIZE_ANALYSES_FACTOR = 2.0f
     }
 
 }

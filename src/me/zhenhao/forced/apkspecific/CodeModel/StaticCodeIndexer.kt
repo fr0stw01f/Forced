@@ -21,8 +21,7 @@ class StaticCodeIndexer {
     private fun initializeUnitToMethod() {
         Scene.v().applicationClasses
                 .filter { UtilInstrumenter.isAppDeveloperCode(it) && it.isConcrete }
-                .forEach { sc ->
-                    sc.methods
+                .forEach { it.methods
                             .filter { it.isConcrete }
                             .forEach { sm ->
                                 sm.retrieveActiveBody().units

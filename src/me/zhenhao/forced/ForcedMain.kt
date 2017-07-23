@@ -14,7 +14,6 @@ import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
 import me.zhenhao.forced.decisionmaker.DecisionMakerConfig
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
-import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import org.apache.commons.io.FileUtils
@@ -34,7 +33,6 @@ import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.*
-import java.util.logging.Level
 
 
 class ForcedMain private constructor() {
@@ -295,7 +293,7 @@ class ForcedMain private constructor() {
         val eventManager = FrameworkEventManager.eventManager
         val manifest = UtilApk.getManifest()
         if (manifest != null)
-            return eventManager.extractInitalEventsForReachingTarget(targetLocation, cfg, manifest)
+            return eventManager.extractInitialEventsForReachingTarget(targetLocation, cfg, manifest)
         return emptySet()
     }
 

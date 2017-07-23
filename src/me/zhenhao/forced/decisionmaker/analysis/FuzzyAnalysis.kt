@@ -12,7 +12,7 @@ abstract class FuzzyAnalysis {
     abstract fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager)
 
     abstract fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision>
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision>
 
     abstract fun reset()
 

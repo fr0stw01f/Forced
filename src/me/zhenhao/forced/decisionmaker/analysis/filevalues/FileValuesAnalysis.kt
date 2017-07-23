@@ -27,7 +27,7 @@ class FileValuesAnalysis : FuzzyAnalysis() {
     }
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val u = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as? AssignStmt ?: return emptyList()
         val assignStmt = u
 

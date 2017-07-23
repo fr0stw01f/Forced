@@ -15,7 +15,7 @@ class FakeAnalysis : FuzzyAnalysis() {
     private val requests = HashSet<DecisionRequest>()
 
     override fun resolveRequest(clientRequest: DecisionRequest,
-                                completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         if (!requests.add(clientRequest))
             return emptyList()
 

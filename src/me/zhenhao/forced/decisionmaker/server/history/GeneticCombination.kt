@@ -11,15 +11,14 @@ import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
 
 
-class GeneticCombination {
-
+object GeneticCombination {
 
     private fun combine(history1: ClientHistory, history2: ClientHistory,
                         mutationHistories: Set<ClientHistory>): ClientHistory {
         val requests = HashSet<DecisionRequest>()
-        for ((first) in history1.getDecisionAndResponse())
+        for ((first) in history1.decisionAndResponse)
             requests.add(first)
-        for ((first) in history2.getDecisionAndResponse())
+        for ((first) in history2.decisionAndResponse)
             requests.add(first)
 
         // Create the combined history
@@ -37,17 +36,17 @@ class GeneticCombination {
             } else {
                 if (DeterministicRandom.theRandom.nextBoolean()) {
                     response = history1.getResponseForRequest(request)
-                    if (response == null || !response.serverResponse!!.doesResponseExist())
+                    if (response == null || !response.serverResponse.doesResponseExist())
                         response = history2.getResponseForRequest(request)
                 } else {
                     response = history2.getResponseForRequest(request)
-                    if (response == null || !response.serverResponse!!.doesResponseExist())
+                    if (response == null || !response.serverResponse.doesResponseExist())
                         response = history1.getResponseForRequest(request)
                 }
             }
 
             // If we have a response, we record it in the new history
-            if (response != null && response.serverResponse!!.doesResponseExist())
+            if (response != null && response.serverResponse.doesResponseExist())
                 newHistory.addDecisionRequestAndResponse(request, response)
         }
 
@@ -208,7 +207,7 @@ class GeneticCombination {
         var highestConfidence = 0
         for (history in tempList) {
             if (history.isShadowTrace) {
-                val (_, second) = history.getDecisionAndResponse()[history.getDecisionAndResponse().size - 1]
+                val (_, second) = history.decisionAndResponse[history.decisionAndResponse.size - 1]
                 highestConfidence = Math.max(highestConfidence,
                         second.decisionWeight)
             } else
@@ -219,7 +218,7 @@ class GeneticCombination {
         // step 1
         for (history in tempList) {
             if (history.isShadowTrace) {
-                val (_, second) = history.getDecisionAndResponse()[history.getDecisionAndResponse().size - 1]
+                val (_, second) = history.decisionAndResponse[history.decisionAndResponse.size - 1]
                 if (second.decisionWeight == highestConfidence)
                     secondBestHistories.add(history)
             }
@@ -237,16 +236,12 @@ class GeneticCombination {
         }
     }
 
-    companion object {
 
+    private val MUTATION_PROBABILITY = 0.1f
 
-        private val MUTATION_PROBABILITY = 0.1f
+    private val MULTIPLIER = 10000
 
-        private val MULTIPLIER = 10000
+    private val LESSER_COMBINATION_PROBABILITY = 0.1f
 
-        private val LESSER_COMBINATION_PROBABILITY = 0.1f
-
-        private val CRASH_PICK_PROBABILITY = 0.01f
-    }
-
+    private val CRASH_PICK_PROBABILITY = 0.01f
 }

@@ -70,7 +70,8 @@ object UtilDecisionMaker {
 
                                             val m = r.matcher(targetLocation)
                                             if (m.find()) {
-                                                if (m.group(1) == invExpr.method.returnType.toString() && m.group(2) == invExpr.method.name)
+                                                if (m.group(1) == invExpr.method.returnType.toString() &&
+                                                        m.group(2) == invExpr.method.name)
                                                     allTargetLocations.add(curUnit)
                                             }
                                         } else if (targetLocation == invokeExprMethodSignature)

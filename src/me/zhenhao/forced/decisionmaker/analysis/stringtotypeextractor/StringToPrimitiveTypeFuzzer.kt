@@ -29,7 +29,7 @@ class StringToPrimitiveTypeFuzzer : FuzzyAnalysis() {
         runDataflowAnalysis()
     }
 
-    override fun resolveRequest(clientRequest: DecisionRequest, completeHistory: ThreadTraceManager): List<AnalysisDecision> {
+    override fun resolveRequest(clientRequest: DecisionRequest, threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
         val decisions = ArrayList<AnalysisDecision>()
         var codePosID = clientRequest.codePosition
         //we have to add one to it
