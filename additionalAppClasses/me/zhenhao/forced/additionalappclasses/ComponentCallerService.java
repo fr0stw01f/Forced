@@ -19,8 +19,7 @@ import me.zhenhao.forced.additionalappclasses.util.UtilAddContact;
 public class ComponentCallerService extends Service {
 
 	private static Map<Class<?>, Object> globalInstances = new HashMap<>();
-	
-	
+
 	public static void registerGlobalInstance(Class<?> clazz, Object instance) {
 		globalInstances.put(clazz, instance);
 	}
@@ -29,13 +28,12 @@ public class ComponentCallerService extends Service {
 	public IBinder onBind(Intent arg0) {
 		return null;
 	}
-	
-	
+
 	@Override
-	public void onStart(Intent intent, int startId) {		
+	public int onStartCommand(Intent intent, int flags, int startId) {
 		String clazz = null;
 		String task = null;
-		String action = null;	
+		String action = null;
 		String mimeType = null;
 		if(intent.hasExtra("className"))
 			clazz = intent.getStringExtra("className");
@@ -45,7 +43,7 @@ public class ComponentCallerService extends Service {
 			action = intent.getStringExtra("action");
 		if(intent.hasExtra("mimeType"))
 			mimeType = intent.getStringExtra("mimeType");
-		
+
 		try {
 			Class<?> className = null;
 			Object thisObject = null;
@@ -53,46 +51,49 @@ public class ComponentCallerService extends Service {
 				//inner class
 				if(clazz.contains("$")) {
 					className = Class.forName(clazz);
-					Constructor<?>[] ctors = className.getDeclaredConstructors();				
+					Constructor<?>[] ctors = className.getDeclaredConstructors();
 					Constructor<?> ctor = getConstructorWithLeastParams(ctors);
 					ctor.setAccessible(true);
-					
-					Class<?>[] firstCtorParms = ctor.getParameterTypes();
-					List<Object> paramObjects = new ArrayList<Object>();
-					for(Class<?> param : firstCtorParms)
+
+					Class<?>[] firstCtorParams = ctor.getParameterTypes();
+					List<Object> paramObjects = new ArrayList<>();
+					for(Class<?> param : firstCtorParams)
 						paramObjects.add(getDefaultObject(param));
-					thisObject = ctor.newInstance(paramObjects.toArray());												
+					thisObject = ctor.newInstance(paramObjects.toArray());
 				}
 				else {
 					className = Class.forName(clazz);
-					thisObject = className.newInstance();			
+					thisObject = className.newInstance();
 				}
 			}
-			
-			
-			if(task.equals("broadcast")) {
-				Intent intent2Sent = new Intent();
-				if(action != null)
-					intent2Sent.setAction(action);
-				if(mimeType != null)
-					intent2Sent.setType(mimeType);
-				Method onReceive = className.getMethod("onReceive", Context.class, Intent.class);				
-				onReceive.invoke(thisObject, getApplicationContext(), intent2Sent);				
-			}			
-			
-			else if(task.equals("onClick")) {
-				Method onClick = className.getMethod("onClick", View.class);
-				View view = new View(getApplicationContext());
-				onClick.invoke(thisObject, view);
-			}
-			
-			else if(task.equals("addContact")) {
-				UtilAddContact.writePhoneContact("Fraunhofer", "9999999999");
+
+			if (task != null) {
+				switch (task) {
+					case "broadcast":
+						Intent intent2Sent = new Intent();
+						if (action != null)
+							intent2Sent.setAction(action);
+						if (mimeType != null)
+							intent2Sent.setType(mimeType);
+						Method onReceive = className.getMethod("onReceive", Context.class, Intent.class);
+						onReceive.invoke(thisObject, getApplicationContext(), intent2Sent);
+						break;
+					case "onClick":
+						Method onClick = className.getMethod("onClick", View.class);
+						View view = new View(getApplicationContext());
+						onClick.invoke(thisObject, view);
+						break;
+					case "addContact":
+						UtilAddContact.writePhoneContact("John Snow", "9999999999");
+						break;
+				}
 			}
 		} catch (Exception e) {
 			Log.i("SSE", "ComponentCallerService exception");
 			e.printStackTrace();
 		}
+
+		return super.onStartCommand(intent, flags, startId);
 	}
 	
 	private Object getDefaultObject(Class<?> clazz) {

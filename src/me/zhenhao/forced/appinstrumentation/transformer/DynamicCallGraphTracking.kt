@@ -16,25 +16,25 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
 
         // Create method references
         val callMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodCallSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val returnMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodReturnSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val enterMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodEnterSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val leaveMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodLeaveSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),

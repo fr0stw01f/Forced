@@ -25,9 +25,10 @@ public class ServerCommunicator{
 	
 	
 	public ServerResponse getResultForRequest(IClientRequest request) {
-		Log.i(SharedClassesSettings.TAG, "Getting results for request...");
+		Log.i(SharedClassesSettings.TAG, "Getting request for" + request + "...");
+
 		synchronized (syncToken) {
-			ClientThread client = new ClientThread(syncToken, request);
+			GettingTask client = new GettingTask(request);
 			Thread thread = new Thread(client);
 			thread.start();
 			try {
@@ -44,92 +45,14 @@ public class ServerCommunicator{
 	public void send(final Collection<IClientRequest> request, final boolean waitForResponse) {
 		Log.i(SharedClassesSettings.TAG, "Server communicator sending request...");
 
-		Thread thread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				// No need to send empty requests
-				if (request.isEmpty())
-					return;
-
-				ObjectOutputStream oos;
-				ObjectInputStream ois;
-				try {
-					Log.i(SharedClassesSettings.TAG,
-							"Establishing socket connection to " + NetworkSettings.SERVER_IP + " " +
-									NetworkSettings.SERVERPORT_OBJECT_TRANSFER);
-					try (Socket socket = new Socket(NetworkSettings.SERVER_IP,
-							NetworkSettings.SERVERPORT_OBJECT_TRANSFER)) {
-						if (!socket.isConnected()) {
-							socket.close();
-							throw new RuntimeException("Socket is not established");
-						}
-
-						// Create the streams
-						oos = new ObjectOutputStream(socket.getOutputStream());
-						ois = new ObjectInputStream(socket.getInputStream());
-
-						// Send the requests to the server
-						Log.i(SharedClassesSettings.TAG, String.format("Sending %d events to server...",
-								request.size()));
-						for (IClientRequest icr : request)
-							oos.writeObject(icr);
-						oos.flush();
-
-						// Wait for all objects to be acknowledged before closing
-						// the connection
-						Log.i(SharedClassesSettings.TAG, "Waiting for server confirmation ("
-								+ Thread.currentThread().getId() + ")...");
-						for (int i = 0; i < request.size(); i++) {
-							ois.readObject();
-//							Log.i(SharedClassesSettings.TAG, String.format("Received %d/%d confirmation responses", i+1, request.size()));
-						}
-
-						// Tell the server that we're ready to close the connection
-						Log.i(SharedClassesSettings.TAG, "All objects confirmed, closing connection...");
-						oos.writeObject(new CloseConnectionRequest());
-						oos.flush();
-						socket.shutdownOutput();
-
-						// Make sure that the server isn't already dead as a doornail
-						ois.mark(1);
-						if (ois.read() != -1) {
-							ois.reset();
-
-							// Wait for the server to acknowledge that it's going away
-							Log.i(SharedClassesSettings.TAG, "Waiting for server shutdown confirmation...");
-							ois.readObject();
-							Log.i(SharedClassesSettings.TAG, "Confirmation received.");
-							// We close the socket anyway
-							// if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
-							// socket.shutdownInput();
-
-							Log.i(SharedClassesSettings.TAG, "OK, request handling done");
-						}
-						Log.i(SharedClassesSettings.TAG, "Connection closed.");
-					}
-				}
-				catch (IOException | ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-				
-				if (syncToken != null && waitForResponse) {
-					synchronized (syncToken) {
-						syncToken.notify();
-					}
-				}
-				
-				Log.i(SharedClassesSettings.TAG, "End of SEND thread (" + Thread.currentThread().getId() + ").");
-			}
-			
-		});
+		Thread thread = new Thread(new SendingTask(request, waitForResponse));
 		thread.start();
-		
+
 		// Wait for completion if we have to
 		try {
 			if (syncToken != null && waitForResponse)
 				synchronized (syncToken) {
-					syncToken.wait();					
+					syncToken.wait();
 				}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -137,13 +60,11 @@ public class ServerCommunicator{
 	}
 	
 	
-	private class ClientThread implements Runnable {
-		
-		private final Object syncToken;
+	private class GettingTask implements Runnable {
+
 		private final IClientRequest request;
 		
-		ClientThread(Object syncToken, IClientRequest request) {
-			this.syncToken = syncToken;
+		GettingTask(IClientRequest request) {
 			this.request = request;
 		}
 		
@@ -198,8 +119,8 @@ public class ServerCommunicator{
 						ois.readObject();
 
 						// We close the socket anyway
-						//					if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
-						//						socket.shutdownInput();
+						// if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
+						// socket.shutdownInput();
 					}
 				}
 			}
@@ -227,5 +148,90 @@ public class ServerCommunicator{
 		}
 	}
 
+	private class SendingTask implements Runnable {
+		final Collection<IClientRequest> request;
+		final boolean waitForResponse;
 
+		SendingTask(final Collection<IClientRequest> request, final boolean waitForResponse) {
+			this.request = request;
+			this.waitForResponse = waitForResponse;
+		}
+
+		@Override
+		public void run() {
+			// No need to send empty requests
+			if (request.isEmpty())
+				return;
+
+			ObjectOutputStream oos;
+			ObjectInputStream ois;
+			try {
+				Log.i(SharedClassesSettings.TAG,
+						"Establishing socket connection to " + NetworkSettings.SERVER_IP + " " +
+								NetworkSettings.SERVERPORT_OBJECT_TRANSFER);
+				try (Socket socket = new Socket(NetworkSettings.SERVER_IP,
+						NetworkSettings.SERVERPORT_OBJECT_TRANSFER)) {
+					if (!socket.isConnected()) {
+						socket.close();
+						throw new RuntimeException("Socket is not established");
+					}
+
+					// Create the streams
+					oos = new ObjectOutputStream(socket.getOutputStream());
+					ois = new ObjectInputStream(socket.getInputStream());
+
+					// Send the requests to the server
+					Log.i(SharedClassesSettings.TAG, String.format("Sending %d events to server...",
+							request.size()));
+					for (IClientRequest icr : request)
+						oos.writeObject(icr);
+					oos.flush();
+
+					// Wait for all objects to be acknowledged before closing
+					// the connection
+					Log.i(SharedClassesSettings.TAG, "Waiting for server confirmation ("
+							+ Thread.currentThread().getId() + ")...");
+					for (int i = 0; i < request.size(); i++) {
+						ois.readObject();
+//							Log.i(SharedClassesSettings.TAG, String.format("Received %d/%d confirmation responses", i+1, request.size()));
+					}
+
+					// Tell the server that we're ready to close the connection
+					Log.i(SharedClassesSettings.TAG, "All objects confirmed, closing connection...");
+					oos.writeObject(new CloseConnectionRequest());
+					oos.flush();
+					socket.shutdownOutput();
+
+					// Make sure that the server isn't already dead as a doornail
+					ois.mark(1);
+					if (ois.read() != -1) {
+						ois.reset();
+
+						// Wait for the server to acknowledge that it's going away
+						Log.i(SharedClassesSettings.TAG, "Waiting for server shutdown confirmation...");
+						ois.readObject();
+						Log.i(SharedClassesSettings.TAG, "Confirmation received.");
+						// We close the socket anyway
+						// if (socket.isConnected() && !socket.isClosed() && !socket.isInputShutdown())
+						// socket.shutdownInput();
+
+						Log.i(SharedClassesSettings.TAG, "OK, request handling done");
+					}
+					Log.i(SharedClassesSettings.TAG, "Connection closed.");
+				}
+			}
+			catch (IOException | ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+
+			if (syncToken != null && waitForResponse) {
+				synchronized (syncToken) {
+					syncToken.notify();
+				}
+			}
+
+			Log.i(SharedClassesSettings.TAG, "End of SEND thread (" + Thread.currentThread().getId() + ").");
+		}
+
+	}
 }

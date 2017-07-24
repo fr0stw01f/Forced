@@ -16,7 +16,7 @@ class GoalReachedTracking(private val targetSignatures: Set<Unit>) : AbstractIns
 
         // Create method references
         val targetReachedRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportTargetReachedSynchronous",
                 emptyList<Type>(),
                 VoidType.v(),

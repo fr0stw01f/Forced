@@ -19,7 +19,7 @@ class OnClickEvent(onClickListenerClass: String, private val packageName: String
 
     override fun onEventReceived(device: IDevice): Any? {
         val shellCmd = String.format("am startservice --es \"className\" \"%s\"" + " --es \"task\" \"onClick\" -n %s/%s",
-                onClickListenerClass, packageName, UtilInstrumenter.COMPONENT_CALLER_SERVICE_HELPER)
+                onClickListenerClass, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
             LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), onClickListenerClass!!))

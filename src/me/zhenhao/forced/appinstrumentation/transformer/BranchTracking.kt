@@ -32,7 +32,7 @@ class BranchTracking : AbstractInstrumentationTransformer() {
     }
 
     private fun instrumentEachBranchAccess(body: Body, unit: Unit) {
-        val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_PATH_INSTRUMENTATION)
+        val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION)
 
         // Create the method invocation
         val reportMethod = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))

@@ -15,31 +15,23 @@ import java.util.*
 
 object UtilInstrumenter {
 
-	val JAVA_CLASS_FOR_PATH_INSTRUMENTATION = "me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger"
-	val JAVA_CLASS_FOR_CODE_POSITIONS = JAVA_CLASS_FOR_PATH_INSTRUMENTATION
-	val JAVA_CLASS_FOR_CRASH_REPORTING = "me.zhenhao.forced.additionalappclasses.crashreporter.CrashReporter"
-	val JAVA_CLASS_FOR_PATH_EXECUTION = "me.zhenhao.forced.additionalappclasses.pathexecution.PathExecutor"
+	val ROOT_PACKAGE_OF_FORCED_CODE = "me.zhenhao.forced."
+	val ROOT_PACKAGE_OF_ADDITIONAL_CODE = ROOT_PACKAGE_OF_FORCED_CODE + "additionalappclasses."
 
-	val ROOT_PACKAGE_OF_INSTRUMENTED_CODE = "me.zhenhao.forced."
-	val PACKAGE_FOR_HOOKER = "com.morgoo.hook."
+	val JAVA_CLASS_FOR_INSTRUMENTATION = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "tracing.BytecodeLogger"
+	val JAVA_CLASS_FOR_CRASH_REPORTING = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "crashreporter.CrashReporter"
+	val JAVA_CLASS_FOR_PATH_EXECUTION  = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "pathexecution.PathExecutor"
 
-	val HELPER_APPLICATION_FOR_BYTECODELOGGER = "me.zhenhao.forced.additionalappclasses.BytecodeLoggerHelperApplication"
+	val HELPER_SERVICE_FOR_PATH_TRACKING = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "tracing.TracingService"
+	val HELPER_SERVICE_FOR_COMPONENT_CALLER = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "ComponentCallerService"
+	val HELPER_APPLICATION_FOR_FORCED_CODE_INIT = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "ForcedCodeInitHelperApp"
 
-	val HELPER_APPLICATION_FOR_HOOKING = "me.zhenhao.forced.additionalappclasses.HookingHelperApplication"
-	val HELPER_SERVICE_FOR_PATH_TRACKING = "me.zhenhao.forced.additionalappclasses.tracing.TracingService"
-	val COMPONENT_CALLER_SERVICE_HELPER = "me.zhenhao.forced.additionalappclasses.ComponentCallerService"
-	val HOOKER_CLASS = "me.zhenhao.forced.additionalappclasses.hooking.Hooker"
+	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "additionalAppClassesBin/"
+	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "sharedClassesBin/"
 
-	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "/additionalAppClassesBin"
-	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "/sharedClassesBin"
-
-	val HOOKING_LIBRARY_ARM = FrameworkOptions.frameworkDir + "/hooking/armeabi/libZHook.so"
-	val HOOKING_LIBRARY_X86 = FrameworkOptions.frameworkDir + "/hooking/x86/libZHook.so"
-
-	val SOOT_OUTPUT = FrameworkOptions.frameworkDir + "/sootOutput"
-	val SOOT_OUTPUT_APK = SOOT_OUTPUT + File.separator + File(FrameworkOptions.getApkName()).name + ".apk"
-	val SOOT_OUTPUT_DEPLOYED_APK = SOOT_OUTPUT + File.separator +
-			File(FrameworkOptions.getApkName()).name + "_deployed.apk"
+	val SOOT_OUTPUT = FrameworkOptions.frameworkDir + "sootOutput/"
+	val SOOT_OUTPUT_APK = SOOT_OUTPUT + File(FrameworkOptions.getApkName()).name + ".apk"
+	val SOOT_OUTPUT_DEPLOYED_APK = SOOT_OUTPUT + File(FrameworkOptions.getApkName()).name + "_deployed.apk"
 
 
 	fun isApiCall(invokeExpr: InvokeExpr): Boolean {
@@ -49,8 +41,7 @@ object UtilInstrumenter {
 	fun isAppDeveloperCode(className: SootClass): Boolean {
 		return !(className.packageName.startsWith("android.") ||
 				className.packageName.startsWith("java.") ||
-				className.toString().startsWith(ROOT_PACKAGE_OF_INSTRUMENTED_CODE) ||
-				className.toString().startsWith(PACKAGE_FOR_HOOKER) ||
+				className.toString().startsWith(ROOT_PACKAGE_OF_FORCED_CODE) ||
 				className.toString().contains("dummyMainClass"))
 	}
 

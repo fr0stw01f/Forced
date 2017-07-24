@@ -18,7 +18,7 @@ class CodePositionTracking(private val codePositionManager: CodePositionManager)
 
         // Make a reference to the tracker method
         val ref = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "setLastExecutedStatement",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),

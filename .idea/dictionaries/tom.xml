@@ -2,13 +2,22 @@
   <dictionary name="tom">
     <words>
       <w>acks</w>
+      <w>additionalappclasses</w>
+      <w>bootup</w>
+      <w>bytecodelogger</w>
       <w>callgraph</w>
+      <w>crashreporter</w>
+      <w>ctor</w>
+      <w>ctors</w>
       <w>dataflow</w>
       <w>fuzzer</w>
+      <w>instrumenter</w>
       <w>launchable</w>
+      <w>pathexecution</w>
       <w>retval</w>
       <w>subpath</w>
       <w>worklist</w>
+      <w>zhenhao</w>
     </words>
   </dictionary>
 </component>

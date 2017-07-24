@@ -149,7 +149,7 @@ object UtilApk {
 
     private fun addComponentCallerService(androidManifest: ProcessManifest) {
         val componentCallerService = AXmlNode("service", null, androidManifest.application)
-        val nameAttribute = AXmlAttribute("name", UtilInstrumenter.COMPONENT_CALLER_SERVICE_HELPER, ANDROID_NAMESPACE)
+        val nameAttribute = AXmlAttribute("name", UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER, ANDROID_NAMESPACE)
         val exportedAttribute = AXmlAttribute("exported", "false", ANDROID_NAMESPACE)
         componentCallerService.addAttribute(nameAttribute)
         componentCallerService.addAttribute(exportedAttribute)
@@ -161,7 +161,7 @@ object UtilApk {
     private fun addHookingHelperAsApplicationIfNecessary(androidManifest: ProcessManifest) {
         val application = androidManifest.application
         if (!application.hasAttribute("name")) {
-            val nameAttribute = AXmlAttribute("name", UtilInstrumenter.HELPER_APPLICATION_FOR_BYTECODELOGGER, ANDROID_NAMESPACE)
+            val nameAttribute = AXmlAttribute("name", UtilInstrumenter.HELPER_APPLICATION_FOR_FORCED_CODE_INIT, ANDROID_NAMESPACE)
             application.addAttribute(nameAttribute)
         }
     }

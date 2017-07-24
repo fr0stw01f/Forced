@@ -67,10 +67,10 @@ class FakeBroadcastEvent(private val receiverClassName: String?, val actionName:
     private fun prepareStartService(): String {
         if (mimeType != null) {
             return String.format("am startservice --es \"className\" %s" + " --es \"action\" %s --es \"task\" \"broadcast\" --es \"mimeType\" %s -n %s/%s",
-                    receiverClassName, actionName, mimeType, packageName, UtilInstrumenter.COMPONENT_CALLER_SERVICE_HELPER)
+                    receiverClassName, actionName, mimeType, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         } else {
             return String.format("am startservice --es \"className\" %s" + " --es \"action\" %s --es \"task\" \"broadcast\"  -n %s/%s",
-                    receiverClassName, actionName, packageName, UtilInstrumenter.COMPONENT_CALLER_SERVICE_HELPER)
+                    receiverClassName, actionName, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         }
     }
 

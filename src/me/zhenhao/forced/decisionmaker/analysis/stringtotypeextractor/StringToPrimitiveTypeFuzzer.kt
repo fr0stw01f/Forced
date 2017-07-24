@@ -74,7 +74,7 @@ class StringToPrimitiveTypeFuzzer : FuzzyAnalysis() {
             infoflow.taintWrapper = EasyTaintWrapper(TAINT_WRAPPER_PATH)
             infoflow.config.enableExceptionTracking = false
             infoflow.config.enableArraySizeTainting = false
-            //			infoflow.getConfig().setCallgraphAlgorithm(CallgraphAlgorithm.CHA);
+            //infoflow.config.setCallgraphAlgorithm(CallgraphAlgorithm.CHA);
 
             println("Running data flow analysis...")
             val pmp = PermissionMethodParser.fromFile(SOURCES_SINKS_FILE)
@@ -97,8 +97,8 @@ class StringToPrimitiveTypeFuzzer : FuzzyAnalysis() {
     }
 
     companion object {
-        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
-        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/stringtotypeextractor/SourcesAndSinks.txt"
+        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
+        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/stringtotypeextractor/SourcesAndSinks.txt"
     }
 
 }

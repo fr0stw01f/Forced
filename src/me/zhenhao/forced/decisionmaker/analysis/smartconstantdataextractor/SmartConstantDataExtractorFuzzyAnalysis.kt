@@ -732,7 +732,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
 
     companion object {
 
-        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
-        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/smartconstantdataextractor/SourcesAndSinks.txt"
+        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
+        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/smartconstantdataextractor/SourcesAndSinks.txt"
     }
 }

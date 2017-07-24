@@ -337,8 +337,8 @@ class FileFuzzer : FuzzyAnalysis() {
     }
 
     companion object {
-        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
-        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "/src/me/zhenhao/forced/decisionmaker/analysis/filefuzzer/SourcesAndSinks.txt"
-        val FUZZY_FILES_DIR = FrameworkOptions.frameworkDir + "/fuzzyFiles/"
+        private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
+        private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/filefuzzer/SourcesAndSinks.txt"
+        val FUZZY_FILES_DIR = FrameworkOptions.frameworkDir + "fuzzyFiles/"
     }
 }

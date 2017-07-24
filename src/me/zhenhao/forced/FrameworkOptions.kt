@@ -258,7 +258,7 @@ class FrameworkOptions {
 
 
 		fun getApkName(): String {
-			val tokens = apkPath.split(Pattern.quote(File.separator).toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+			val tokens = apkPath.split(Pattern.quote(File.separator))
 			val tmp = tokens[tokens.size - 1]
 
 			return tmp.substring(0, tmp.length - 4)

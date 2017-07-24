@@ -26,7 +26,7 @@ class DynamicValueTransformer(instrumentOnlyComparisons: Boolean) : AbstractInst
             paramTypeList.add(stringType)
             paramTypeList.add(IntType.v())
             refString = Scene.v().makeMethodRef(
-                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                     "reportDynamicValue",
                     paramTypeList,
                     VoidType.v(),
@@ -37,7 +37,7 @@ class DynamicValueTransformer(instrumentOnlyComparisons: Boolean) : AbstractInst
             paramTypeList.add(IntType.v())
             paramTypeList.add(IntType.v())
             refInt = Scene.v().makeMethodRef(
-                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CODE_POSITIONS),
+                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
                     "reportDynamicValue",
                     paramTypeList,
                     VoidType.v(),

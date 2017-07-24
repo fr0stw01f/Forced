@@ -11,15 +11,15 @@ import me.zhenhao.forced.sharedclasses.SharedClassesSettings;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodCallItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodEnterItem;
 import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodLeaveItem;
-import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodReturnItem;
 import me.zhenhao.forced.sharedclasses.networkconnection.IClientRequest;
 import me.zhenhao.forced.sharedclasses.networkconnection.NetworkConnectionInitiator;
 import me.zhenhao.forced.sharedclasses.networkconnection.ServerCommunicator;
 import me.zhenhao.forced.sharedclasses.tracing.*;
 
 import java.io.*;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -27,13 +27,18 @@ public class BytecodeLogger {
 
 	public static Context applicationContext;
 
-	//private static final Map<Integer, Boolean> branchTracking = new TreeMap<>();
-	//private static final List<Pair<Integer, Boolean>> branchTracking = new ArrayList<>();
-	private static final Set<Integer> executedStatements = new HashSet<>();
-	//private static int fileCounter = 0;
-	
+	private static ThreadLocal<Integer> lastExecutedStatement = new ThreadLocal<Integer>() {
+
+		@Override
+		protected Integer initialValue() {
+			return -1;
+		}
+
+	};
+	private static int globalLastExecutedStatement;
 	private static final Queue<TraceItem> bootupQueue = new LinkedBlockingQueue<>();
 	private static ITracingServiceInterface tracingService = null;
+
 	private static ServiceConnection tracingConnection = new ServiceConnection() {
 		
 		@Override
@@ -46,7 +51,7 @@ public class BytecodeLogger {
 		public void onServiceConnected(ComponentName arg0, IBinder serviceBinder) {
 			Log.i(SharedClassesSettings.TAG, "Tracing service connected");
 			if (serviceBinder == null) {
-				Log.e(SharedClassesSettings.TAG, "Got a null binder. Shitaki.");
+				Log.e(SharedClassesSettings.TAG, "Got a null binder");
 				return;				
 			}
 			
@@ -61,8 +66,7 @@ public class BytecodeLogger {
 	};
 	
 	BytecodeLogger() {
-		// this constructor shall just prevent external code from instantiating
-		// this class
+		// this constructor shall just prevent external code from instantiating this class
 	}
 	
 	
@@ -95,115 +99,36 @@ public class BytecodeLogger {
 		Log.i(SharedClassesSettings.TAG_FORCED, "Bytecode logger ready...");
 	}
 	
-	private static ThreadLocal<Integer> lastExecutedStatement = new ThreadLocal<Integer>() {
-
-		@Override
-		protected Integer initialValue() {
-			return -1;
-		}
-
-	};
-	
-	
-	private static int globalLastExecutedStatement;
-		
-	
 	public static void setLastExecutedStatement(int statementID) {
 		lastExecutedStatement.set(statementID);
 		globalLastExecutedStatement = statementID;
 	}
 	
-	
 	public static int getLastExecutedStatement() {
-		int last = lastExecutedStatement.get();
-		executedStatements.add(last);
-		return last;
-	}
-	
-	
-	private static Context getAppContext() {
-		if(applicationContext != null)
-			return applicationContext;
-		try {
-		    Class<?> activityThreadClass = Class.forName("android.app.ActivityThread");
-		    Method method = activityThreadClass.getMethod("currentApplication");
-		    Context app = (Context) method.invoke(null, (Object[]) null);
-			
-		    if (app == null) {
-		    	Class<?> appGlobalsClass = Class.forName("android.app.AppGlobals");
-		    	method = appGlobalsClass.getMethod("getInitialApplication");
-		    	app = (Context) method.invoke(null, (Object[]) null);
-		    }
-		    
-		    return app;
-		}
-		catch (Exception ex) {
-			throw new RuntimeException("Could not get context");
-		}
-	}
-	
-	
-	public static void reportConditionOutcome(boolean decision) {
-		reportConditionOutcome(decision, getAppContext());
+		return lastExecutedStatement.get();
 	}
 
-
-	private static void reportConditionOutcome(boolean decision, Context context) {
-		Intent serviceIntent = new Intent(context, TracingService.class);
+	@SuppressWarnings("unused")
+	private static void reportConditionOutcome(boolean decision) {
+		Intent serviceIntent = new Intent(applicationContext, TracingService.class);
 		serviceIntent.setAction(TracingService.ACTION_ENQUEUE_TRACE_ITEM);
 		serviceIntent.putExtra(TracingService.EXTRA_ITEM_TYPE, TracingService.ITEM_TYPE_PATH_TRACKING);
 		serviceIntent.putExtra(TracingService.EXTRA_TRACE_ITEM, (Parcelable)
 				new PathTrackingTraceItem(getLastExecutedStatement(), decision));
-		context.startService(serviceIntent);
+		applicationContext.startService(serviceIntent);
 	}
 
-	
-	public static void reportConditionOutcomeSynchronous(boolean decision) {
-		reportConditionOutcomeSynchronous(decision, getAppContext());
-	}
-	
-	
-	private static void reportConditionOutcomeSynchronous(boolean decision, Context context) {
+	@SuppressWarnings("unused")
+	private static void reportConditionOutcomeSynchronous(boolean decision) {
 		// Create the trace item to be enqueued
 		int lastStmt = getLastExecutedStatement();
 
 		Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
-		//branchTracking.add(new Pair<>(lastStmt, decision));
-		//dumpConditionOutcomeToFile(lastStmt, decision);
 
 		TraceItem traceItem = new PathTrackingTraceItem(lastStmt, decision);
-		sendTraceItemSynchronous(context, traceItem);
+		sendTraceItemSynchronous(traceItem);
 	}
 
-	private static void dumpConditionOutcomeToFile(int lastStmt, boolean decision) {
-		String fileCounter = "";
-		try {
-			FileReader fr = new FileReader(SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "file_counter.txt");
-			BufferedReader br = new BufferedReader(fr);
-			fileCounter = br.readLine();
-
-			br.close();
-			fr.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		String fileName = SharedClassesSettings.BRANCH_TRACKING_DIR_PATH + "bt_"
-				+ String.format ("%06d", Integer.valueOf(fileCounter)) + ".txt";
-		try {
-			FileWriter fw = new FileWriter(fileName, true);
-			BufferedWriter bw = new BufferedWriter(fw);
-
-			bw.write(lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision + "\n");
-
-			bw.close();
-			fw.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
 	private static void flushBootupQueue() {
 		if (tracingService == null || bootupQueue.isEmpty())
 			return;
@@ -221,32 +146,22 @@ public class BytecodeLogger {
 		}
 	}
 
-	
-	public static void dumpTracingData() {
-		dumpTracingData(getAppContext());
-	}
-	
-	
-	private static void dumpTracingData(Context context) {
+	@SuppressWarnings("unused")
+	private static void dumpTracingData() {
 		Log.i(SharedClassesSettings.TAG, "Sending an intent to dump tracing data...");
-		Intent serviceIntent = new Intent(context, TracingService.class);
+		Intent serviceIntent = new Intent(applicationContext, TracingService.class);
 		serviceIntent.setAction(TracingService.ACTION_DUMP_QUEUE);
-		context.startService(serviceIntent);
+		applicationContext.startService(serviceIntent);
 		Log.i(SharedClassesSettings.TAG, "Tracing data dumped via intent");
 	}
-
+	
 	
 	public static void dumpTracingDataSynchronous() {
-		dumpTracingDataSynchronous(getAppContext());
-	}
-	
-	
-	private static void dumpTracingDataSynchronous(Context context) {
 		// If we don't have a service connection yet, we must directly send the
 		// contents of our boot-up queue
 		if (tracingService == null && !bootupQueue.isEmpty()) {
-			Log.i(SharedClassesSettings.TAG, String.format("Flushing "
-					+ "boot-up queue of %d elements...", bootupQueue.size()));
+			Log.i(SharedClassesSettings.TAG, String.format("Flushing boot-up queue of %d elements...",
+					bootupQueue.size()));
 			ServerCommunicator communicator = new ServerCommunicator(bootupQueue);
 			List<IClientRequest> items = new ArrayList<>(bootupQueue.size());
 			while (!bootupQueue.isEmpty()) {
@@ -276,69 +191,34 @@ public class BytecodeLogger {
 		}
 	}
 
-	
-	public static void reportMethodCallSynchronous(int codePosition) {
-		reportMethodCallSynchronous(codePosition, getAppContext());
+	@SuppressWarnings("unused")
+	private static void reportMethodCallSynchronous(int codePosition) {
+		sendTraceItemSynchronous(new MethodCallItem(codePosition));
 	}
-	
-	
-	private static void reportMethodCallSynchronous(int codePosition, Context context) {
-		sendTraceItemSynchronous(context, new MethodCallItem(codePosition));
+
+	@SuppressWarnings("unused")
+	private static void reportMethodEnterSynchronous(int codePosition) {
+		sendTraceItemSynchronous(new MethodEnterItem(codePosition));
 	}
-	
-	
-	public static void reportMethodReturnSynchronous(int codePosition) {
-		reportMethodReturnSynchronous(codePosition, getAppContext());
+
+	@SuppressWarnings("unused")
+	private static void reportMethodLeaveSynchronous(int codePosition) {
+		sendTraceItemSynchronous(new MethodLeaveItem(codePosition));
 	}
-	
-	
-	private static void reportMethodReturnSynchronous(int codePosition, Context context) {
-		sendTraceItemSynchronous(context, new MethodReturnItem(codePosition));
-	}
-	
-	
-	public static void reportMethodEnterSynchronous(int codePosition) {
-		reportMethodEnterSynchronous(codePosition, getAppContext());
-	}
-	
-	
-	private static void reportMethodEnterSynchronous(int codePosition, Context context) {
-		sendTraceItemSynchronous(context, new MethodEnterItem(codePosition));
-	}
-	
-	
-	public static void reportMethodLeaveSynchronous(int codePosition) {
-		reportMethodLeaveSynchronous(codePosition, getAppContext());
-	}
-	
-	
-	private static void reportMethodLeaveSynchronous(int codePosition, Context context) {
-		sendTraceItemSynchronous(context, new MethodLeaveItem(codePosition));
-	}
-	
-	
-	public static void reportTargetReachedSynchronous() {
-		reportTargetReachedSynchronous(getAppContext());
-	}
-	
-	
-	private static void reportTargetReachedSynchronous(Context context) {
+
+	@SuppressWarnings("unused")
+	private static void reportTargetReachedSynchronous() {
 		Log.i(SharedClassesSettings.TAG, "Target location has been reached.");
 		
-		sendTraceItemSynchronous(context, new TargetReachedTraceItem(getLastExecutedStatement()));
+		sendTraceItemSynchronous(new TargetReachedTraceItem(getLastExecutedStatement()));
 		
 		// This is usually the end of the analysis, so make sure to get our
 		// data out
-		dumpTracingDataSynchronous(context);
+		dumpTracingDataSynchronous();
 	}
 	
-
+	
 	public static void sendDexFileToServer(String dexFileName, byte[] dexFile) {
-		sendDexFileToServer(dexFileName, dexFile, getAppContext());
-	}
-	
-	
-	private static void sendDexFileToServer(String dexFileName, byte[] dexFile, Context context) {
 		// Since dex files can be large and we need to make sure that they are
 		// sent even if the app crashes afterwards, we write them to disk. The
 		// separate watchdog app will pick them up there.
@@ -384,45 +264,27 @@ public class BytecodeLogger {
 				}
 		}
 	}
-	
-	
-	public static void reportDynamicValue(String dynamicValue, int paramIdx) {
-		reportDynamicValue(getAppContext(), dynamicValue, paramIdx);
-	}
-	
-	
-	private static void reportDynamicValue(Context context, String dynamicValue,
-										   int paramIdx) {
+
+	@SuppressWarnings("unused")
+	private static void reportDynamicValue(String dynamicValue, int paramIdx) {
 		if (dynamicValue != null && dynamicValue.length() > 0) {
-			sendTraceItemSynchronous(context, new DynamicStringValueTraceItem(
-					dynamicValue, paramIdx, getLastExecutedStatement()));
+			sendTraceItemSynchronous(new DynamicStringValueTraceItem(dynamicValue, paramIdx, getLastExecutedStatement()));
 		}
 	}
-	
-	
-	public static void reportDynamicValue(int dynamicValue, int paramIdx) {
-		reportDynamicValue(getAppContext(), dynamicValue, paramIdx);
-	}
-	
-	
-	private static void reportDynamicValue(Context context, int dynamicValue,
-										   int paramIdx) {
-		sendTraceItemSynchronous(context, new DynamicIntValueTraceItem(
+
+	@SuppressWarnings("unused")
+	private static void reportDynamicValue(int dynamicValue, int paramIdx) {
+		sendTraceItemSynchronous(new DynamicIntValueTraceItem(
 				dynamicValue, paramIdx, getLastExecutedStatement()));
 	}
 
-	
-	public static void reportTimingBomb(long originalValue, long newValue) {
-		reportTimingBomb(getAppContext(), originalValue, newValue);
+	@SuppressWarnings("unused")
+	private static void reportTimingBomb(long originalValue, long newValue) {
+		sendTraceItemSynchronous(new TimingBombTraceItem(originalValue, newValue));
 	}
 	
 	
-	private static void reportTimingBomb(Context context, long originalValue, long newValue) {
-		sendTraceItemSynchronous(context, new TimingBombTraceItem(originalValue, newValue));		
-	}
-	
-	
-	private static void sendTraceItemSynchronous(Context context, TraceItem traceItem) {
+	private static void sendTraceItemSynchronous(TraceItem traceItem) {
 		Log.i(SharedClassesSettings.TAG_FORCED, "Sending trace item " + traceItem.toString());
 		// If we don't have a service connection yet, we use our own boot-up
 		// queue

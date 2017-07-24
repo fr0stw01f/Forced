@@ -2,13 +2,13 @@ package me.zhenhao.forced.additionalappclasses;
 
 import android.app.Application;
 import android.content.Context;
-import me.zhenhao.forced.additionalappclasses.hooking.Hooker;
+import me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger;
 
-public class HookingHelperApplication extends Application{	
+public class ForcedCodeInitHelperApp extends Application{
 			
 	protected void attachBaseContext(Context context) {
 		super.attachBaseContext(context);
-		Hooker.initializeHooking(context);
+		BytecodeLogger.initialize(context);
 	}
 
 }
