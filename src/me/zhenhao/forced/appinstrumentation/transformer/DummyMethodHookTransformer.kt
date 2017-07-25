@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
+import me.zhenhao.forced.shared.SharedClassesSettings
 import soot.Body
 import soot.RefType
 import soot.Scene
@@ -44,35 +44,35 @@ class DummyMethodHookTransformer : AbstractInstrumentationTransformer() {
 					if (mSig == "<android.content.pm.PackageManager: android.content.pm.PackageInfo getPackageInfo(java.lang.String,int)>") {
 						if (invokeExpr is VirtualInvokeExpr) {
 							val vie = invokeExpr
-							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.wrapper.DummyWrapper: android.content.pm.PackageInfo dummyWrapper_getPackageInfo(android.content.pm.PackageManager,java.lang.String,int)>")
+							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.android.wrapper.DummyWrapper: android.content.pm.PackageInfo dummyWrapper_getPackageInfo(android.content.pm.PackageManager,java.lang.String,int)>")
 							val newInv = Jimple.v().newStaticInvokeExpr(dummyMethod.makeRef(), vie.base, vie.getArg(0), vie.getArg(1))
 							curAssignStmt.rightOp = newInv
 						}
 					} else if (mSig == "<java.util.Properties: java.lang.String getProperty(java.lang.String,java.lang.String)>") {
 						if (invokeExpr is VirtualInvokeExpr) {
 							val vie = invokeExpr
-							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.wrapper.DummyWrapper: java.lang.String dummyWrapper_getProperty(java.util.Properties,java.lang.String,java.lang.String)>")
+							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.android.wrapper.DummyWrapper: java.lang.String dummyWrapper_getProperty(java.util.Properties,java.lang.String,java.lang.String)>")
 							val newInv = Jimple.v().newStaticInvokeExpr(dummyMethod.makeRef(), vie.base, vie.getArg(0), vie.getArg(1))
 							curAssignStmt.rightOp = newInv
 						}
 					} else if (mSig == "<java.util.Properties: java.lang.String getProperty(java.lang.String)>") {
 						if (invokeExpr is VirtualInvokeExpr) {
 							val vie = invokeExpr
-							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.wrapper.DummyWrapper: java.lang.String dummyWrapper_getProperty(java.util.Properties,java.lang.String)>")
+							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.android.wrapper.DummyWrapper: java.lang.String dummyWrapper_getProperty(java.util.Properties,java.lang.String)>")
 							val newInv = Jimple.v().newStaticInvokeExpr(dummyMethod.makeRef(), vie.base, vie.getArg(0))
 							curAssignStmt.rightOp = newInv
 						}
 					} else if (mSig == "<dalvik.system.DexClassLoader: java.lang.Class loadClass(java.lang.String)>" || mSig == "<java.lang.ClassLoader: java.lang.Class loadClass(java.lang.String)>") {
 						if (invokeExpr is VirtualInvokeExpr) {
 							val vie = invokeExpr
-							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.wrapper.DummyWrapper: java.lang.Class dummyWrapper_loadClass(java.lang.String,java.lang.ClassLoader)>")
+							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.android.wrapper.DummyWrapper: java.lang.Class dummyWrapper_loadClass(java.lang.String,java.lang.ClassLoader)>")
 							val newInv = Jimple.v().newStaticInvokeExpr(dummyMethod.makeRef(), vie.getArg(0), vie.base)
 							curAssignStmt.rightOp = newInv
 						}
 					} else if (mSig == "<java.lang.Class: java.lang.reflect.Method getMethod(java.lang.String,java.lang.Class[])>") {
 						if (invokeExpr is VirtualInvokeExpr) {
 							val vie = invokeExpr
-							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.wrapper.DummyWrapper: java.lang.reflect.Method dummyWrapper_getMethod(java.lang.Class,java.lang.String,java.lang.Class[])>")
+							val dummyMethod = Scene.v().getMethod("<me.zhenhao.forced.android.wrapper.DummyWrapper: java.lang.reflect.Method dummyWrapper_getMethod(java.lang.Class,java.lang.String,java.lang.Class[])>")
 							val newInv = Jimple.v().newStaticInvokeExpr(dummyMethod.makeRef(), vie.base, vie.getArg(0), vie.getArg(1))
 							curAssignStmt.rightOp = newInv
 						}

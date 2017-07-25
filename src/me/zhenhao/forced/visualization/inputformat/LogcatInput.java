@@ -58,7 +58,7 @@
 //				AbstractPathExecutionEvent event = handleMethodCalleeEvent(line);
 //				allEvents.add(event);
 //			}
-//			else if(line.contains(SharedClassesSettings.RETURN_LABEL))
+//			else if(line.contains(SharedClassesSettings.METHOD_RETURN_LABEL))
 //			{
 //				AbstractPathExecutionEvent event = handleReturnStmt(line);
 //				allEvents.add(event);
@@ -96,7 +96,7 @@
 //	
 //	private ReturnEvent handleReturnStmt(String line)
 //	{				
-//		String regex = ".*\\((.*)\\).*" + SharedClassesSettings.RETURN_LABEL + ":\\s(<.*>)" + "\\s\\|\\|"
+//		String regex = ".*\\((.*)\\).*" + SharedClassesSettings.METHOD_RETURN_LABEL + ":\\s(<.*>)" + "\\s\\|\\|"
 //				+ "\\sCodePos:\\s(.*)\\s\\|\\|"
 //				+ "\\sMethod-Sign:\\s(.*)\\s\\|\\|"
 //				+ "\\sreturn\\s(.*)$";

@@ -9,14 +9,13 @@ import java.io.IOException
 import java.util.HashSet
 
 import soot.Scene
-import soot.SootMethod
 import soot.Unit
 import soot.jimple.infoflow.solver.cfg.InfoflowCFG
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
+import me.zhenhao.forced.shared.SharedClassesSettings
 
 
 object UtilMain {

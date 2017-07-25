@@ -21,9 +21,8 @@ import me.zhenhao.forced.dynamiccfg.DynamicCallgraphBuilder
 import me.zhenhao.forced.dynamiccfg.utils.MapUtils
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import java.io.*
 import java.text.SimpleDateFormat

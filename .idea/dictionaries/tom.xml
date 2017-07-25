@@ -12,6 +12,7 @@
       <w>dataflow</w>
       <w>fuzzer</w>
       <w>instrumenter</w>
+      <w>jimple</w>
       <w>launchable</w>
       <w>pathexecution</w>
       <w>retval</w>

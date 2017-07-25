@@ -2,8 +2,8 @@ package me.zhenhao.forced.decisionmaker.analysis
 
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 import soot.Unit
 import java.util.*
 

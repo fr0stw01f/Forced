@@ -10,7 +10,7 @@ import com.google.common.collect.HashBasedTable
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
-import me.zhenhao.forced.sharedclasses.util.Pair
+import me.zhenhao.forced.shared.util.Pair
 
 
 class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val cfg: InfoflowCFG) : IProgressMetric {

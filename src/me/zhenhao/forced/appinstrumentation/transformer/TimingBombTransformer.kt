@@ -17,7 +17,7 @@ class TimingBombTransformer : AbstractInstrumentationTransformer() {
 			return
 
 		// Get a reference to the reporter method
-		val reporterRef = Scene.v().getMethod("<me.zhenhao.forced.additionalappclasses.tracing.BytecodeLogger: " + "void reportTimingBomb(long,long)>").makeRef()
+		val reporterRef = Scene.v().getMethod("<me.zhenhao.forced.android.tracing.BytecodeLogger: " + "void reportTimingBomb(long,long)>").makeRef()
 
 		val unitIt = body.units.snapshotIterator()
 		while (unitIt.hasNext()) {

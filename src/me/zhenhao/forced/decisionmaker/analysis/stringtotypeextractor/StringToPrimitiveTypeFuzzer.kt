@@ -17,8 +17,8 @@ import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 
 
 class StringToPrimitiveTypeFuzzer : FuzzyAnalysis() {

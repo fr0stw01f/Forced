@@ -1,6 +1,6 @@
 package me.zhenhao.forced.visualization.events
 
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
+import me.zhenhao.forced.shared.SharedClassesSettings
 
 
 class MethodCallerEvent(processId: Int, lastCodePosition: Long, methodSignature: String, private val methodCalleeWithRuntimeValues: String) : AbstractPathExecutionEvent(processId, lastCodePosition, methodSignature) {

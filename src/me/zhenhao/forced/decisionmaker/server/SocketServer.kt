@@ -24,21 +24,21 @@ import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicIntValue
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicStringValue
-import me.zhenhao.forced.sharedclasses.crashreporter.CrashReportItem
-import me.zhenhao.forced.sharedclasses.dynamiccfg.AbstractDynamicCFGItem
-import me.zhenhao.forced.sharedclasses.networkconnection.CloseConnectionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
-import me.zhenhao.forced.sharedclasses.networkconnection.serializables.BinarySerializableObject
-import me.zhenhao.forced.sharedclasses.tracing.DexFileTransferTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.DynamicIntValueTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.DynamicStringValueTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.DynamicValueTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.PathTrackingTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.TargetReachedTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.TimingBombTraceItem
-import me.zhenhao.forced.sharedclasses.tracing.TraceItem
-import me.zhenhao.forced.sharedclasses.util.NetworkSettings
+import me.zhenhao.forced.shared.crashreporter.CrashReportItem
+import me.zhenhao.forced.shared.dynamiccfg.AbstractDynamicCFGItem
+import me.zhenhao.forced.shared.networkconnection.CloseConnectionRequest
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.serializables.BinarySerializableObject
+import me.zhenhao.forced.shared.tracing.DexFileTransferTraceItem
+import me.zhenhao.forced.shared.tracing.DynamicIntValueTraceItem
+import me.zhenhao.forced.shared.tracing.DynamicStringValueTraceItem
+import me.zhenhao.forced.shared.tracing.DynamicValueTraceItem
+import me.zhenhao.forced.shared.tracing.PathTrackingTraceItem
+import me.zhenhao.forced.shared.tracing.TargetReachedTraceItem
+import me.zhenhao.forced.shared.tracing.TimingBombTraceItem
+import me.zhenhao.forced.shared.tracing.TraceItem
+import me.zhenhao.forced.shared.util.NetworkSettings
 
 
 class SocketServer private constructor(private val decisionMaker: DecisionMaker) {
@@ -158,7 +158,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 		serverSocket = null
 		try {
 			// Create the server socket
-			serverSocket = ServerSocket(NetworkSettings.SERVERPORT_OBJECT_TRANSFER)
+			serverSocket = ServerSocket(NetworkSettings.SERVER_OBJECT_TRANSFER_PORT)
 			executor = CountingThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors(),
 					30, TimeUnit.SECONDS, LinkedBlockingQueue<Runnable>())
 

@@ -6,11 +6,11 @@ import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.FileFormat
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
-import me.zhenhao.forced.sharedclasses.networkconnection.serializables.FileFuzzingSerializableObject
-import me.zhenhao.forced.sharedclasses.util.Pair
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.FileFormat
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.serializables.FileFuzzingSerializableObject
+import me.zhenhao.forced.shared.util.Pair
 import soot.Scene
 import soot.SootMethod
 import soot.Unit
@@ -339,6 +339,6 @@ class FileFuzzer : FuzzyAnalysis() {
 	companion object {
 		private val TAINT_WRAPPER_PATH = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/EasyTaintWrapperSource.txt"
 		private val SOURCES_SINKS_FILE = FrameworkOptions.frameworkDir + "src/me/zhenhao/forced/decisionmaker/analysis/filefuzzer/SourcesAndSinks.txt"
-		val FUZZY_FILES_DIR = FrameworkOptions.frameworkDir + "fuzzyFiles/"
+		val FUZZY_FILES_DIR = FrameworkOptions.frameworkDir + "fuzzy-files/"
 	}
 }

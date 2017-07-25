@@ -20,7 +20,7 @@ class GlobalInstanceTransformer : SceneTransformer() {
 		val scContentProvider = Scene.v().getSootClassUnsafe("android.app.ContentProvider")
 
 		// Get the registration class
-		val scRegistrar = Scene.v().getSootClassUnsafe("me.zhenhao.forced.additionalappclasses.ComponentCallerService")
+		val scRegistrar = Scene.v().getSootClassUnsafe("me.zhenhao.forced.android.ComponentCallerService")
 		val smRegistrarRef = scRegistrar.getMethodByName("registerGlobalInstance").makeRef()
 
 		// Get the getClass() method

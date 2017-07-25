@@ -3,7 +3,7 @@ package me.zhenhao.forced.decisionmaker.analysis
 import java.util.ArrayList
 
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 
 
 class AnalysisDecision : Comparable<AnalysisDecision>, Cloneable {

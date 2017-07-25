@@ -190,7 +190,7 @@ object UtilApk {
 		androidManifest.addService(tracingService)
 	}
 
-	fun removeOldAPKs(appName: String) {
+	fun removeOldAPKs() {
 		val apkFile = File(UtilInstrumenter.SOOT_OUTPUT_APK)
 		if (apkFile.exists()) apkFile.delete()
 		val apkDeployedFile = File(UtilInstrumenter.SOOT_OUTPUT_DEPLOYED_APK)

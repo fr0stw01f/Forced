@@ -8,7 +8,7 @@ import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
-import me.zhenhao.forced.sharedclasses.networkconnection.FileFormat
+import me.zhenhao.forced.shared.networkconnection.FileFormat
 
 
 class FileFuzzerResultsAvailableHandler(private val valuesToFuzz: MutableMap<Int, FileFormat>) : ResultsAvailableHandler {

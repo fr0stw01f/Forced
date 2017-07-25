@@ -232,7 +232,7 @@ class Main private constructor() {
 	private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
 		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
 
-		UtilApk.removeOldAPKs(FrameworkOptions.getApkName())
+		UtilApk.removeOldAPKs()
 
 		val instrumenter = Instrumenter(codePositionManager, config)
 		LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_START, "")

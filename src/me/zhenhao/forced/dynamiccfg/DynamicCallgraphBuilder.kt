@@ -2,10 +2,10 @@ package me.zhenhao.forced.dynamiccfg
 
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.apkspecific.CodeModel.StaticCodeIndexer
-import me.zhenhao.forced.sharedclasses.dynamiccfg.AbstractDynamicCFGItem
-import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodCallItem
-import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodEnterItem
-import me.zhenhao.forced.sharedclasses.dynamiccfg.MethodReturnItem
+import me.zhenhao.forced.shared.dynamiccfg.AbstractDynamicCFGItem
+import me.zhenhao.forced.shared.dynamiccfg.MethodCallItem
+import me.zhenhao.forced.shared.dynamiccfg.MethodEnterItem
+import me.zhenhao.forced.shared.dynamiccfg.MethodReturnItem
 import soot.Unit
 import java.util.concurrent.LinkedBlockingQueue
 

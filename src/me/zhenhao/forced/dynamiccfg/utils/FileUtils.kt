@@ -10,7 +10,6 @@ import me.zhenhao.forced.commandlinelogger.MyLevel
 
 object FileUtils {
 
-
 	fun textFileToLineSet(fileName: String): Set<String> {
 		val analysesNames = HashSet<String>()
 		try {
@@ -30,6 +29,5 @@ object FileUtils {
 
 		return analysesNames
 	}
-
 
 }

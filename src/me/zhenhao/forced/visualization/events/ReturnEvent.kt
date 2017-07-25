@@ -1,12 +1,12 @@
 package me.zhenhao.forced.visualization.events
 
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
+import me.zhenhao.forced.shared.SharedClassesSettings
 
 
 class ReturnEvent(processId: Int, lastCodePosition: Long, methodSignature: String, val returnValue: String) : AbstractPathExecutionEvent(processId, lastCodePosition, methodSignature) {
 
 	override fun toString(): String {
-		return String.format("%s %s return-value: %s", SharedClassesSettings.RETURN_LABEL, methodSignature, returnValue)
+		return String.format("%s %s return-value: %s", SharedClassesSettings.METHOD_RETURN_LABEL, methodSignature, returnValue)
 	}
 
 	override fun hashCode(): Int {

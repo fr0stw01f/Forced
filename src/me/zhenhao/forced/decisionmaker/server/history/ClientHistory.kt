@@ -8,7 +8,7 @@ import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicValueContainer
 import me.zhenhao.forced.dynamiccfg.Callgraph
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 
 
 class ClientHistory : Cloneable {

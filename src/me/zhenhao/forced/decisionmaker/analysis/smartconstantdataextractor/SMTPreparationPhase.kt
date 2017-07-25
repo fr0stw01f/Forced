@@ -16,7 +16,7 @@ import soot.jimple.infoflow.results.ResultSourceInfo
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import me.zhenhao.forced.FrameworkOptions
 import me.zhenhao.forced.decisionmaker.analysis.symbolicexecution.UtilSMT
-import me.zhenhao.forced.sharedclasses.util.Pair
+import me.zhenhao.forced.shared.util.Pair
 
 
 class SMTPreparationPhase(private val cfg: IInfoflowCFG, private val results: InfoflowResults) {

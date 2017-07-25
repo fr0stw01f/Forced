@@ -18,8 +18,8 @@ import me.zhenhao.forced.decisionmaker.analysis.symbolicexecution.datastructure.
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 import org.apache.commons.codec.binary.Hex
 import soot.Scene
 import soot.Unit

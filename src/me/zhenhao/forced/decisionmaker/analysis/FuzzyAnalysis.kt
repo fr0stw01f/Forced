@@ -3,7 +3,7 @@ package me.zhenhao.forced.decisionmaker.analysis
 import soot.Unit
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 
 
 abstract class FuzzyAnalysis {

@@ -2,7 +2,7 @@ package me.zhenhao.forced.appinstrumentation
 
 import me.zhenhao.forced.FrameworkOptions
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
-import me.zhenhao.forced.sharedclasses.util.Pair
+import me.zhenhao.forced.shared.util.Pair
 import soot.*
 import soot.Unit
 import soot.javaToJimple.LocalGenerator
@@ -16,7 +16,7 @@ import java.util.*
 object UtilInstrumenter {
 
 	val ROOT_PACKAGE_OF_FORCED_CODE = "me.zhenhao.forced."
-	val ROOT_PACKAGE_OF_ADDITIONAL_CODE = ROOT_PACKAGE_OF_FORCED_CODE + "additionalappclasses."
+	val ROOT_PACKAGE_OF_ADDITIONAL_CODE = ROOT_PACKAGE_OF_FORCED_CODE + "android."
 
 	val JAVA_CLASS_FOR_INSTRUMENTATION = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "tracing.BytecodeLogger"
 	val JAVA_CLASS_FOR_CRASH_REPORTING = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "crashreporter.CrashReporter"
@@ -26,8 +26,8 @@ object UtilInstrumenter {
 	val HELPER_SERVICE_FOR_COMPONENT_CALLER = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "ComponentCallerService"
 	val HELPER_APPLICATION_FOR_FORCED_CODE_INIT = ROOT_PACKAGE_OF_ADDITIONAL_CODE + "ForcedCodeInitHelperApp"
 
-	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "additionalAppClassesBin/"
-	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "sharedClassesBin/"
+	val ADDITIONAL_APP_CLASSES_BIN = FrameworkOptions.frameworkDir + "android-bin/"
+	val SHARED_CLASSES_BIN = FrameworkOptions.frameworkDir + "shared-bin/"
 
 	val SOOT_OUTPUT = FrameworkOptions.frameworkDir + "sootOutput/"
 	val SOOT_OUTPUT_APK = SOOT_OUTPUT + File(FrameworkOptions.getApkName()).name + ".apk"

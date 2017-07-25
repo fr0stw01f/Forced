@@ -9,8 +9,8 @@ import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
 import me.zhenhao.forced.decisionmaker.analysis.randomFuzzer.RandomPrimitives
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
 import soot.Scene
 import soot.SootClass
 import soot.Unit
@@ -22,12 +22,10 @@ import kotlin.collections.ArrayList
 import kotlin.collections.List
 import kotlin.collections.MutableSet
 import kotlin.collections.contains
-import kotlin.collections.dropLastWhile
 import kotlin.collections.forEach
 import kotlin.collections.isEmpty
 import kotlin.collections.listOf
 import kotlin.collections.map
-import kotlin.collections.toTypedArray
 
 
 class SourceConstantFuzzer : FuzzyAnalysis() {

@@ -6,9 +6,9 @@ import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
 import me.zhenhao.forced.dynamiccfg.utils.FileUtils
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
-import me.zhenhao.forced.sharedclasses.networkconnection.ServerResponse
-import me.zhenhao.forced.sharedclasses.util.Pair
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.ServerResponse
+import me.zhenhao.forced.shared.util.Pair
 import soot.RefType
 import soot.Unit
 import soot.jimple.AssignStmt

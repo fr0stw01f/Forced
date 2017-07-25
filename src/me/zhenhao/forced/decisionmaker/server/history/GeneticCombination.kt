@@ -8,7 +8,7 @@ import me.zhenhao.forced.FrameworkOptions.TraceConstructionMode
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 
 
 object GeneticCombination {

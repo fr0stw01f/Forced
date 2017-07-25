@@ -6,7 +6,7 @@ import com.android.ddmlib.IDevice
 
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
-import me.zhenhao.forced.sharedclasses.SharedClassesSettings
+import me.zhenhao.forced.shared.SharedClassesSettings
 
 
 class PushFuzzyFilesEvent(private val dirPath: String) : FrameworkEvent() {

@@ -15,7 +15,7 @@ class ClassLoaderTransformer : AbstractInstrumentationTransformer() {
 	private val methodDexFileLoadClass = Scene.v().getMethod(
 			"<dalvik.system.DexFile: java.lang.Class loadClass(java.lang.String,java.lang.ClassLoader)>")
 	private val methodOwnLoader = Scene.v().getMethod(
-			"<me.zhenhao.forced.additionalappclasses.classloading.InterceptingClassLoader: " + "java.lang.Class loadClass(dalvik.system.DexFile,java.lang.String,java.lang.ClassLoader)>")
+			"<me.zhenhao.forced.android.classloading.InterceptingClassLoader: " + "java.lang.Class loadClass(dalvik.system.DexFile,java.lang.String,java.lang.ClassLoader)>")
 
 	override fun internalTransform(b: Body, phaseName: String,
 								   options: Map<String, String>) {

@@ -6,7 +6,7 @@ import java.util.HashSet
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistoryCreatedHandler
-import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
+import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 
 
 class ThreadTraceManager(val threadID: Long) {
