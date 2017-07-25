@@ -13,10 +13,10 @@ public class DexFileExtractorHookDefinitions implements Hook{
 		Set<HookInfo> dexFileHooks = new HashSet<HookInfo>();
 
 		MethodHookInfo loadDex = new MethodHookInfo("<dalvik.system.DexFile: dalvik.system.DexFile loadDex(java.lang.String, java.lang.String, int)>");
-        loadDex.dexFileExtractorHookBefore(0);
-        dexFileHooks.add(loadDex);
-        
-        return dexFileHooks;
+		loadDex.dexFileExtractorHookBefore(0);
+		dexFileHooks.add(loadDex);
+
+		return dexFileHooks;
 	}
 
 }

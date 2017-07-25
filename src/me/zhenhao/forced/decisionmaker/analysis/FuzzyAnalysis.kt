@@ -7,15 +7,15 @@ import me.zhenhao.forced.sharedclasses.networkconnection.DecisionRequest
 
 
 abstract class FuzzyAnalysis {
-    var penaltyRank = 0
+	var penaltyRank = 0
 
-    abstract fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager)
+	abstract fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager)
 
-    abstract fun resolveRequest(clientRequest: DecisionRequest,
-                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision>
+	abstract fun resolveRequest(clientRequest: DecisionRequest,
+								threadTraceManager: ThreadTraceManager): List<AnalysisDecision>
 
-    abstract fun reset()
+	abstract fun reset()
 
-    abstract fun getAnalysisName(): String
+	abstract fun getAnalysisName(): String
 
 }

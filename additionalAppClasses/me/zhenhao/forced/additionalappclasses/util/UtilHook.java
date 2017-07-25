@@ -94,13 +94,13 @@ public class UtilHook {
 	
 	private static int countMatch(String string, String findStr) {
 		int lastIndex = 0;
-	    int count = 0;
+		int count = 0;
 
-	    while ((lastIndex = string.indexOf(findStr, lastIndex)) != -1) {
-	        count++;
-	        lastIndex += findStr.length() - 1;
-	    }	    
-	    return count;
+		while ((lastIndex = string.indexOf(findStr, lastIndex)) != -1) {
+			count++;
+			lastIndex += findStr.length() - 1;
+		}
+		return count;
 	}
 	
 	

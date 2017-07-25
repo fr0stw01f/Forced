@@ -123,8 +123,7 @@ class Main private constructor() {
 				config = DecisionMakerConfig()
 				config.initializeCFG()
 
-				//now we have access to the CFG
-				//check if target is reachable:
+				//now we have access to the CFG, check if target is reachable:
 				if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
 					LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
 					continue
@@ -230,8 +229,7 @@ class Main private constructor() {
 	}
 
 
-	private fun appPreparationPhase(codePositionManager: CodePositionManager,
-									config: DecisionMakerConfig) {
+	private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
 		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
 
 		UtilApk.removeOldAPKs(FrameworkOptions.getApkName())
@@ -265,14 +263,15 @@ class Main private constructor() {
 
 		// print branch tracking info of all traces
 		val threadTraceManager = decisionMaker.getManagerForThreadId(-1)
-		for (clientHistory in threadTraceManager.clientHistories) {
-			val pathTrace = clientHistory.pathTrace
-			val codePosMgr = decisionMaker.codePositionManager
-			for ((unit, decision) in pathTrace) {
-				val codePos = codePosMgr.getCodePositionForUnit(unit)
-				println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+		if (threadTraceManager != null)
+			for (clientHistory in threadTraceManager.clientHistories) {
+				val pathTrace = clientHistory.pathTrace
+				val codePosMgr = decisionMaker.codePositionManager
+				for ((unit, decision) in pathTrace) {
+					val codePos = codePosMgr.getCodePositionForUnit(unit)
+					println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+				}
 			}
-		}
 
 
 		decisionMaker.tearDown()

@@ -5,13 +5,13 @@ import soot.tagkit.Tag
 
 
 object InstrumentedCodeTag : Tag {
-    override fun getName(): String {
-        return "InstrumentedCodeTag"
-    }
+	override fun getName(): String {
+		return "InstrumentedCodeTag"
+	}
 
-    @Throws(AttributeValueException::class)
-    override fun getValue(): ByteArray? {
-        return null
-    }
+	@Throws(AttributeValueException::class)
+	override fun getValue(): ByteArray? {
+		return null
+	}
 
 }

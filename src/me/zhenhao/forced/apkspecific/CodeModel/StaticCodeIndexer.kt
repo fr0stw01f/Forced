@@ -12,28 +12,28 @@ import soot.Unit
 
 class StaticCodeIndexer {
 
-    private val unitToMethod = HashMap<Unit, SootMethod>()
+	private val unitToMethod = HashMap<Unit, SootMethod>()
 
-    init {
-        initializeUnitToMethod()
-    }
+	init {
+		initializeUnitToMethod()
+	}
 
-    private fun initializeUnitToMethod() {
-        Scene.v().applicationClasses
-                .filter { UtilInstrumenter.isAppDeveloperCode(it) && it.isConcrete }
-                .forEach { it.methods
-                            .filter { it.isConcrete }
-                            .forEach { sm ->
-                                sm.retrieveActiveBody().units
-                                        .filterNot { it.hasTag(InstrumentedCodeTag.name) }
-                                        .forEach { unitToMethod.put(it, sm) }
-                            }
-                }
-    }
+	private fun initializeUnitToMethod() {
+		Scene.v().applicationClasses
+				.filter { UtilInstrumenter.isAppDeveloperCode(it) && it.isConcrete }
+				.forEach { it.methods
+							.filter { it.isConcrete }
+							.forEach { sm ->
+								sm.retrieveActiveBody().units
+										.filterNot { it.hasTag(InstrumentedCodeTag.name) }
+										.forEach { unitToMethod.put(it, sm) }
+							}
+				}
+	}
 
 
-    fun getMethodOf(u: Unit): SootMethod {
-        return unitToMethod[u]!!
-    }
+	fun getMethodOf(u: Unit): SootMethod {
+		return unitToMethod[u]!!
+	}
 
 }

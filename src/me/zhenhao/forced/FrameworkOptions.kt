@@ -220,18 +220,18 @@ class FrameworkOptions {
 //		val homeDir = "/home/zhenhao"
 		val homeDir = "/Users/tom"
 
-        var androidJarPath = homeDir + "/Work/Android/Sdk/platforms/"
-        var resultsDir = homeDir + "/Work/FuzzDroid/"
-        var frameworkDir = homeDir + "/IdeaProjects/Forced/"
-        var devicePort = "5555"
+		var androidJarPath = homeDir + "/Work/Android/Sdk/platforms/"
+		var resultsDir = homeDir + "/Work/FuzzDroid/"
+		var frameworkDir = homeDir + "/IdeaProjects/Forced/"
+		var devicePort = "5555"
 
 		var apkPath = ""
 		var apkMD5 = ""
 
 		var nbSeeds = 1
-		var forceTimeout = 20       //60
+		var forceTimeout = 20	   //60
 		var inactivityTimeout = 10   //40
-		var maxRestarts = 1         //5
+		var maxRestarts = 1		 //5
 
 		var uninstallWaitingTime = 3000
 		var tryStartAppWaitingTime = 3000

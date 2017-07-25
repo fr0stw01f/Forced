@@ -27,9 +27,9 @@ public class PersistentHookDefinitions implements Hook{
 		
 		emulatorHoocks.addAll(buildSpecificEmulatorCheckHooks());
 		emulatorHoocks.addAll(telephonyManagerSpecificEmulatorCheckHooks());				
-		emulatorHoocks.addAll(applicationPackageManagerEmulatorCheckHooks());               
+		emulatorHoocks.addAll(applicationPackageManagerEmulatorCheckHooks());
 
-        return emulatorHoocks;            
+		return emulatorHoocks;
 	}
 	
 	
@@ -38,54 +38,54 @@ public class PersistentHookDefinitions implements Hook{
 		
 		FieldHookInfo build_abi = new FieldHookInfo("<android.os.Build: java.lang.String CPU_ABI>");
 		build_abi.persistentHookAfter("armeabi-v7a");
-        FieldHookInfo build_abi2 = new FieldHookInfo("<android.os.Build: java.lang.String CPU_ABI2>");
-        build_abi2.persistentHookAfter("armeabi");
-        FieldHookInfo build_board = new FieldHookInfo("<android.os.Build: java.lang.String BOARD>");
-        build_board.persistentHookAfter("MAKO");
-        FieldHookInfo build_brand = new FieldHookInfo("<android.os.Build: java.lang.String BRAND>");
-        build_brand.persistentHookAfter("google");
-        FieldHookInfo build_device = new FieldHookInfo("<android.os.Build: java.lang.String DEVICE>");
-        build_device.persistentHookAfter("mako");        
-        FieldHookInfo build_fingerprint = new FieldHookInfo("<android.os.Build: java.lang.String FINGERPRINT>");
-        build_fingerprint.persistentHookAfter("google/occam/mako:4.4.2/KOT49H/937116:user/release-keys");        
-        FieldHookInfo build_hardware = new FieldHookInfo("<android.os.Build: java.lang.String HARDWARE>");
-        build_hardware.persistentHookAfter("mako");        
-        FieldHookInfo build_host = new FieldHookInfo("<android.os.Build: java.lang.String HOST>");
-        build_host.persistentHookAfter("kpfj3.cbf.corp.google.com");        
-        FieldHookInfo build_id = new FieldHookInfo("<android.os.Build: java.lang.String ID>");
-        build_id.persistentHookAfter("KOT49H");        
-        FieldHookInfo build_manufacturer = new FieldHookInfo("<android.os.Build: java.lang.String MANUFACTURER>");
-        build_manufacturer.persistentHookAfter("LGE");        
-        FieldHookInfo build_model = new FieldHookInfo("<android.os.Build: java.lang.String MODEL>");
-        build_model.persistentHookAfter("Nexus 4");        
-        FieldHookInfo build_product = new FieldHookInfo("<android.os.Build: java.lang.String PRODUCT>");
-        build_product.persistentHookAfter("occam");        
-        FieldHookInfo build_radio = new FieldHookInfo("<android.os.Build: java.lang.String RADIO>");
-        build_radio.persistentHookAfter("unknown");        
-        FieldHookInfo build_serial = new FieldHookInfo("<android.os.Build: java.lang.String SERIAL>");
-        build_serial.persistentHookAfter("016ff0251853784a");        
-        FieldHookInfo build_tags = new FieldHookInfo("<android.os.Build: java.lang.String TAGS>");
-        build_tags.persistentHookAfter("release-keys");        
-        FieldHookInfo build_user = new FieldHookInfo("<android.os.Build: java.lang.String USER>");
-        build_user.persistentHookAfter("android-build");
+		FieldHookInfo build_abi2 = new FieldHookInfo("<android.os.Build: java.lang.String CPU_ABI2>");
+		build_abi2.persistentHookAfter("armeabi");
+		FieldHookInfo build_board = new FieldHookInfo("<android.os.Build: java.lang.String BOARD>");
+		build_board.persistentHookAfter("MAKO");
+		FieldHookInfo build_brand = new FieldHookInfo("<android.os.Build: java.lang.String BRAND>");
+		build_brand.persistentHookAfter("google");
+		FieldHookInfo build_device = new FieldHookInfo("<android.os.Build: java.lang.String DEVICE>");
+		build_device.persistentHookAfter("mako");
+		FieldHookInfo build_fingerprint = new FieldHookInfo("<android.os.Build: java.lang.String FINGERPRINT>");
+		build_fingerprint.persistentHookAfter("google/occam/mako:4.4.2/KOT49H/937116:user/release-keys");
+		FieldHookInfo build_hardware = new FieldHookInfo("<android.os.Build: java.lang.String HARDWARE>");
+		build_hardware.persistentHookAfter("mako");
+		FieldHookInfo build_host = new FieldHookInfo("<android.os.Build: java.lang.String HOST>");
+		build_host.persistentHookAfter("kpfj3.cbf.corp.google.com");
+		FieldHookInfo build_id = new FieldHookInfo("<android.os.Build: java.lang.String ID>");
+		build_id.persistentHookAfter("KOT49H");
+		FieldHookInfo build_manufacturer = new FieldHookInfo("<android.os.Build: java.lang.String MANUFACTURER>");
+		build_manufacturer.persistentHookAfter("LGE");
+		FieldHookInfo build_model = new FieldHookInfo("<android.os.Build: java.lang.String MODEL>");
+		build_model.persistentHookAfter("Nexus 4");
+		FieldHookInfo build_product = new FieldHookInfo("<android.os.Build: java.lang.String PRODUCT>");
+		build_product.persistentHookAfter("occam");
+		FieldHookInfo build_radio = new FieldHookInfo("<android.os.Build: java.lang.String RADIO>");
+		build_radio.persistentHookAfter("unknown");
+		FieldHookInfo build_serial = new FieldHookInfo("<android.os.Build: java.lang.String SERIAL>");
+		build_serial.persistentHookAfter("016ff0251853784a");
+		FieldHookInfo build_tags = new FieldHookInfo("<android.os.Build: java.lang.String TAGS>");
+		build_tags.persistentHookAfter("release-keys");
+		FieldHookInfo build_user = new FieldHookInfo("<android.os.Build: java.lang.String USER>");
+		build_user.persistentHookAfter("android-build");
 		
-        
-        buildSpecificEmulatorCheckHooks.add(build_abi);
-        buildSpecificEmulatorCheckHooks.add(build_abi2);
-        buildSpecificEmulatorCheckHooks.add(build_board);
-        buildSpecificEmulatorCheckHooks.add(build_brand);
-        buildSpecificEmulatorCheckHooks.add(build_device);        
-        buildSpecificEmulatorCheckHooks.add(build_fingerprint);        
-        buildSpecificEmulatorCheckHooks.add(build_hardware);        
-        buildSpecificEmulatorCheckHooks.add(build_host);        
-        buildSpecificEmulatorCheckHooks.add(build_id);        
-        buildSpecificEmulatorCheckHooks.add(build_manufacturer);        
-        buildSpecificEmulatorCheckHooks.add(build_model);        
-        buildSpecificEmulatorCheckHooks.add(build_product);        
-        buildSpecificEmulatorCheckHooks.add(build_radio);        
-        buildSpecificEmulatorCheckHooks.add(build_serial);
-        buildSpecificEmulatorCheckHooks.add(build_tags);
-        buildSpecificEmulatorCheckHooks.add(build_user);
+
+		buildSpecificEmulatorCheckHooks.add(build_abi);
+		buildSpecificEmulatorCheckHooks.add(build_abi2);
+		buildSpecificEmulatorCheckHooks.add(build_board);
+		buildSpecificEmulatorCheckHooks.add(build_brand);
+		buildSpecificEmulatorCheckHooks.add(build_device);
+		buildSpecificEmulatorCheckHooks.add(build_fingerprint);
+		buildSpecificEmulatorCheckHooks.add(build_hardware);
+		buildSpecificEmulatorCheckHooks.add(build_host);
+		buildSpecificEmulatorCheckHooks.add(build_id);
+		buildSpecificEmulatorCheckHooks.add(build_manufacturer);
+		buildSpecificEmulatorCheckHooks.add(build_model);
+		buildSpecificEmulatorCheckHooks.add(build_product);
+		buildSpecificEmulatorCheckHooks.add(build_radio);
+		buildSpecificEmulatorCheckHooks.add(build_serial);
+		buildSpecificEmulatorCheckHooks.add(build_tags);
+		buildSpecificEmulatorCheckHooks.add(build_user);
 		
 		return buildSpecificEmulatorCheckHooks;
 	}
@@ -95,7 +95,7 @@ public class PersistentHookDefinitions implements Hook{
 		Set<HookInfo> telephonyManagerSpecificEmulatorCheckHooks = new HashSet<HookInfo>();
 		
 //		 MethodHookInfo deviceId = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>");
-//		 deviceId.persistentHookAfter("353918056991322");	        
+//		 deviceId.persistentHookAfter("353918056991322");
 		 MethodHookInfo line1Number = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getLine1Number()>");
 		 line1Number.persistentHookAfter("");
 		 MethodHookInfo simSerial = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimSerialNumber()>");
@@ -156,7 +156,7 @@ public class PersistentHookDefinitions implements Hook{
 //		setRepeating.persistentHookBefore(Collections.singleton(paramTime));
 //			
 //		//yes, this is not a conditional hook, but it belongs to the cat timingbombs
-//		MethodHookInfo hPostDelayed = new MethodHookInfo("<android.os.Handler: boolean postDelayed(java.lang.Runnable,long)>");       
+//		MethodHookInfo hPostDelayed = new MethodHookInfo("<android.os.Handler: boolean postDelayed(java.lang.Runnable,long)>");
 //		Set<ParameterConditionValueInfo> parameterInfos1 = new HashSet<ParameterConditionValueInfo>();
 //		ParameterConditionValueInfo arg1 = new ParameterConditionValueInfo(1, new Condition() {
 //			@Override

@@ -3,3 +3,11 @@
 <android.webkit.WebView: void loadUrl(java.lang.String, java.util.Map<java.langString, java.lang.String>)>
 <android.webkit.WebView: void setJavaScriptEnabled(boolean)>
 <android.telephony.SmsManager: void sendTextMessage(java.lang.String, java.lang.String, java.lang.String, android.app.PendingIntent, android.app.PendingIntent)>
+<com.lody.virtual.client.core: void startup(android.content.Context)>
+<com.lody.virtual.client.core: void startup(android.content.Context)>
+<com.lody.virtual.client.core: int getSystemPid()>
+<com.lody.virtual.client.core: java.lang.String getProcessName()>
+<com.lody.virtual.client.core: com.lody.virtual.helper.proto.InstallResult installApp(java.lang.String, int)>
+<com.lody.virtual.client.core: boolean isMainProcess()>
+<com.lody.virtual.client.core: void killAllApps()>
+<com.lody.virtual.client.core: void sendBroadcast(android.content.Intent intent)>

@@ -5,40 +5,40 @@ public class Pair<F, S> implements Serializable, Cloneable {
 	private static final long serialVersionUID = 7408444626787884925L;
 	
 	private F first; 
-    private S second;
-    
+	private S second;
+
 	protected int hashCode = 0;
 
-    public Pair(F first, S second) {
-        this.first = first;
-        this.second = second;
-    }
+	public Pair(F first, S second) {
+		this.first = first;
+		this.second = second;
+	}
 
-    public void setFirst(F first) {
-        this.first = first;
+	public void setFirst(F first) {
+		this.first = first;
 		hashCode = 0;
-    }
+	}
 
-    public void setSecond(S second) {
-        this.second = second;
+	public void setSecond(S second) {
+		this.second = second;
 		hashCode = 0;
-    }
-    
+	}
+
 	public void setPair(F no1, S no2) {
 		first = no1;
 		second = no2;
 		hashCode = 0;
 	}
 
-    public F getFirst() {
-        return first;
-    }
+	public F getFirst() {
+		return first;
+	}
 
-    public S getSecond() {
-        return second;
-    }
-    
-    @Override
+	public S getSecond() {
+		return second;
+	}
+
+	@Override
 	public int hashCode() {
 		if (hashCode != 0)
 			return hashCode;

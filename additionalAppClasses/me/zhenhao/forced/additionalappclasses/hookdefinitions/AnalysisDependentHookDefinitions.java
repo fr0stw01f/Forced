@@ -29,41 +29,41 @@ public class AnalysisDependentHookDefinitions implements Hook{
 
 	
 	private Set<HookInfo> telephonyManagerHooks() {
-		Set<HookInfo> tmHoocks = new HashSet<HookInfo>();
+		Set<HookInfo> tmHooks = new HashSet<HookInfo>();
 		
 		MethodHookInfo deviceId = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getDeviceId()>");
-        deviceId.analysisDependentHookAfter();
-        MethodHookInfo countryIso = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkCountryIso()>");
-        countryIso.analysisDependentHookAfter();
-        MethodHookInfo networkOperator = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkOperator()>");
-        networkOperator.analysisDependentHookAfter();
-        MethodHookInfo simCountryIso = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimCountryIso()>");
-        simCountryIso.analysisDependentHookAfter();
-        MethodHookInfo simSerial = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimSerialNumber()>");
-        simSerial.analysisDependentHookAfter();
-        MethodHookInfo voiceMail = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getVoiceMailNumber()>");
-        voiceMail.analysisDependentHookAfter();
-        MethodHookInfo phoneType = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getPhoneType()>");
-        phoneType.analysisDependentHookAfter();
-        MethodHookInfo networkType = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkType()>");
-        phoneType.analysisDependentHookAfter();
-        MethodHookInfo simOperator = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimOperator()>");
-        simOperator.analysisDependentHookAfter();
-        MethodHookInfo simOperatorName = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimOperatorName()>");
-        simOperatorName.analysisDependentHookAfter();
+		deviceId.analysisDependentHookAfter();
+		MethodHookInfo countryIso = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkCountryIso()>");
+		countryIso.analysisDependentHookAfter();
+		MethodHookInfo networkOperator = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkOperator()>");
+		networkOperator.analysisDependentHookAfter();
+		MethodHookInfo simCountryIso = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimCountryIso()>");
+		simCountryIso.analysisDependentHookAfter();
+		MethodHookInfo simSerial = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimSerialNumber()>");
+		simSerial.analysisDependentHookAfter();
+		MethodHookInfo voiceMail = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getVoiceMailNumber()>");
+		voiceMail.analysisDependentHookAfter();
+		MethodHookInfo phoneType = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getPhoneType()>");
+		phoneType.analysisDependentHookAfter();
+		MethodHookInfo networkType = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getNetworkType()>");
+		phoneType.analysisDependentHookAfter();
+		MethodHookInfo simOperator = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimOperator()>");
+		simOperator.analysisDependentHookAfter();
+		MethodHookInfo simOperatorName = new MethodHookInfo("<android.telephony.TelephonyManager: java.lang.String getSimOperatorName()>");
+		simOperatorName.analysisDependentHookAfter();
 
-        tmHoocks.add(deviceId);
-        tmHoocks.add(countryIso);
-        tmHoocks.add(networkOperator);
-        tmHoocks.add(simCountryIso);
-        tmHoocks.add(simSerial);
-        tmHoocks.add(voiceMail);
-        tmHoocks.add(phoneType);        
-        tmHoocks.add(networkType);        
-        tmHoocks.add(simOperator);        
-        tmHoocks.add(simOperatorName);        
-        
-        return tmHoocks;
+		tmHooks.add(deviceId);
+		tmHooks.add(countryIso);
+		tmHooks.add(networkOperator);
+		tmHooks.add(simCountryIso);
+		tmHooks.add(simSerial);
+		tmHooks.add(voiceMail);
+		tmHooks.add(phoneType);
+		tmHooks.add(networkType);
+		tmHooks.add(simOperator);
+		tmHooks.add(simOperatorName);
+
+		return tmHooks;
 	}
 	
 	private Set<HookInfo> intentBasedHooks() {
@@ -71,9 +71,9 @@ public class AnalysisDependentHookDefinitions implements Hook{
 		
 		MethodHookInfo stringExtra = new MethodHookInfo("<android.content.Intent: java.lang.String getStringExtra(java.lang.String)>");
 		stringExtra.analysisDependentHookAfter();
-        
-        intentBasedHooks.add(stringExtra);
-        return intentBasedHooks;
+
+		intentBasedHooks.add(stringExtra);
+		return intentBasedHooks;
 	}
 	
 	private Set<HookInfo> xmlBasedHooks() {
@@ -92,11 +92,11 @@ public class AnalysisDependentHookDefinitions implements Hook{
 		Set<HookInfo> deviceAdminHoocks = new HashSet<HookInfo>();
 		
 		MethodHookInfo isAdminActive = new MethodHookInfo("<android.app.admin.DevicePolicyManager: boolean isAdminActive(android.content.ComponentName)>");
-        isAdminActive.analysisDependentHookAfter();
-        
-        deviceAdminHoocks.add(isAdminActive);
-        
-        return deviceAdminHoocks;		
+		isAdminActive.analysisDependentHookAfter();
+
+		deviceAdminHoocks.add(isAdminActive);
+
+		return deviceAdminHoocks;
 	}
 	
 	

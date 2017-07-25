@@ -47,17 +47,17 @@ public class Hooker {
 	}
 	
 	public static void doHooking(final Set<HookInfo> infos) {
-    	for(HookInfo info : infos) {
-    		if(info instanceof MethodHookInfo)
-    			doMethodHooking((MethodHookInfo)info);
-    		else if (info instanceof FieldHookInfo)
-    			doFieldHooking((FieldHookInfo)info);
-    	}
-    }
-    	
-    private static void doMethodHooking(final MethodHookInfo info) {
-    	MethodHook callback = new MethodHook() {
-        	
+		for(HookInfo info : infos) {
+			if(info instanceof MethodHookInfo)
+				doMethodHooking((MethodHookInfo)info);
+			else if (info instanceof FieldHookInfo)
+				doFieldHooking((FieldHookInfo)info);
+		}
+	}
+
+	private static void doMethodHooking(final MethodHookInfo info) {
+		MethodHook callback = new MethodHook() {
+
 			@Override
 			protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 				super.beforeHookedMethod(param);
@@ -102,41 +102,41 @@ public class Hooker {
 									doFileFuzzingIfNecessary(param, paramValuePair.getFirst(), (FileFuzzingSerializableObject)paramValuePair.getSecond());
 								else
 									param.args[paramValuePair.getFirst()] = paramValuePair.getSecond();
-		                	}	
+							}
 							return;
 						}											
 					}
-                }
-            }
-	        	
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);                                
-                
-            	if(info.hasHookAfter()) {
-            		List<AbstractMethodHookAfter> orderedAfterHooks = info.getAfterHooks();
-            		
-            		for(AbstractMethodHookAfter singleAfterHook : orderedAfterHooks) {  
-            			String hookingType = null;
-	            		// adding the runtime value of the return value
-	            		if(singleAfterHook instanceof AnalysisDependentMethodHookAfter) {
-	            			hookingType = "AnalysisDependentMethodHookAfter";
-	            			AnalysisDependentMethodHookAfter analysisDependenHook = (AnalysisDependentMethodHookAfter)singleAfterHook;
-	            			analysisDependenHook.retrieveValueFromServer(param.getResult());            			
-	            		}
-	            		else if(singleAfterHook instanceof ConditionalMethodHookAfter) {
-	            			hookingType = "ConditionalMethodHookAfter";
-	            			ConditionalMethodHookAfter conditionalHook = (ConditionalMethodHookAfter)singleAfterHook;
-	            			conditionalHook.testConditionSatisfaction(param);          				
-	            		}
-	            		else if(singleAfterHook instanceof SimpleBooleanHookAfter) {
-	            			hookingType = "SimpleBooleanHookAfter";
-	            			SimpleBooleanHookAfter boolHookAfer = (SimpleBooleanHookAfter)singleAfterHook;
-	            			boolHookAfer.retrieveBooleanValueFromServer();
-	            		}
-	            		
-	            		// first match of hooks quits the hooking
-	            		if(singleAfterHook.isValueReplacementNecessary()) {
+				}
+			}
+
+			@Override
+			protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+				super.afterHookedMethod(param);
+
+				if(info.hasHookAfter()) {
+					List<AbstractMethodHookAfter> orderedAfterHooks = info.getAfterHooks();
+
+					for(AbstractMethodHookAfter singleAfterHook : orderedAfterHooks) {
+						String hookingType = null;
+						// adding the runtime value of the return value
+						if(singleAfterHook instanceof AnalysisDependentMethodHookAfter) {
+							hookingType = "AnalysisDependentMethodHookAfter";
+							AnalysisDependentMethodHookAfter analysisDependenHook = (AnalysisDependentMethodHookAfter)singleAfterHook;
+							analysisDependenHook.retrieveValueFromServer(param.getResult());
+						}
+						else if(singleAfterHook instanceof ConditionalMethodHookAfter) {
+							hookingType = "ConditionalMethodHookAfter";
+							ConditionalMethodHookAfter conditionalHook = (ConditionalMethodHookAfter)singleAfterHook;
+							conditionalHook.testConditionSatisfaction(param);
+						}
+						else if(singleAfterHook instanceof SimpleBooleanHookAfter) {
+							hookingType = "SimpleBooleanHookAfter";
+							SimpleBooleanHookAfter boolHookAfer = (SimpleBooleanHookAfter)singleAfterHook;
+							boolHookAfer.retrieveBooleanValueFromServer();
+						}
+
+						// first match of hooks quits the hooking
+						if(singleAfterHook.isValueReplacementNecessary()) {
 							//this is a hardcoded check due to serialization problems with the non-serializable PackageInfo object
 							Object returnValue = singleAfterHook.getReturnValue();
 							if(returnValue instanceof SignatureSerializableObject) {
@@ -156,14 +156,14 @@ public class Hooker {
 								//only for logging purpose
 								Log.i(SharedClassesSettings.TAG, String.format("[HOOK] %s || MethodSign: %s || Replace: %s", hookingType, param.method.toString(), singleAfterHook.getReturnValue()));
 							}
-	            			return;
-	            		}
-            		}
-            	}
-        	}    	            
-	        };
-                
-        Member methodOrConstructor = null;		
+							return;
+						}
+					}
+				}
+			}
+			};
+
+		Member methodOrConstructor = null;
 		try {
 			Class<?> cls = Class.forName(info.getClassName());
 			Class<?>[] tmp = info.getParams();
@@ -180,92 +180,92 @@ public class Hooker {
 			e.printStackTrace();
 		}
 		
-        ZHook.hookMethod(methodOrConstructor, callback);  
-    }
-    
-    
-    private static void doFieldHooking(final FieldHookInfo info) {
-    	AbstractFieldHookAfter afterHook = info.getAfterHook();    	
-    	
-    	if(afterHook.isValueReplacementNecessary()) {
+		ZHook.hookMethod(methodOrConstructor, callback);
+	}
+
+
+	private static void doFieldHooking(final FieldHookInfo info) {
+		AbstractFieldHookAfter afterHook = info.getAfterHook();
+
+		if(afterHook.isValueReplacementNecessary()) {
 			try {				
 				Class<?> tmp  = Class.forName(info.getClassName());	
 				Field field = tmp.getField(info.getFieldName());
 				field.setAccessible(true);
 				Object oldValue = retrieveOldFieldValue(info.getClassName(), info.getFieldName());
-		        // Sets the field to the new value				
-		        field.set(oldValue, afterHook.getNewValue());
+				// Sets the field to the new value
+				field.set(oldValue, afterHook.getNewValue());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-    	}
-    }
-    
-    private static Object retrieveOldFieldValue(String className, String fieldName) {
-    	try {
-	    	Class<?> tmp  = Class.forName(className);	
+		}
+	}
+
+	private static Object retrieveOldFieldValue(String className, String fieldName) {
+		try {
+			Class<?> tmp  = Class.forName(className);
 			Field field = tmp.getField(fieldName);
 			field.setAccessible(true);
 			return field.get(Class.forName(className));
-    	}catch(Exception ex) {
-    		ex.printStackTrace();
-    		return null;
-    	}
-    }
-    
-    private static void doFileFuzzingIfNecessary(MethodHookParam param, int index, FileFuzzingSerializableObject fuzzyingObject) {
-    	//file is in private dir and only the file name is necessary
-    	if(fuzzyingObject.getStorageMode() == 0)
-    		doPrivateDirFileFuzzing(param, index, fuzzyingObject);
-    	//there is a file object available
-    	else if(fuzzyingObject.getStorageMode() == 1)
-    		doFileFuzzingBasedOnFileObject(param, fuzzyingObject);
-    	//absolute path of file is given
-    	else if(fuzzyingObject.getStorageMode() == 2)
-    		doFileFuzzingBasedOnAbsoluteStringPath(param, index, fuzzyingObject);
-    }
+		}catch(Exception ex) {
+			ex.printStackTrace();
+			return null;
+		}
+	}
 
-    
-    private static void doFileFuzzingBasedOnAbsoluteStringPath(MethodHookParam param, int index, FileFuzzingSerializableObject fuzzyingObject) {
-    	//get file
-    	File file = new File((String)param.args[index]);
-    	
-    	//second copy corresponding file to file path
-    	copyCorrectFile(file, fuzzyingObject.getFileFormat());
+	private static void doFileFuzzingIfNecessary(MethodHookParam param, int index, FileFuzzingSerializableObject fuzzyingObject) {
+		//file is in private dir and only the file name is necessary
+		if(fuzzyingObject.getStorageMode() == 0)
+			doPrivateDirFileFuzzing(param, index, fuzzyingObject);
+		//there is a file object available
+		else if(fuzzyingObject.getStorageMode() == 1)
+			doFileFuzzingBasedOnFileObject(param, fuzzyingObject);
+		//absolute path of file is given
+		else if(fuzzyingObject.getStorageMode() == 2)
+			doFileFuzzingBasedOnAbsoluteStringPath(param, index, fuzzyingObject);
+	}
+
+
+	private static void doFileFuzzingBasedOnAbsoluteStringPath(MethodHookParam param, int index, FileFuzzingSerializableObject fuzzyingObject) {
+		//get file
+		File file = new File((String)param.args[index]);
+
+		//second copy corresponding file to file path
+		copyCorrectFile(file, fuzzyingObject.getFileFormat());
 	}
 
 	
-    private static void doFileFuzzingBasedOnFileObject(MethodHookParam param, FileFuzzingSerializableObject fuzzyingObject) {
+	private static void doFileFuzzingBasedOnFileObject(MethodHookParam param, FileFuzzingSerializableObject fuzzyingObject) {
 		File file = null;
-    	//first get correct file
-    	if(param.args.length == 2) {
-    		//File(File parent, String child)
-    		if(param.args[0] instanceof File && param.args[1] instanceof String) 
-    			file = new File((File)param.args[0], (String)param.args[1]);
-    		//File(String parent, String child)
-    		else if(param.args[0] instanceof String && param.args[1] instanceof String)
-    			file = new File((String)param.args[0], (String)param.args[1]);
-    		else
-    			return;
-    			
-    	}
-    	else if(param.args.length == 1) {
-    		//File(String pathname)
-    		if(param.args[0] instanceof String)
-    			file = new File((String)param.args[0]);
-    		//File(URI uri)
-    		else if(param.args[0] instanceof URI)
-    			file = new File((URI)param.args[0]);
-    		else 
-    			return;
-    	}
-    	
-    	//there is nothing to do
-    	if(file == null || file.exists())
-    		return;
-    	
-    	//second copy corresponding file to file path
-    	copyCorrectFile(file, fuzzyingObject.getFileFormat());
+		//first get correct file
+		if(param.args.length == 2) {
+			//File(File parent, String child)
+			if(param.args[0] instanceof File && param.args[1] instanceof String)
+				file = new File((File)param.args[0], (String)param.args[1]);
+			//File(String parent, String child)
+			else if(param.args[0] instanceof String && param.args[1] instanceof String)
+				file = new File((String)param.args[0], (String)param.args[1]);
+			else
+				return;
+
+		}
+		else if(param.args.length == 1) {
+			//File(String pathname)
+			if(param.args[0] instanceof String)
+				file = new File((String)param.args[0]);
+			//File(URI uri)
+			else if(param.args[0] instanceof URI)
+				file = new File((URI)param.args[0]);
+			else
+				return;
+		}
+
+		//there is nothing to do
+		if(file == null || file.exists())
+			return;
+
+		//second copy corresponding file to file path
+		copyCorrectFile(file, fuzzyingObject.getFileFormat());
 	}
 
 	
@@ -302,16 +302,16 @@ public class Hooker {
 			File sdCardFile = new File(sdCardFilePath);
 			try {
 				InputStream in = new FileInputStream(sdCardFile);
-			    OutputStream out = new FileOutputStream(localFile);
+				OutputStream out = new FileOutputStream(localFile);
 	
-			    // Transfer bytes from in to out
-			    byte[] buf = new byte[1024];
-			    int len;
-			    while ((len = in.read(buf)) > 0) {
-			        out.write(buf, 0, len);
-			    }
-			    in.close();
-			    out.close();
+				// Transfer bytes from in to out
+				byte[] buf = new byte[1024];
+				int len;
+				while ((len = in.read(buf)) > 0) {
+					out.write(buf, 0, len);
+				}
+				in.close();
+				out.close();
 			} catch (IOException e) {					
 				e.printStackTrace();
 			}

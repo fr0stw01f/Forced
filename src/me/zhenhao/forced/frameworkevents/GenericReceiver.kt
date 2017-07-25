@@ -5,13 +5,13 @@ import com.android.ddmlib.MultiLineReceiver
 
 class GenericReceiver : MultiLineReceiver() {
 
-    override fun processNewLines(lines: Array<String>) {
-        for (line in lines) {
-            System.out.format("[ADB] %s\n", line)
-        }
-    }
+	override fun processNewLines(lines: Array<String>) {
+		for (line in lines) {
+			System.out.format("[ADB] %s\n", line)
+		}
+	}
 
-    override fun isCancelled(): Boolean {
-        return false
-    }
+	override fun isCancelled(): Boolean {
+		return false
+	}
 }

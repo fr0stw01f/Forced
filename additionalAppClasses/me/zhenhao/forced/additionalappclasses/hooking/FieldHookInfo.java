@@ -20,14 +20,14 @@ public class FieldHookInfo implements HookInfo{
 	
 	private String getClassNameFromSignature() {
 		String pattern = "<(.*):.*>";
-	      Pattern r = Pattern.compile(pattern);
+		  Pattern r = Pattern.compile(pattern);
 
-	      Matcher m = r.matcher(fieldSignature);
-	      if (m.find()) {
-	         return m.group(1);
-	      } else {
-	         throw new RuntimeException("wrong format for className");
-	      }
+		  Matcher m = r.matcher(fieldSignature);
+		  if (m.find()) {
+			 return m.group(1);
+		  } else {
+			 throw new RuntimeException("wrong format for className");
+		  }
 	}
 	
 	private String getFieldNameFromSignature() {

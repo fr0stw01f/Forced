@@ -31,7 +31,7 @@ public class ConditionalHookDefinitions implements Hook{
 	private Set<HookInfo> textMessageCrashPrevention() {
 		Set<HookInfo> textMessageHooks = new HashSet<HookInfo>();
 
-		MethodHookInfo smsManagerSendTextMessage = new MethodHookInfo("<android.telephony.SmsManager: void sendTextMessage(java.lang.String, java.lang.String, java.lang.String, android.app.PendingIntent, android.app.PendingIntent)>");       
+		MethodHookInfo smsManagerSendTextMessage = new MethodHookInfo("<android.telephony.SmsManager: void sendTextMessage(java.lang.String, java.lang.String, java.lang.String, android.app.PendingIntent, android.app.PendingIntent)>");
 		Set<ParameterConditionValueInfo> parameterInfos1 = new HashSet<ParameterConditionValueInfo>();
 		ParameterConditionValueInfo arg1 = new ParameterConditionValueInfo(0, new Condition() {
 			@Override
@@ -86,8 +86,8 @@ public class ConditionalHookDefinitions implements Hook{
 		parameterInfos4.add(arg4);
 		gsmSendMultiTextMessage.conditionDependentHookBefore(parameterInfos4);		
 		textMessageHooks.add(gsmSendMultiTextMessage);
-		        
-        return textMessageHooks;
+
+		return textMessageHooks;
 	}
 	
 
@@ -95,47 +95,47 @@ public class ConditionalHookDefinitions implements Hook{
 	private Set<HookInfo> fileSpecificEmulatorChecks() {
 		Set<HookInfo> fileHooks = new HashSet<HookInfo>();
 		
-        MethodHookInfo exists = new MethodHookInfo("<java.io.File: boolean exists()>");
-        //qemu_pipe check
-        exists.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
+		MethodHookInfo exists = new MethodHookInfo("<java.io.File: boolean exists()>");
+		//qemu_pipe check
+		exists.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
 				if(param.thisObject.toString().equals("/dev/qemu_pipe"))
 					return true;
 				return false;
-        	}        	
-        }, false);
-        //qemud check
-        exists.conditionDependentHookAfter(new Condition() {
+			}
+		}, false);
+		//qemud check
+		exists.conditionDependentHookAfter(new Condition() {
 			@Override
 			public boolean isConditionSatisfied(MethodHookParam param) {
 				if(param.thisObject.toString().equals("/dev/socket/qemud"))
 					return true;
 				return false;
-			}        	
-        }, false);
-        //goldfish check
-        exists.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.thisObject.toString().equals("/init.goldfish.rc"))
-        			return true;
-        		return false;
-        	}        	
-        }, false);
-        //qemu_trace check
-        exists.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.thisObject.toString().equals("/sys/qemu_trace"))
-        			return true;
-        		return false;
-        	}        	
-        }, false);
-                
-                
-        fileHooks.add(exists);        
-        return fileHooks;
+			}
+		}, false);
+		//goldfish check
+		exists.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.thisObject.toString().equals("/init.goldfish.rc"))
+					return true;
+				return false;
+			}
+		}, false);
+		//qemu_trace check
+		exists.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.thisObject.toString().equals("/sys/qemu_trace"))
+					return true;
+				return false;
+			}
+		}, false);
+
+
+		fileHooks.add(exists);
+		return fileHooks;
 	}
 	
 	
@@ -143,314 +143,314 @@ public class ConditionalHookDefinitions implements Hook{
 		Set<HookInfo> systemPropHooks = new HashSet<HookInfo>();
 		
 		MethodHookInfo systemPropGet = new MethodHookInfo("<android.os.SystemProperties: java.lang.String get(java.lang.String)>");
-        //gsm.sim.operator.alpha check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
+		//gsm.sim.operator.alpha check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
 				if(param.args[0].toString().equals("gsm.sim.operator.alpha"))
 					return true;
 				return false;
-        	}        	
-        }, "T-mobile D");
-        //gsm.operator.numeric check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("gsm.operator.numeric"))
-        			return true;
-        		return false;
-        	}        	
-        }, "26201");
-        //gsm.sim.operator.numeric check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("gsm.sim.operator.numeric"))
-        			return true;
-        		return false;
-        	}        	
-        }, "8923440000000000003");
-        //gsm.version.ril-impl check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("gsm.version.ril-impl"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.baseband check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.baseband"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.bootloader check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.bootloader"))
-        			return true;
-        		return false;
-        	}        	
-        }, "PRIMEMD04");
-        //ro.build.description check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.description"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.build.display.id check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.display.id"))
-        			return true;
-        		return false;
-        	}        	
-        }, "JWR66Y");
-        //ro.build.fingerprint check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.fingerprint"))
-        			return true;
-        		return false;
-        	}        	
-        }, "google/takju/maguro:4.3/JWR66Y/776638:user/release-keys");
-        //ro.build.tags check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.tags"))
-        			return true;
-        		return false;
-        	}        	
-        }, "release-keys");
-        //ro.build.user check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.user"))
-        			return true;
-        		return false;
-        	}        	
-        }, "android-build");
-        //ro.hardware check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.hardware"))
-        			return true;
-        		return false;
-        	}        	
-        }, "tuna");
-        //ro.product.board check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.product.board"))
-        			return true;
-        		return false;
-        	}        	
-        }, "tuna");
-        //ro.product.brand check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.product.brand"))
-        			return true;
-        		return false;
-        	}        	
-        }, "google");
-        //ro.product.device check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.product.device"))
-        			return true;
-        		return false;
-        	}        	
-        }, "maguro");
-        //ro.product.manufacturer check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.product.manufacturer"))
-        			return true;
-        		return false;
-        	}        	
-        }, "samsung");
-        //ro.product.name check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.product.name"))
-        			return true;
-        		return false;
-        	}        	
-        }, "takju");
-        //ro.serialno check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.serialno"))
-        			return true;
-        		return false;
-        	}        	
-        }, "0149E08209007013");
-        //ro.setupwizard.mode check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.setupwizard.mode"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.build.type check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.build.type"))
-        			return true;
-        		return false;
-        	}        	
-        }, "user");
-        //ARGH check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ARGH"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //init.svc.goldfish-logcat check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("init.svc.goldfish-logcat"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //init.svc.goldfish-setup check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("init.svc.goldfish-setup"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //init.svc.qemud check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("init.svc.qemud"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //qemu.hw.mainkeys check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("qemu.hw.mainkeys"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //init.svc.qemu-props check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("init.svc.qemu-props"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //qemu.sf.fake_camera check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("qemu.sf.fake_camera"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //qemu.sf.lcd_density check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("qemu.sf.lcd_density"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.android.checkjni check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.android.checkjni"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.android.qemud check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.android.qemud"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.console check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.console"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.ndns check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.ndns"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.qemu.gles check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.qemu.gles"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        //ro.kernel.qemu check
-        systemPropGet.conditionDependentHookAfter(new Condition() {
-        	@Override
-        	public boolean isConditionSatisfied(MethodHookParam param) {
-        		if(param.args[0].toString().equals("ro.kernel.qemu"))
-        			return true;
-        		return false;
-        	}        	
-        }, "");
-        
-        systemPropHooks.add(systemPropGet);
+			}
+		}, "T-mobile D");
+		//gsm.operator.numeric check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("gsm.operator.numeric"))
+					return true;
+				return false;
+			}
+		}, "26201");
+		//gsm.sim.operator.numeric check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("gsm.sim.operator.numeric"))
+					return true;
+				return false;
+			}
+		}, "8923440000000000003");
+		//gsm.version.ril-impl check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("gsm.version.ril-impl"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.baseband check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.baseband"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.bootloader check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.bootloader"))
+					return true;
+				return false;
+			}
+		}, "PRIMEMD04");
+		//ro.build.description check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.description"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.build.display.id check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.display.id"))
+					return true;
+				return false;
+			}
+		}, "JWR66Y");
+		//ro.build.fingerprint check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.fingerprint"))
+					return true;
+				return false;
+			}
+		}, "google/takju/maguro:4.3/JWR66Y/776638:user/release-keys");
+		//ro.build.tags check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.tags"))
+					return true;
+				return false;
+			}
+		}, "release-keys");
+		//ro.build.user check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.user"))
+					return true;
+				return false;
+			}
+		}, "android-build");
+		//ro.hardware check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.hardware"))
+					return true;
+				return false;
+			}
+		}, "tuna");
+		//ro.product.board check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.product.board"))
+					return true;
+				return false;
+			}
+		}, "tuna");
+		//ro.product.brand check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.product.brand"))
+					return true;
+				return false;
+			}
+		}, "google");
+		//ro.product.device check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.product.device"))
+					return true;
+				return false;
+			}
+		}, "maguro");
+		//ro.product.manufacturer check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.product.manufacturer"))
+					return true;
+				return false;
+			}
+		}, "samsung");
+		//ro.product.name check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.product.name"))
+					return true;
+				return false;
+			}
+		}, "takju");
+		//ro.serialno check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.serialno"))
+					return true;
+				return false;
+			}
+		}, "0149E08209007013");
+		//ro.setupwizard.mode check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.setupwizard.mode"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.build.type check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.build.type"))
+					return true;
+				return false;
+			}
+		}, "user");
+		//ARGH check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ARGH"))
+					return true;
+				return false;
+			}
+		}, "");
+		//init.svc.goldfish-logcat check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("init.svc.goldfish-logcat"))
+					return true;
+				return false;
+			}
+		}, "");
+		//init.svc.goldfish-setup check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("init.svc.goldfish-setup"))
+					return true;
+				return false;
+			}
+		}, "");
+		//init.svc.qemud check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("init.svc.qemud"))
+					return true;
+				return false;
+			}
+		}, "");
+		//qemu.hw.mainkeys check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("qemu.hw.mainkeys"))
+					return true;
+				return false;
+			}
+		}, "");
+		//init.svc.qemu-props check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("init.svc.qemu-props"))
+					return true;
+				return false;
+			}
+		}, "");
+		//qemu.sf.fake_camera check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("qemu.sf.fake_camera"))
+					return true;
+				return false;
+			}
+		}, "");
+		//qemu.sf.lcd_density check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("qemu.sf.lcd_density"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.android.checkjni check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.android.checkjni"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.android.qemud check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.android.qemud"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.console check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.console"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.ndns check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.ndns"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.qemu.gles check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.qemu.gles"))
+					return true;
+				return false;
+			}
+		}, "");
+		//ro.kernel.qemu check
+		systemPropGet.conditionDependentHookAfter(new Condition() {
+			@Override
+			public boolean isConditionSatisfied(MethodHookParam param) {
+				if(param.args[0].toString().equals("ro.kernel.qemu"))
+					return true;
+				return false;
+			}
+		}, "");
+
+		systemPropHooks.add(systemPropGet);
 		
 		return systemPropHooks;
 	}
@@ -460,7 +460,7 @@ public class ConditionalHookDefinitions implements Hook{
 		Set<HookInfo> appSpecificHooks = new HashSet<HookInfo>();
 		
 		MethodHookInfo addCategory = new MethodHookInfo("<android.content.Intent: android.content.Intent addCategory(java.lang.String)>");
-        
+
 		Set<ParameterConditionValueInfo> parameterInfos = new HashSet<ParameterConditionValueInfo>();
 		ParameterConditionValueInfo arg1 = new ParameterConditionValueInfo(0, new Condition() {
 

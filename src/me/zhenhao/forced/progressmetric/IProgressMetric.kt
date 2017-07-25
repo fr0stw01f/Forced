@@ -6,14 +6,14 @@ import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
 
 interface IProgressMetric {
 
-    fun update(history: ClientHistory): Int
+	fun update(history: ClientHistory): Int
 
-    fun getMetricName(): String
+	fun getMetricName(): String
 
-    fun getMetricIdentifier(): String
+	fun getMetricIdentifier(): String
 
-    fun initialize()
+	fun initialize()
 
-    fun setCurrentTargetLocation(currentTargetLocation: Unit)
+	fun setCurrentTargetLocation(currentTargetLocation: Unit)
 
 }

@@ -5,11 +5,11 @@ import com.android.ddmlib.IDevice
 
 class PullFileEvent(private val src: String, private val dst: String) : FrameworkEvent() {
 
-    override fun onEventReceived(device: IDevice): Any? {
+	override fun onEventReceived(device: IDevice): Any? {
 
-        device.pullFile(src, dst)
+		device.pullFile(src, dst)
 
-        return null
-    }
+		return null
+	}
 
 }

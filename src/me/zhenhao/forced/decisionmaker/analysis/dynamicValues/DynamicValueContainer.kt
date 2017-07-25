@@ -8,40 +8,40 @@ import soot.util.MultiMap
 
 class DynamicValueContainer : Cloneable {
 
-    private val dynValueHandlers = HashSet<DynamicValueUpdateHandler>()
-    internal val values = ConcurrentHashMultiMap<Int, DynamicValue>()
+	private val dynValueHandlers = HashSet<DynamicValueUpdateHandler>()
+	internal val values = ConcurrentHashMultiMap<Int, DynamicValue>()
 
-    constructor()
+	constructor()
 
-    private constructor(original: DynamicValueContainer) {
-        this.dynValueHandlers.addAll(original.dynValueHandlers)
-        this.values.putAll(original.values)
-    }
+	private constructor(original: DynamicValueContainer) {
+		this.dynValueHandlers.addAll(original.dynValueHandlers)
+		this.values.putAll(original.values)
+	}
 
-    fun add(codePosition: Int, value: DynamicValue) {
-        values.put(codePosition, value)
-        for (handler in dynValueHandlers)
-            handler.onDynamicValueAvailable(value, codePosition)
-    }
+	fun add(codePosition: Int, value: DynamicValue) {
+		values.put(codePosition, value)
+		for (handler in dynValueHandlers)
+			handler.onDynamicValueAvailable(value, codePosition)
+	}
 
-    fun getValues(): Set<DynamicValue> {
-        return values.values()
-    }
+	fun getValues(): Set<DynamicValue> {
+		return values.values()
+	}
 
-    fun getValuesAtCodePosition(codePosition: Int): Set<DynamicValue> {
-        return values.get(codePosition)
-    }
+	fun getValuesAtCodePosition(codePosition: Int): Set<DynamicValue> {
+		return values.get(codePosition)
+	}
 
-    fun clear() {
-        values.clear()
-    }
+	fun clear() {
+		values.clear()
+	}
 
-    fun addDynamicValueUpdateHandler(handler: DynamicValueUpdateHandler) {
-        dynValueHandlers.add(handler)
-    }
+	fun addDynamicValueUpdateHandler(handler: DynamicValueUpdateHandler) {
+		dynValueHandlers.add(handler)
+	}
 
-    public override fun clone(): DynamicValueContainer {
-        return DynamicValueContainer(this)
-    }
+	public override fun clone(): DynamicValueContainer {
+		return DynamicValueContainer(this)
+	}
 
 }

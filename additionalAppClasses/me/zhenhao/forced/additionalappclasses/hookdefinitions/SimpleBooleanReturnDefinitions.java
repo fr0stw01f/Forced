@@ -14,9 +14,9 @@ public class SimpleBooleanReturnDefinitions implements Hook{
 
 		MethodHookInfo getBooleanSP = new MethodHookInfo("<android.app.SharedPreferencesImpl: boolean getBoolean(java.lang.String, boolean)>");
 		getBooleanSP.simpleBooleanHookAfter();
-        booleanHooks.add(getBooleanSP);
-        
-        return booleanHooks;
+		booleanHooks.add(getBooleanSP);
+
+		return booleanHooks;
 	}
 
 }
