@@ -20,74 +20,74 @@ import me.zhenhao.forced.shared.util.Pair
 
 class DynamicValueAnalysis : FuzzyAnalysis() {
 
-	private val codePositionManager = CodePositionManager.codePositionManagerInstance
+    private val codePositionManager = CodePositionManager.codePositionManagerInstance
 
-	override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
-		// nothing to do here
-	}
+    override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
+        // nothing to do here
+    }
 
-	override fun resolveRequest(clientRequest: DecisionRequest,
-								threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
-		val s = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as Stmt
-		if (!s.containsInvokeExpr())
-			return emptyList()
+    override fun resolveRequest(clientRequest: DecisionRequest,
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
+        val s = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as Stmt
+        if (!s.containsInvokeExpr())
+            return emptyList()
 
-		val stringType = RefType.v("java.lang.String")
+        val stringType = RefType.v("java.lang.String")
 
-		// Return the dynamically-obtained values
-		val runtimeValues = threadTraceManager.getNewestClientHistory()?.dynamicValues?.getValues() ?: return emptyList()
-		val decisions = ArrayList<AnalysisDecision>(runtimeValues.size)
-		for (value in runtimeValues) {
-			val serverResponse = ServerResponse()
-			serverResponse.analysisName = getAnalysisName()
-			serverResponse.setResponseExist(true)
+        // Return the dynamically-obtained values
+        val runtimeValues = threadTraceManager.getNewestClientHistory()?.dynamicValues?.getValues() ?: return emptyList()
+        val decisions = ArrayList<AnalysisDecision>(runtimeValues.size)
+        for (value in runtimeValues) {
+            val serverResponse = ServerResponse()
+            serverResponse.analysisName = getAnalysisName()
+            serverResponse.setResponseExist(true)
 
-			val returnType = s.invokeExpr.method.returnType
-			if (clientRequest.isHookAfter && isSupported(returnType)) {
-				serverResponse.returnValue = checkAndGet(returnType, value)
-			} else {
-				val paramValues = HashSet<Pair<Int, Any>>()
-				for (i in 0..s.invokeExpr.argCount - 1) {
-					val paramType = s.invokeExpr.method.getParameterType(i)
-					if (paramType === stringType) {
-						val newParamVal = checkAndGet(paramType, value)
-						if (newParamVal != null)
-							paramValues.add(Pair(i, newParamVal))
-					}
-				}
-				serverResponse.paramValues = paramValues
-			}
+            val returnType = s.invokeExpr.method.returnType
+            if (clientRequest.isHookAfter && isSupported(returnType)) {
+                serverResponse.returnValue = checkAndGet(returnType, value)
+            } else {
+                val paramValues = HashSet<Pair<Int, Any>>()
+                for (i in 0..s.invokeExpr.argCount - 1) {
+                    val paramType = s.invokeExpr.method.getParameterType(i)
+                    if (paramType === stringType) {
+                        val newParamVal = checkAndGet(paramType, value)
+                        if (newParamVal != null)
+                            paramValues.add(Pair(i, newParamVal))
+                    }
+                }
+                serverResponse.paramValues = paramValues
+            }
 
-			val decision = AnalysisDecision()
-			decision.analysisName = getAnalysisName()
-			decision.serverResponse = serverResponse
-			decision.decisionWeight = 5
-			decisions.add(decision)
-		}
-		return decisions
-	}
-
-
-	private fun checkAndGet(tp: Type, value: DynamicValue): Any? {
-		if (tp === IntType.v() && value is DynamicIntValue)
-			return value.intValue
-		else if (tp === RefType.v("java.lang.String") && value is DynamicStringValue)
-			return value.stringValue
-		else
-			return null
-	}
+            val decision = AnalysisDecision()
+            decision.analysisName = getAnalysisName()
+            decision.serverResponse = serverResponse
+            decision.decisionWeight = 5
+            decisions.add(decision)
+        }
+        return decisions
+    }
 
 
-	private fun isSupported(returnType: Type): Boolean {
-		return returnType === RefType.v("java.lang.String") || returnType === IntType.v()
-	}
+    private fun checkAndGet(tp: Type, value: DynamicValue): Any? {
+        if (tp === IntType.v() && value is DynamicIntValue)
+            return value.intValue
+        else if (tp === RefType.v("java.lang.String") && value is DynamicStringValue)
+            return value.stringValue
+        else
+            return null
+    }
 
-	override fun reset() {
-		// nothing to do here
-	}
 
-	override fun getAnalysisName(): String {
-		return "DynamicValues"
-	}
+    private fun isSupported(returnType: Type): Boolean {
+        return returnType === RefType.v("java.lang.String") || returnType === IntType.v()
+    }
+
+    override fun reset() {
+        // nothing to do here
+    }
+
+    override fun getAnalysisName(): String {
+        return "DynamicValues"
+    }
 
 }

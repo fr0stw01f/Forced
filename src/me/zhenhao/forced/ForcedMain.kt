@@ -38,41 +38,41 @@ import java.util.logging.Level
 
 class ForcedMain private constructor() {
 
-	private fun run(args: Array<String>): Set<EnvironmentResult>? {
-		val frameworkOptions = FrameworkOptions()
-		frameworkOptions.parse(args)
-		LoggerHelper.initialize()
-		LoggerHelper.logEvent(MyLevel.APKPATH, FrameworkOptions.apkPath)
-		LoggerHelper.logEvent(MyLevel.ANALYSIS,
-				String.format("Force timeout: %d || Inactivity timeout: %d || Max restarts: %d",
-						FrameworkOptions.forceTimeout, FrameworkOptions.inactivityTimeout, FrameworkOptions.maxRestarts))
+    private fun run(args: Array<String>): Set<EnvironmentResult>? {
+        val frameworkOptions = FrameworkOptions()
+        frameworkOptions.parse(args)
+        LoggerHelper.initialize()
+        LoggerHelper.logEvent(MyLevel.APKPATH, FrameworkOptions.apkPath)
+        LoggerHelper.logEvent(MyLevel.ANALYSIS,
+                String.format("Force timeout: %d || Inactivity timeout: %d || Max restarts: %d",
+                        FrameworkOptions.forceTimeout, FrameworkOptions.inactivityTimeout, FrameworkOptions.maxRestarts))
 
         // make sure we have the latest class files to instrument
         makeForcedBinReadyForInstrument()
 
-		//remove all files in sootOutput folder
-		FileUtils.cleanDirectory(File(UtilInstrumenter.SOOT_OUTPUT))
+        //remove all files in sootOutput folder
+        FileUtils.cleanDirectory(File(UtilInstrumenter.SOOT_OUTPUT))
 
-		if (UtilMain.blacklistedAPKs.contains(FrameworkOptions.apkPath))
-			return null
+        if (UtilMain.blacklistedAPKs.contains(FrameworkOptions.apkPath))
+            return null
 
-		// Schedule the initial analysis task
-		// Task manager is passed to SocketServer to enqueue new tasks by calling
+        // Schedule the initial analysis task
+        // Task manager is passed to SocketServer to enqueue new tasks by calling
         // handleDexFileReceived(DexFileTransferTraceItem)
-		val analysisTaskManager = AnalysisTaskManager()
-		analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
+        val analysisTaskManager = AnalysisTaskManager()
+        analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
 
-		// Execute all the tasks from the task manager
-		val results = HashSet<EnvironmentResult>()
-		var currentTask = analysisTaskManager.scheduleNextTask()
+        // Execute all the tasks from the task manager
+        val results = HashSet<EnvironmentResult>()
+        var currentTask = analysisTaskManager.scheduleNextTask()
         var taskId = 0
-		while (currentTask != null) {
-			handleAllTargets(currentTask, analysisTaskManager, results, taskId++)
-			currentTask = analysisTaskManager.scheduleNextTask()
-		}
+        while (currentTask != null) {
+            handleAllTargets(currentTask, analysisTaskManager, results, taskId++)
+            currentTask = analysisTaskManager.scheduleNextTask()
+        }
 
-		return results
-	}
+        return results
+    }
 
     fun handleAllTargets(analysisTask: AnalysisTask, analysisTaskManager: AnalysisTaskManager,
                          results: MutableSet<EnvironmentResult>, taskId: Int) {
@@ -225,174 +225,174 @@ class ForcedMain private constructor() {
         FileUtils.copyDirectory(shared_code_src_path, shared_code_dst_path)
     }
 
-	private fun removeStatementsForAnalysis(currentTask: AnalysisTask) {
-		for (codePos in currentTask.statementsToRemove) {
-			// Get the method in which to remove the statement
-			val sm = Scene.v().grabMethod(codePos.methodSignature)
-			if (sm == null) {
-				LoggerHelper.logWarning("Method " + codePos.methodSignature + " not found")
-				continue
-			}
+    private fun removeStatementsForAnalysis(currentTask: AnalysisTask) {
+        for (codePos in currentTask.statementsToRemove) {
+            // Get the method in which to remove the statement
+            val sm = Scene.v().grabMethod(codePos.methodSignature)
+            if (sm == null) {
+                LoggerHelper.logWarning("Method " + codePos.methodSignature + " not found")
+                continue
+            }
 
-			var lineNum = 0
-			val unitIt = sm.activeBody.units.iterator()
-			while (unitIt.hasNext()) {
-				// Is this the statement to remove?
-				val u = unitIt.next()
+            var lineNum = 0
+            val unitIt = sm.activeBody.units.iterator()
+            while (unitIt.hasNext()) {
+                // Is this the statement to remove?
+                val u = unitIt.next()
 
-				// Ignore statements that were added by an instrumenter
-				if (!u.hasTag(InstrumentedCodeTag.name))
-					if (lineNum == codePos.lineNumber)
-						if (u.toString() == codePos.statement) {
-							unitIt.remove()
-							break
-						}
-				lineNum++
-			}
-		}
-	}
+                // Ignore statements that were added by an instrumenter
+                if (!u.hasTag(InstrumentedCodeTag.name))
+                    if (lineNum == codePos.lineNumber)
+                        if (u.toString() == codePos.statement) {
+                            unitIt.remove()
+                            break
+                        }
+                lineNum++
+            }
+        }
+    }
 
-	private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
-		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
+    private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
+        LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
 
-		UtilApk.removeOldAPKs()
+        UtilApk.removeOldAPKs()
 
-		val instrumenter = Instrumenter(codePositionManager, config)
-		LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_START, "")
-		instrumenter.doInstrumentation()
-		LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_STOP, "")
+        val instrumenter = Instrumenter(codePositionManager, config)
+        LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_START, "")
+        instrumenter.doInstrumentation()
+        LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_STOP, "")
 
-		if (FrameworkOptions.deployApp) {
-			UtilApk.jarsigner()
-			UtilApk.zipalign()
-		}
-	}
+        if (FrameworkOptions.deployApp) {
+            UtilApk.jarsigner()
+            UtilApk.zipalign()
+        }
+    }
 
-	private fun repeatedlyExecuteAnalysis(decisionMaker: DecisionMaker,
-										  results: MutableSet<EnvironmentResult>, event: FrameworkEvent?) {
-		decisionMaker.initialize()
+    private fun repeatedlyExecuteAnalysis(decisionMaker: DecisionMaker,
+                                          results: MutableSet<EnvironmentResult>, event: FrameworkEvent?) {
+        decisionMaker.initialize()
 
-		for (seed in 0..FrameworkOptions.numSeeds -1) {
-			LoggerHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
-			DeterministicRandom.reinitialize(seed)
-			val curResult = decisionMaker.executeDecisionMaker(event)
+        for (seed in 0..FrameworkOptions.numSeeds -1) {
+            LoggerHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
+            DeterministicRandom.reinitialize(seed)
+            val curResult = decisionMaker.executeDecisionMaker(event)
 
-			results.add(curResult)
-			if (curResult.isTargetReached)
-				LoggerHelper.logEvent(MyLevel.RUNTIME, "Target reached")
-			else
-				LoggerHelper.logEvent(MyLevel.RUNTIME, "Target not reached")
-		}
+            results.add(curResult)
+            if (curResult.isTargetReached)
+                LoggerHelper.logEvent(MyLevel.RUNTIME, "Target reached")
+            else
+                LoggerHelper.logEvent(MyLevel.RUNTIME, "Target not reached")
+        }
 
         // print branch tracking info of all traces
         decisionMaker.printBranchTrackingForThreadId(-1)
 
-		decisionMaker.tearDown()
-	}
+        decisionMaker.tearDown()
+    }
 
-	private fun initializeSoot(currentTask: AnalysisTask) {
-		val app = SetupApplication(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
-		app.calculateSourcesSinksEntrypoints(NullSourceSinkDefinitionProvider())
+    private fun initializeSoot(currentTask: AnalysisTask) {
+        val app = SetupApplication(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
+        app.calculateSourcesSinksEntrypoints(NullSourceSinkDefinitionProvider())
 
-		SootConfigForAndroid().setSootOptions(Options.v())
+        SootConfigForAndroid().setSootOptions(Options.v())
 
-		Options.v().set_allow_phantom_refs(true)
-		Options.v().set_validate(true)
-		Options.v().set_force_overwrite(true)
+        Options.v().set_allow_phantom_refs(true)
+        Options.v().set_validate(true)
+        Options.v().set_force_overwrite(true)
 
-		// We need a callgraph
-		Options.v().set_whole_program(true)
-		Options.v().setPhaseOption("cg.spark", "on")
+        // We need a callgraph
+        Options.v().set_whole_program(true)
+        Options.v().setPhaseOption("cg.spark", "on")
 
-		Options.v().set_src_prec(Options.src_prec_apk)
-		Options.v().set_output_format(Options.output_format_dex)
+        Options.v().set_src_prec(Options.src_prec_apk)
+        Options.v().set_output_format(Options.output_format_dex)
 
-		val processDir = ArrayList<String>()
-		processDir.add(FrameworkOptions.apkPath)
+        val processDir = ArrayList<String>()
+        processDir.add(FrameworkOptions.apkPath)
 
-		// dex files to merge
-		for (dexFile in currentTask.dexFilesToMerge) {
-			if (!dexFile.localFileName.isEmpty() && File(dexFile.localFileName).exists())
-				processDir.add(dexFile.localFileName)
-			else
-				throw RuntimeException("Could not find local dex file")
-		}
+        // dex files to merge
+        for (dexFile in currentTask.dexFilesToMerge) {
+            if (!dexFile.localFileName.isEmpty() && File(dexFile.localFileName).exists())
+                processDir.add(dexFile.localFileName)
+            else
+                throw RuntimeException("Could not find local dex file")
+        }
 
-		// app code bin
-		processDir.add(UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN)
-		processDir.add(UtilInstrumenter.SHARED_CLASSES_BIN)
-		Options.v().set_process_dir(processDir)
+        // app code bin
+        processDir.add(UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN)
+        processDir.add(UtilInstrumenter.SHARED_CLASSES_BIN)
+        Options.v().set_process_dir(processDir)
 
-		Options.v().set_android_jars(FrameworkOptions.androidJarPath)
-		Options.v().set_no_writeout_body_releasing(true)
+        Options.v().set_android_jars(FrameworkOptions.androidJarPath)
+        Options.v().set_no_writeout_body_releasing(true)
 
-		//the bin folder has to be added to the classpath in order to
-		//use the Java part for the instrumentation (JavaClassForInstrumentation)
-		val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
-		val sootClassPath = UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
-				UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
-		Options.v().set_soot_classpath(sootClassPath)
+        //the bin folder has to be added to the classpath in order to
+        //use the Java part for the instrumentation (JavaClassForInstrumentation)
+        val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
+        val sootClassPath = UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
+                UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
+        Options.v().set_soot_classpath(sootClassPath)
 
-		Scene.v().loadNecessaryClasses()
+        Scene.v().loadNecessaryClasses()
 
-		LibraryClassPatcher().patchLibraries()
+        LibraryClassPatcher().patchLibraries()
 
-		// Create the entry point
-		app.entryPointCreator.setDummyMethodName("main")
-		val entryPoint = app.entryPointCreator.createDummyMain()
-		entryPoint.declaringClass.setLibraryClass()
-		Options.v().set_main_class(entryPoint.declaringClass.name)
-		Scene.v().entryPoints = listOf<SootMethod>(entryPoint)
+        // Create the entry point
+        app.entryPointCreator.setDummyMethodName("main")
+        val entryPoint = app.entryPointCreator.createDummyMain()
+        entryPoint.declaringClass.setLibraryClass()
+        Options.v().set_main_class(entryPoint.declaringClass.name)
+        Scene.v().entryPoints = listOf<SootMethod>(entryPoint)
 
-		PackManager.v().runPacks()
-	}
+        PackManager.v().runPacks()
+    }
 
-	private fun printTargetLocationInfo(config: DecisionMakerConfig, codePositionManager: CodePositionManager) {
-		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Found " + config.allTargetLocations.size + " target location(s)")
-		for (unit in config.allTargetLocations) {
-			val codePos = codePositionManager.getCodePositionForUnit(unit)
-			val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, unit.toString())
-			LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
-		}
-	}
+    private fun printTargetLocationInfo(config: DecisionMakerConfig, codePositionManager: CodePositionManager) {
+        LoggerHelper.logEvent(MyLevel.ANALYSIS, "Found " + config.allTargetLocations.size + " target location(s)")
+        for (unit in config.allTargetLocations) {
+            val codePos = codePositionManager.getCodePositionForUnit(unit)
+            val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, unit.toString())
+            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
+        }
+    }
 
-	private fun getFrameworkEvents(targetLocation: Unit, cfg: BackwardsInfoflowCFG): Set<FrameworkEvent?> {
-		val eventManager = FrameworkEventManager.eventManager
-		val manifest = UtilApk.getManifest()
-		if (manifest != null)
-			return eventManager.extractInitialEventsForReachingTarget(targetLocation, cfg, manifest)
-		return emptySet()
-	}
+    private fun getFrameworkEvents(targetLocation: Unit, cfg: BackwardsInfoflowCFG): Set<FrameworkEvent?> {
+        val eventManager = FrameworkEventManager.eventManager
+        val manifest = UtilApk.getManifest()
+        if (manifest != null)
+            return eventManager.extractInitialEventsForReachingTarget(targetLocation, cfg, manifest)
+        return emptySet()
+    }
 
-	companion object {
-		private val SINGLETON = ForcedMain()
+    companion object {
+        private val SINGLETON = ForcedMain()
 
-		fun v(): ForcedMain {
-			return SINGLETON
-		}
+        fun v(): ForcedMain {
+            return SINGLETON
+        }
 
-		@JvmStatic fun main(args: Array<String>) {
-			Timer().schedule(object : TimerTask() {
-				override fun run() {
-					LoggerHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
-					System.exit(0)
-				}
-			}, (40 * 60000).toLong())
+        @JvmStatic fun main(args: Array<String>) {
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    LoggerHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
+                    System.exit(0)
+                }
+            }, (40 * 60000).toLong())
 
-			try {
-				v().run(args)
-				AndroidDebugBridge.terminate()
-			} catch (ex: Exception) {
-				val sw = StringWriter()
-				val pw = PrintWriter(sw)
-				ex.printStackTrace(pw)
-				LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, sw.toString())
-				UtilMain.writeToFile("mainException.txt", FrameworkOptions.apkPath + "\n")
-			}
+            try {
+                v().run(args)
+                AndroidDebugBridge.terminate()
+            } catch (ex: Exception) {
+                val sw = StringWriter()
+                val pw = PrintWriter(sw)
+                ex.printStackTrace(pw)
+                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, sw.toString())
+                UtilMain.writeToFile("mainException.txt", FrameworkOptions.apkPath + "\n")
+            }
 
-			LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "Analysis successfully terminated")
-			//this is necessary otherwise we will wait for a max of 20 minutes for the TimerTask
-			System.exit(0)
-		}
-	}
+            LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "Analysis successfully terminated")
+            //this is necessary otherwise we will wait for a max of 20 minutes for the TimerTask
+            System.exit(0)
+        }
+    }
 }

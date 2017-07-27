@@ -16,57 +16,57 @@ import java.util.Collections;
 @SuppressWarnings("unused")
 public class CrashReporter {
 
-	private static final UncaughtExceptionHandler uch = new UncaughtExceptionHandler() {
+    private static final UncaughtExceptionHandler uch = new UncaughtExceptionHandler() {
 
-		private ServerCommunicator communicator = new ServerCommunicator(this);
+        private ServerCommunicator communicator = new ServerCommunicator(this);
 
-		@Override
-		public void uncaughtException(Thread arg0, Throwable arg1) {
-			Log.i(SharedClassesSettings.TAG, "Crash reporter started: " + arg1.toString()
-					+ " at " + arg1.getStackTrace());
-			if (arg1.getCause() != null)
-				Log.i(SharedClassesSettings.TAG, "Cause: " + arg1.getCause().getStackTrace().toString());
-			if (arg1.getCause().getCause() != null)
-				Log.i(SharedClassesSettings.TAG, "Cause 2: " + arg1.getCause().getCause().toString());
-			if (arg1.getCause().getCause().getCause() != null)
-				Log.i(SharedClassesSettings.TAG, "Cause 3: " + arg1.getCause().getCause().getCause().toString());
+        @Override
+        public void uncaughtException(Thread arg0, Throwable arg1) {
+            Log.i(SharedClassesSettings.TAG, "Crash reporter started: " + arg1.toString()
+                    + " at " + arg1.getStackTrace());
+            if (arg1.getCause() != null)
+                Log.i(SharedClassesSettings.TAG, "Cause: " + arg1.getCause().getStackTrace().toString());
+            if (arg1.getCause().getCause() != null)
+                Log.i(SharedClassesSettings.TAG, "Cause 2: " + arg1.getCause().getCause().toString());
+            if (arg1.getCause().getCause().getCause() != null)
+                Log.i(SharedClassesSettings.TAG, "Cause 3: " + arg1.getCause().getCause().getCause().toString());
 
-			// Make sure that we flush the trace items before we die
-			BytecodeLogger.dumpTracingDataSynchronous();
+            // Make sure that we flush the trace items before we die
+            BytecodeLogger.dumpTracingDataSynchronous();
 
-			// Send the crash report
-			CrashReportItem ci = new CrashReportItem(arg1.getMessage(), BytecodeLogger.getLastExecutedStatement());
-			communicator.send(Collections.singleton(ci), true);
+            // Send the crash report
+            CrashReportItem ci = new CrashReportItem(arg1.getMessage(), BytecodeLogger.getLastExecutedStatement());
+            communicator.send(Collections.singleton(ci), true);
 
-			dumpExceptionToFile(arg1);
-			//BytecodeLogger.dumpConditionOutcomeToFile();
-		}
+            dumpExceptionToFile(arg1);
+            //BytecodeLogger.dumpConditionOutcomeToFile();
+        }
 
-	};
+    };
 
-	public static void registerExceptionHandler() {
-		Thread.setDefaultUncaughtExceptionHandler(uch);
-	}
+    public static void registerExceptionHandler() {
+        Thread.setDefaultUncaughtExceptionHandler(uch);
+    }
 
-	private static void dumpExceptionToFile(Throwable arg1) {
-		FileWriter fw;
-		BufferedWriter out;
-		try {
-			fw = new FileWriter("/sdcard/condition_outcome.txt");
-			out = new BufferedWriter(fw);
+    private static void dumpExceptionToFile(Throwable arg1) {
+        FileWriter fw;
+        BufferedWriter out;
+        try {
+            fw = new FileWriter("/sdcard/condition_outcome.txt");
+            out = new BufferedWriter(fw);
 
-			out.write("Crash reporter started: " + arg1.toString() + " at " + arg1.getStackTrace());
-			if (arg1.getCause() != null)
-				out.write("Cause: " + arg1.getCause().getStackTrace().toString());
-			if (arg1.getCause().getCause() != null)
-				out.write("Cause 2: " + arg1.getCause().getCause().toString());
-			if (arg1.getCause().getCause().getCause() != null)
-				out.write("Cause 3: " + arg1.getCause().getCause().getCause().toString());
+            out.write("Crash reporter started: " + arg1.toString() + " at " + arg1.getStackTrace());
+            if (arg1.getCause() != null)
+                out.write("Cause: " + arg1.getCause().getStackTrace().toString());
+            if (arg1.getCause().getCause() != null)
+                out.write("Cause 2: " + arg1.getCause().getCause().toString());
+            if (arg1.getCause().getCause().getCause() != null)
+                out.write("Cause 3: " + arg1.getCause().getCause().getCause().toString());
 
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

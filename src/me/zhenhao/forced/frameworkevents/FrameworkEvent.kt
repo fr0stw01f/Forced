@@ -4,9 +4,9 @@ import com.android.ddmlib.IDevice
 
 
 abstract class FrameworkEvent {
-	abstract fun onEventReceived(device: IDevice): Any?
+    abstract fun onEventReceived(device: IDevice): Any?
 
-	fun adbEventFormat(eventType: String, eventCmd: String): String {
-		return String.format("%s || %s", eventType, eventCmd)
-	}
+    fun adbEventFormat(eventType: String, eventCmd: String): String {
+        return String.format("%s || %s", eventType, eventCmd)
+    }
 }

@@ -18,63 +18,63 @@ import java.util.*
 
 class FileValuesAnalysis : FuzzyAnalysis() {
 
-	private val codePositionManager = CodePositionManager.codePositionManagerInstance
-	private var values: Set<String>? = null
+    private val codePositionManager = CodePositionManager.codePositionManagerInstance
+    private var values: Set<String>? = null
 
-	override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
-		// Read the file
-		this.values = FileUtils.textFileToLineSet(RANDOM_VALUES_FILENAME)
-	}
+    override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
+        // Read the file
+        this.values = FileUtils.textFileToLineSet(RANDOM_VALUES_FILENAME)
+    }
 
-	override fun resolveRequest(clientRequest: DecisionRequest,
-								threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
-		val u = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as? AssignStmt ?: return emptyList()
-		val assignStmt = u
+    override fun resolveRequest(clientRequest: DecisionRequest,
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
+        val u = codePositionManager.getUnitForCodePosition(clientRequest.codePosition + 1) as? AssignStmt ?: return emptyList()
+        val assignStmt = u
 
-		// We only support strings at the moment
-		if (assignStmt.leftOp.type !== RefType.v("java.lang.String"))
-			return emptyList()
+        // We only support strings at the moment
+        if (assignStmt.leftOp.type !== RefType.v("java.lang.String"))
+            return emptyList()
 
-		val stringType = RefType.v("java.lang.String")
+        val stringType = RefType.v("java.lang.String")
 
-		// Return the dynamically-obtained strings
-		val decisions = ArrayList<AnalysisDecision>(values!!.size)
-		for (value in values!!) {
-			val serverResponse = ServerResponse()
-			serverResponse.setResponseExist(true)
+        // Return the dynamically-obtained strings
+        val decisions = ArrayList<AnalysisDecision>(values!!.size)
+        for (value in values!!) {
+            val serverResponse = ServerResponse()
+            serverResponse.setResponseExist(true)
 
-			if (clientRequest.isHookAfter) {
-				serverResponse.returnValue = value
-			} else if (assignStmt.containsInvokeExpr()) {
-				val paramValues = HashSet<Pair<Int, Any>>()
-				for (i in 0..assignStmt.invokeExpr.argCount - 1) {
-					val paramType = assignStmt.invokeExpr.method.getParameterType(i)
-					if (paramType === stringType)
-						paramValues.add(Pair<Int, Any>(i, value))
-				}
-				serverResponse.paramValues = paramValues
-			}
+            if (clientRequest.isHookAfter) {
+                serverResponse.returnValue = value
+            } else if (assignStmt.containsInvokeExpr()) {
+                val paramValues = HashSet<Pair<Int, Any>>()
+                for (i in 0..assignStmt.invokeExpr.argCount - 1) {
+                    val paramType = assignStmt.invokeExpr.method.getParameterType(i)
+                    if (paramType === stringType)
+                        paramValues.add(Pair<Int, Any>(i, value))
+                }
+                serverResponse.paramValues = paramValues
+            }
 
-			val decision = AnalysisDecision()
-			decision.analysisName = getAnalysisName()
-			decision.serverResponse = serverResponse
-			decision.decisionWeight = 5
-			decisions.add(decision)
-		}
-		return decisions
-	}
+            val decision = AnalysisDecision()
+            decision.analysisName = getAnalysisName()
+            decision.serverResponse = serverResponse
+            decision.decisionWeight = 5
+            decisions.add(decision)
+        }
+        return decisions
+    }
 
-	override fun reset() {
-		// nothing to do here
-	}
+    override fun reset() {
+        // nothing to do here
+    }
 
-	override fun getAnalysisName(): String {
-		return "FileValues"
-	}
+    override fun getAnalysisName(): String {
+        return "FileValues"
+    }
 
-	companion object {
+    companion object {
 
-		private val RANDOM_VALUES_FILENAME = "." + File.separator + "files" + File.separator + "randomValues.txt"
-	}
+        private val RANDOM_VALUES_FILENAME = "." + File.separator + "files" + File.separator + "randomValues.txt"
+    }
 
 }

@@ -5,7 +5,6 @@ shared-bin
 sootOutput
 lib
 plot
-android-jars
-/hooking
 mainException.txt
 noLoggingPoint.txt
+.idea/workspace.xml

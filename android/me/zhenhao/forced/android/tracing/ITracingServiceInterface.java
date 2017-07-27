@@ -5,8 +5,8 @@ import me.zhenhao.forced.shared.tracing.TraceItem;
 
 interface ITracingServiceInterface {
 
-	void dumpQueue();
+    void dumpQueue();
 
-	void enqueueTraceItem(TraceItem ti);
+    void enqueueTraceItem(TraceItem ti);
 
 }

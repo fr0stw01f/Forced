@@ -11,15 +11,15 @@ import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.GINGERBREAD)
 public class FileBasedTracingUtils {
-	
-	public static File getFuzzerDirectory() {
-		File storageDir = new File(Environment.getExternalStorageDirectory(),
-				"evoFuzzDumps/");
-		if (!storageDir.exists() && !storageDir.mkdirs())
-			Log.e(SharedClassesSettings.TAG, "Could not create communication directory for watchdog: " + storageDir);
-		storageDir.setWritable(true, false);
-		Log.i(SharedClassesSettings.TAG, "Communication directory for watchdog: " + storageDir);
-		return storageDir;
-	}
+
+    public static File getFuzzerDirectory() {
+        File storageDir = new File(Environment.getExternalStorageDirectory(),
+                "evoFuzzDumps/");
+        if (!storageDir.exists() && !storageDir.mkdirs())
+            Log.e(SharedClassesSettings.TAG, "Could not create communication directory for watchdog: " + storageDir);
+        storageDir.setWritable(true, false);
+        Log.i(SharedClassesSettings.TAG, "Communication directory for watchdog: " + storageDir);
+        return storageDir;
+    }
 
 }

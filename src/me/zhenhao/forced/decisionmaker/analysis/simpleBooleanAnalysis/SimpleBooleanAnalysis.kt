@@ -14,55 +14,55 @@ import me.zhenhao.forced.shared.networkconnection.ServerResponse
 
 class SimpleBooleanAnalysis : FuzzyAnalysis() {
 
-	private val seenCodePositions = HashSet<Int>()
+    private val seenCodePositions = HashSet<Int>()
 
-	override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
-		// do nothing
-	}
+    override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
+        // do nothing
+    }
 
-	override fun resolveRequest(clientRequest: DecisionRequest,
-								threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
-		val decisions = ArrayList<AnalysisDecision>()
+    override fun resolveRequest(clientRequest: DecisionRequest,
+                                threadTraceManager: ThreadTraceManager): List<AnalysisDecision> {
+        val decisions = ArrayList<AnalysisDecision>()
 
-		if (seenCodePositions.contains(clientRequest.codePosition))
-			return ArrayList()
+        if (seenCodePositions.contains(clientRequest.codePosition))
+            return ArrayList()
 
-		if (clientRequest.loggingPointSignature ==
-				"<android.app.SharedPreferencesImpl: boolean getBoolean(java.lang.String, boolean)>"
-				|| clientRequest.loggingPointSignature ==
-				"<android.app.admin.DevicePolicyManager: boolean isAdminActive(android.content.ComponentName)>") {
-			seenCodePositions.add(clientRequest.codePosition)
-			val responseTrue = ServerResponse()
-			responseTrue.analysisName = getAnalysisName()
-			responseTrue.setResponseExist(true)
-			responseTrue.returnValue = true
-			val finalDecisionTrue = AnalysisDecision()
-			finalDecisionTrue.analysisName = getAnalysisName()
-			finalDecisionTrue.decisionWeight = 5
-			finalDecisionTrue.serverResponse = responseTrue
-			val responseFalse = ServerResponse()
-			responseFalse.analysisName = getAnalysisName()
-			responseFalse.setResponseExist(true)
-			responseFalse.returnValue = false
-			val finalDecisionFalse = AnalysisDecision()
-			finalDecisionFalse.analysisName = getAnalysisName()
-			finalDecisionFalse.decisionWeight = 5
-			finalDecisionFalse.serverResponse = responseFalse
+        if (clientRequest.loggingPointSignature ==
+                "<android.app.SharedPreferencesImpl: boolean getBoolean(java.lang.String, boolean)>"
+                || clientRequest.loggingPointSignature ==
+                "<android.app.admin.DevicePolicyManager: boolean isAdminActive(android.content.ComponentName)>") {
+            seenCodePositions.add(clientRequest.codePosition)
+            val responseTrue = ServerResponse()
+            responseTrue.analysisName = getAnalysisName()
+            responseTrue.setResponseExist(true)
+            responseTrue.returnValue = true
+            val finalDecisionTrue = AnalysisDecision()
+            finalDecisionTrue.analysisName = getAnalysisName()
+            finalDecisionTrue.decisionWeight = 5
+            finalDecisionTrue.serverResponse = responseTrue
+            val responseFalse = ServerResponse()
+            responseFalse.analysisName = getAnalysisName()
+            responseFalse.setResponseExist(true)
+            responseFalse.returnValue = false
+            val finalDecisionFalse = AnalysisDecision()
+            finalDecisionFalse.analysisName = getAnalysisName()
+            finalDecisionFalse.decisionWeight = 5
+            finalDecisionFalse.serverResponse = responseFalse
 
-			decisions.add(finalDecisionTrue)
-			decisions.add(finalDecisionFalse)
-			return decisions
-		}
+            decisions.add(finalDecisionTrue)
+            decisions.add(finalDecisionFalse)
+            return decisions
+        }
 
-		return ArrayList()
-	}
+        return ArrayList()
+    }
 
-	override fun reset() {
-		// do nothing
-	}
+    override fun reset() {
+        // do nothing
+    }
 
-	override fun getAnalysisName(): String {
-		return "SimpleBooleanAnalysis"
-	}
+    override fun getAnalysisName(): String {
+        return "SimpleBooleanAnalysis"
+    }
 
 }

@@ -7,10 +7,10 @@ import me.zhenhao.forced.android.tracing.BytecodeLogger;
 
 @SuppressWarnings("unused")
 public class ForcedCodeInitHelperApp extends Application{
-			
-	protected void attachBaseContext(Context context) {
-		super.attachBaseContext(context);
-		BytecodeLogger.initialize(context);
-	}
+
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(context);
+        BytecodeLogger.initialize(context);
+    }
 
 }

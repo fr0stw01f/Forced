@@ -6,37 +6,37 @@ import android.os.Parcelable;
 
 public class MethodCallItem extends AbstractDynamicCFGItem {
 
-	private static final long serialVersionUID = -8382002494703671501L;
-	
-	public static final Parcelable.Creator<MethodCallItem> CREATOR = new Parcelable.Creator<MethodCallItem>() {
+    private static final long serialVersionUID = -8382002494703671501L;
 
-		@Override
-		public MethodCallItem createFromParcel(Parcel parcel) {
-			MethodCallItem mci = new MethodCallItem();
-			mci.readFromParcel(parcel);
-			return mci;
-		}
+    public static final Parcelable.Creator<MethodCallItem> CREATOR = new Parcelable.Creator<MethodCallItem>() {
 
-		@Override
-		public MethodCallItem[] newArray(int size) {
-			return new MethodCallItem[size];
-		}
+        @Override
+        public MethodCallItem createFromParcel(Parcel parcel) {
+            MethodCallItem mci = new MethodCallItem();
+            mci.readFromParcel(parcel);
+            return mci;
+        }
 
-	};
-	
-	
-	private MethodCallItem() {
-		super();
-	}
-	
-	
-	public MethodCallItem(int lastExecutedStatement) {
-		super(lastExecutedStatement);
-	}
-	
-	@Override
-	public String toString() {
-		return "Method call: " + getLastExecutedStatement();
-	}
-	
+        @Override
+        public MethodCallItem[] newArray(int size) {
+            return new MethodCallItem[size];
+        }
+
+    };
+
+
+    private MethodCallItem() {
+        super();
+    }
+
+
+    public MethodCallItem(int lastExecutedStatement) {
+        super(lastExecutedStatement);
+    }
+
+    @Override
+    public String toString() {
+        return "Method call: " + getLastExecutedStatement();
+    }
+
 }

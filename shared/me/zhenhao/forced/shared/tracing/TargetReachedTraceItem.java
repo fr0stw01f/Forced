@@ -6,30 +6,30 @@ import android.os.Parcelable;
 
 public class TargetReachedTraceItem extends TraceItem {
 
-	private static final long serialVersionUID = 2184482709277468438L;
-	
-	public static final Parcelable.Creator<TargetReachedTraceItem> CREATOR = new Parcelable.Creator<TargetReachedTraceItem>() {
+    private static final long serialVersionUID = 2184482709277468438L;
 
-		@Override
-		public TargetReachedTraceItem createFromParcel(Parcel parcel) {
-			TargetReachedTraceItem ti = new TargetReachedTraceItem();
-			ti.readFromParcel(parcel);
-			return ti;
-		}
+    public static final Parcelable.Creator<TargetReachedTraceItem> CREATOR = new Parcelable.Creator<TargetReachedTraceItem>() {
 
-		@Override
-		public TargetReachedTraceItem[] newArray(int size) {
-			return new TargetReachedTraceItem[size];
-		}
+        @Override
+        public TargetReachedTraceItem createFromParcel(Parcel parcel) {
+            TargetReachedTraceItem ti = new TargetReachedTraceItem();
+            ti.readFromParcel(parcel);
+            return ti;
+        }
 
-	};
-	
-	private TargetReachedTraceItem() {
-		super();
-	}
+        @Override
+        public TargetReachedTraceItem[] newArray(int size) {
+            return new TargetReachedTraceItem[size];
+        }
 
-	public TargetReachedTraceItem(int lastExecutedStatement) {
-		super(lastExecutedStatement);
-	}
+    };
+
+    private TargetReachedTraceItem() {
+        super();
+    }
+
+    public TargetReachedTraceItem(int lastExecutedStatement) {
+        super(lastExecutedStatement);
+    }
 
 }

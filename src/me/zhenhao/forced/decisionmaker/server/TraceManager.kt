@@ -7,35 +7,35 @@ import java.util.concurrent.ConcurrentMap
 
 class TraceManager {
 
-	private val threadToManager = ConcurrentHashMap<Long, ThreadTraceManager>()
+    private val threadToManager = ConcurrentHashMap<Long, ThreadTraceManager>()
 
-	private val onCreateHandler = HashSet<ThreadTraceManagerCreatedHandler>()
-
-
-	fun getAllThreadTraceManagers(): Collection<ThreadTraceManager> {
-		return threadToManager.values
-	}
+    private val onCreateHandler = HashSet<ThreadTraceManagerCreatedHandler>()
 
 
-	fun getThreadTraceManager(threadId: Long): ThreadTraceManager? {
-		return threadToManager[threadId]
-	}
+    fun getAllThreadTraceManagers(): Collection<ThreadTraceManager> {
+        return threadToManager.values
+    }
 
 
-	fun getOrCreateThreadTraceManager(threadId: Long): ThreadTraceManager {
-		val newManager = ThreadTraceManager(threadId)
-		val existingManager = threadToManager.putIfAbsent(threadId, newManager)
-		if (existingManager == null) {
-			for (handler in onCreateHandler)
-				handler.onThreadTraceManagerCreated(newManager)
-			return newManager
-		} else
-			return existingManager
-	}
+    fun getThreadTraceManager(threadId: Long): ThreadTraceManager? {
+        return threadToManager[threadId]
+    }
 
 
-	fun addThreadTraceCreateHandler(handler: ThreadTraceManagerCreatedHandler) {
-		this.onCreateHandler.add(handler)
-	}
+    fun getOrCreateThreadTraceManager(threadId: Long): ThreadTraceManager {
+        val newManager = ThreadTraceManager(threadId)
+        val existingManager = threadToManager.putIfAbsent(threadId, newManager)
+        if (existingManager == null) {
+            for (handler in onCreateHandler)
+                handler.onThreadTraceManagerCreated(newManager)
+            return newManager
+        } else
+            return existingManager
+    }
+
+
+    fun addThreadTraceCreateHandler(handler: ThreadTraceManagerCreatedHandler) {
+        this.onCreateHandler.add(handler)
+    }
 
 }
