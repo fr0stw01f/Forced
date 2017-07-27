@@ -127,7 +127,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
 
 			converter.printProgramToCmdLine()
 
-			val z3str2Script = File(FrameworkOptions.Z3SCRIPT_LOCATION)
+			val z3str2Script = File(FrameworkOptions.z3scriptLocation)
 			if (!z3str2Script.exists())
 				throw RuntimeException("There is no z3-script available")
 			val smtExecutor = SMTExecutor(converter.getSmtPrograms(), z3str2Script)
@@ -184,7 +184,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
 
 				converter.printProgramToCmdLine()
 
-				val z3str2Script = File(FrameworkOptions.Z3SCRIPT_LOCATION)
+				val z3str2Script = File(FrameworkOptions.z3scriptLocation)
 				if (!z3str2Script.exists())
 					throw RuntimeException("There is no z3-script available")
 				val smtExecutor = SMTExecutor(converter.getSmtPrograms(), z3str2Script)
@@ -311,7 +311,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
 							}
 						}
 
-						val z3str2Script = File(FrameworkOptions.Z3SCRIPT_LOCATION)
+						val z3str2Script = File(FrameworkOptions.z3scriptLocation)
 						if (!z3str2Script.exists())
 							throw RuntimeException("There is no z3-script available")
 						val smtExecutor = SMTExecutor(setOf(smtProgram), z3str2Script)

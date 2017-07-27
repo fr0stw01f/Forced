@@ -22,7 +22,7 @@ object UtilMain {
 
 	private val BLACKLISTED_APKS = "." + File.separator + "files" + File.separator + "blacklistedAPKs.txt"
 
-	fun convertUnitsToIndependentCodePosition(units: Set<Unit>, cfg: InfoflowCFG): Set<InstanceIndependentCodePosition> {
+	fun convertUnitsToIndependentCodePositions(units: Set<Unit>, cfg: InfoflowCFG): Set<InstanceIndependentCodePosition> {
 		val positions = HashSet<InstanceIndependentCodePosition>()
 
 		for (unit in units) {
@@ -43,7 +43,7 @@ object UtilMain {
 	}
 
 
-	fun convertIndependentCodePositionToUnits(codePos: InstanceIndependentCodePosition): Unit? {
+	fun convertIndependentCodePositionToUnit(codePos: InstanceIndependentCodePosition): Unit? {
 		var unit: Unit? = null
 
 		val sm = Scene.v().getMethod(codePos.methodSignature)
@@ -84,8 +84,7 @@ object UtilMain {
 			val blacklisted = HashSet<String>()
 
 			try {
-				val br = BufferedReader(FileReader(BLACKLISTED_APKS))
-				br.use { br ->
+				BufferedReader(FileReader(BLACKLISTED_APKS)).use { br ->
 					var line = br.readLine()
 					while (line != null) {
 						if (!line.startsWith("%"))

@@ -30,11 +30,11 @@ class SMTPreparationPhase(private val cfg: IInfoflowCFG, private val results: In
 		InfoflowConfiguration.setPathAgnosticResults(false)
 
 		//control flow involved
-		return prepareDataFlowsDependingOnControlFlow(results, FrameworkOptions.mergeDataFlows)
+		return prepareDataFlowsDependingOnControlFlow(results, FrameworkOptions.mergeDataFlow)
 	}
 
 
-	private fun prepareDataFlowsDependingOnControlFlow(results: InfoflowResults, mergeDataFlows: Boolean): Set<ResultSourceInfo> {
+	private fun prepareDataFlowsDependingOnControlFlow(results: InfoflowResults, mergeDataFlow: Boolean): Set<ResultSourceInfo> {
 		val dataFlows = HashSet<ResultSourceInfo>()
 
 		for (sink in results.results.keySet()) {
@@ -87,7 +87,7 @@ class SMTPreparationPhase(private val cfg: IInfoflowCFG, private val results: In
 			val accessPathDataFlow1 = ArrayList(Arrays.asList(*dataflow1.pathAccessPaths))
 
 			//if one wants to be more precise, he needs to merge the dataflows for a more precise contraint
-			if (mergeDataFlows) {
+			if (mergeDataFlow) {
 				for (indexDataflow1Statements in 0..statementsDataFlow1.size - 1 - 1) {
 					val fromStmt_Dataflow1 = statementsDataFlow1[indexDataflow1Statements]
 					val toStmt_Dataflow1 = statementsDataFlow1[indexDataflow1Statements + 1]
@@ -217,7 +217,7 @@ class SMTPreparationPhase(private val cfg: IInfoflowCFG, private val results: In
 	}
 
 
-	private fun mergeDataFlowsIntoSingleDataFlow(statementToEnrich: Stmt, originalPath: ResultSourceInfo, pathToMerge: ResultSourceInfo): ResultSourceInfo {
+	private fun mergeDataFlow(statementToEnrich: Stmt, originalPath: ResultSourceInfo, pathToMerge: ResultSourceInfo): ResultSourceInfo {
 		val pathStmts = ArrayList(Arrays.asList(*originalPath.path))
 		val accessPaths = ArrayList(Arrays.asList(*originalPath.pathAccessPaths))
 

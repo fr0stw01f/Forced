@@ -9,7 +9,6 @@ import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
 import me.zhenhao.forced.bootstrap.DexFileManager
-import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
@@ -19,7 +18,6 @@ import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import org.apache.commons.io.FileUtils
-import org.xmlpull.v1.XmlPullParserException
 import soot.PackManager
 import soot.Scene
 import soot.SootMethod
@@ -31,7 +29,6 @@ import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG
 import soot.jimple.infoflow.source.data.NullSourceSinkDefinitionProvider
 import soot.options.Options
 import java.io.File
-import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.*
@@ -96,7 +93,7 @@ class Main private constructor() {
 			}
 
 			//we have to do this hack due to a reset of soot. This step is necessary otherwise, we will not get a clean apk for each logging point
-			val targetsAsCodePos = UtilMain.convertUnitsToIndependentCodePosition(allTargetLocations, config.backwardsCFG)
+			val targetsAsCodePos = UtilMain.convertUnitsToIndependentCodePositions(allTargetLocations, config.backwardsCFG)
 			var firstRun = true
 
 			//treat each target location individually
@@ -108,7 +105,7 @@ class Main private constructor() {
 				firstRun = false
 
 				//we need to do this step, because we reset soot
-				val singleTarget = UtilMain.convertIndependentCodePositionToUnits(singleTargetAsPos)
+				val singleTarget = UtilMain.convertIndependentCodePositionToUnit(singleTargetAsPos)
 				if (singleTarget == null) {
 					LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
 					continue
@@ -249,7 +246,7 @@ class Main private constructor() {
 										  results: MutableSet<EnvironmentResult>, event: FrameworkEvent?) {
 		decisionMaker.initialize()
 
-		for (seed in 0..FrameworkOptions.nbSeeds - 1) {
+		for (seed in 0..FrameworkOptions.numSeeds - 1) {
 			LoggerHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
 			DeterministicRandom.reinitialize(seed)
 			val curResult = decisionMaker.executeDecisionMaker(event)
@@ -372,6 +369,17 @@ class Main private constructor() {
 			return data
 		}
 
+        fun makeForcedBinReadyForInstrument() {
+            val android_code_src_path = File(FrameworkOptions.frameworkDir + "bin/me/zhenhao/forced/android")
+            val android_code_dst_path = File(FrameworkOptions.frameworkDir + "android-bin/me/zhenhao/forced/android")
+            FileUtils.deleteDirectory(android_code_dst_path)
+            FileUtils.copyDirectory(android_code_src_path, android_code_dst_path)
+
+            val shared_code_src_path = File(FrameworkOptions.frameworkDir + "bin/me/zhenhao/forced/shared")
+            val shared_code_dst_path = File(FrameworkOptions.frameworkDir + "shared-bin/me/zhenhao/forced/shared")
+            FileUtils.deleteDirectory(shared_code_dst_path)
+            FileUtils.copyDirectory(shared_code_src_path, shared_code_dst_path)
+        }
 
 		@JvmStatic fun main(args: Array<String>) {
 			Timer().schedule(object : TimerTask() {
@@ -382,6 +390,8 @@ class Main private constructor() {
 			}, (40 * 60000).toLong())
 
 			try {
+				makeForcedBinReadyForInstrument()
+
 				v().run(args)
 				AndroidDebugBridge.terminate()
 			} catch (ex: Exception) {

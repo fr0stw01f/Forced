@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="android-jar">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/android-jars/android-21.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/android-21.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

@@ -9,15 +9,16 @@ import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
 import me.zhenhao.forced.bootstrap.DexFileManager
+import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LoggerHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
 import me.zhenhao.forced.decisionmaker.DecisionMakerConfig
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
+import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import org.apache.commons.io.FileUtils
-import org.xmlpull.v1.XmlPullParserException
 import soot.PackManager
 import soot.Scene
 import soot.SootMethod
@@ -29,16 +30,14 @@ import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG
 import soot.jimple.infoflow.source.data.NullSourceSinkDefinitionProvider
 import soot.options.Options
 import java.io.File
-import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.*
+import java.util.logging.Level
 
 
 class ForcedMain private constructor() {
 
-
-	@Throws(IOException::class, XmlPullParserException::class)
 	private fun run(args: Array<String>): Set<EnvironmentResult>? {
 		val frameworkOptions = FrameworkOptions()
 		frameworkOptions.parse(args)
@@ -48,109 +47,183 @@ class ForcedMain private constructor() {
 				String.format("Force timeout: %d || Inactivity timeout: %d || Max restarts: %d",
 						FrameworkOptions.forceTimeout, FrameworkOptions.inactivityTimeout, FrameworkOptions.maxRestarts))
 
+        // make sure we have the latest class files to instrument
+        makeForcedBinReadyForInstrument()
+
 		//remove all files in sootOutput folder
 		FileUtils.cleanDirectory(File(UtilInstrumenter.SOOT_OUTPUT))
 
-		val blacklistedAPKs = UtilMain.blacklistedAPKs
-
-		if (blacklistedAPKs.contains(FrameworkOptions.apkPath))
+		if (UtilMain.blacklistedAPKs.contains(FrameworkOptions.apkPath))
 			return null
 
-		val dexFileManager = DexFileManager()
-
 		// Schedule the initial analysis task
-		// Task manager is passed to SocketServer to enqueue new tasks by handleDexFileReceived(DexFileTransferTraceItem)
+		// Task manager is passed to SocketServer to enqueue new tasks by calling
+        // handleDexFileReceived(DexFileTransferTraceItem)
 		val analysisTaskManager = AnalysisTaskManager()
 		analysisTaskManager.enqueueAnalysisTask(AnalysisTask())
 
-		// Execute all of our analysis tasks
+		// Execute all the tasks from the task manager
 		val results = HashSet<EnvironmentResult>()
-		var currentTask: AnalysisTask? = analysisTaskManager.scheduleNextTask()
-		var taskId = 0
+		var currentTask = analysisTaskManager.scheduleNextTask()
+        var taskId = 0
 		while (currentTask != null) {
-			LoggerHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
-					taskId++, currentTask.dexFilesToMerge.size))
-			try {
-				//needed for the extractAllTargetLocations method
-				initializeSoot(currentTask)
-			} catch (ex: Exception) {
-				System.err.println("Could not initialize Soot, skipping analysis task: " + ex.message)
-				ex.printStackTrace()
-				continue
-			}
-
-			// The DecisionMaker configuration needs to initialize the metrics.
-			// Therefore, it requires a running Soot instance.
-			var config = DecisionMakerConfig()
-			config.initializeCFG()
-
-			// We may need to remove some statements before running the analysis
-			removeStatementsForAnalysis(currentTask)
-
-			// needs to be re-initialized due to soot-reset
-			config = DecisionMakerConfig()
-			config.initializeCFG()
-
-			// register fuzzy analyses for the single target
-			val successfulInitialization = config.initialize(emptySet())
-
-//			if (successfulInitialization) {
-//				//get potential Android event which trigger the initial code section for reaching the logging point
-//				val events: MutableSet<FrameworkEvent?>
-//				//todo PAPER-EVAL ONLY
-//				if (FrameworkOptions.evaluationJustStartApp) {
-//					events = HashSet()
-//					events.add(null)
-//				} else
-//					events = getFrameworkEvents(singleTarget, config.backwardsCFG) as MutableSet
-//				if (events.isEmpty()) {
-//					LoggerHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
-//					events.add(null)
-//				}
-//
-//				val decisionMaker = DecisionMaker(config, dexFileManager, analysisTaskManager)
-//				val codePositionManager = CodePositionManager.codePositionManagerInstance
-//
-//				// instrumentation, sign and align
-//				appPreparationPhase(codePositionManager, config)
-//
-//				val totalEvents = events.size
-//				var currentEvent = 0
-//				val resultsPerApp = HashSet<EnvironmentResult>()
-//
-//				// trigger all the events for a specific target
-//				for (event in events) {
-//					try {
-//						currentEvent += 1
-//
-//						//todo PAPER-EVAL ONLY
-//						if (!FrameworkOptions.evaluationOnly)
-//						// do fuzzy analyses
-//							decisionMaker.runPreAnalysisPhase()
-//
-//						LoggerHelper.logEvent(MyLevel.EXECUTION_START, "")
-//						repeatedlyExecuteAnalysis(decisionMaker, resultsPerApp, event)
-//						LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
-//
-//						// If we have reached the goal, there is no need to try the other events
-//						for (result in resultsPerApp)
-//							if (result.isTargetReached)
-//								break
-//					} catch (ex: Exception) {
-//						LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
-//						ex.printStackTrace()
-//					}
-//
-//				}
-//
-//				results.addAll(resultsPerApp)
-//			}
-
+			handleAllTargets(currentTask, analysisTaskManager, results, taskId++)
 			currentTask = analysisTaskManager.scheduleNextTask()
 		}
+
 		return results
 	}
 
+    fun handleAllTargets(analysisTask: AnalysisTask, analysisTaskManager: AnalysisTaskManager,
+                         results: MutableSet<EnvironmentResult>, taskId: Int) {
+        LoggerHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
+                taskId, analysisTask.dexFilesToMerge.size))
+        try {
+            //needed for the extractAllTargetLocations method
+            initializeSoot(analysisTask)
+        } catch (ex: Exception) {
+            System.err.println("Could not initialize Soot, skipping analysis task: " + ex.message)
+            ex.printStackTrace()
+            return
+        }
+        // The DecisionMaker configuration needs to initialize the metrics.
+        // Therefore, it requires a running Soot instance.
+        val config = DecisionMakerConfig()
+        config.initializeCFG()
+
+        //extract all target locations
+        val allTargetLocations = UtilDecisionMaker.extractAllTargetLocations()
+        if (allTargetLocations.isEmpty()) {
+            LoggerHelper.logEvent(MyLevel.NO_TARGETS, "There are no reachable target locations")
+            UtilMain.writeToFile("noLoggingPoint.txt", FrameworkOptions.apkPath + "\n")
+        }
+
+        // We have to do this hack due to a reset of soot.
+        // This step is necessary otherwise, we will not get a clean apk for each logging point
+        val targetsAsCodePos = UtilMain.convertUnitsToIndependentCodePositions(allTargetLocations,
+                config.backwardsCFG)
+
+        var initSoot = false
+
+        // Treat each target location individually
+        for (singleTargetAsPos in targetsAsCodePos) {
+            handleSingleTarget(singleTargetAsPos, analysisTask, analysisTaskManager, results, initSoot)
+            initSoot = true
+        }
+    }
+
+    fun handleSingleTarget(singleTargetAsPos: InstanceIndependentCodePosition, analysisTask: AnalysisTask,
+                           analysisTaskManager: AnalysisTaskManager, results: MutableSet<EnvironmentResult>,
+                           initSoot: Boolean) {
+
+        if (initSoot)
+            initializeSoot(analysisTask)
+
+        //we need to do this step, because we reset soot
+        val singleTarget = UtilMain.convertIndependentCodePositionToUnit(singleTargetAsPos)
+        if (singleTarget == null) {
+            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
+            return
+        }
+
+        val singleTargetLocation = setOf(singleTarget)
+
+        // We may need to remove some statements before running the analysis
+        removeStatementsForAnalysis(analysisTask)
+
+        // needs to be re-initialized due to soot-reset
+        val config = DecisionMakerConfig()
+        config.initializeCFG()
+
+        //now we have access to the CFG, check if target is reachable:
+        if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
+            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+            return
+        }
+
+        // register fuzzy analyses for the single target
+        if (config.initialize(singleTargetLocation)) {
+            //get potential Android event which trigger the initial code section for reaching the logging point
+            val events: MutableSet<FrameworkEvent?>
+            //todo PAPER-EVAL ONLY
+            if (FrameworkOptions.evaluationJustStartApp) {
+                events = HashSet()
+                events.add(null)
+            } else {
+                events = getFrameworkEvents(singleTarget, config.backwardsCFG) as MutableSet
+
+                if (events.isEmpty()) {
+                    LoggerHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
+                    events.add(null)
+                }
+            }
+
+            val decisionMaker = DecisionMaker(config, DexFileManager(), analysisTaskManager)
+            val codePositionManager = CodePositionManager.codePositionManagerInstance
+
+            // instrument, sign and align
+            appPreparationPhase(codePositionManager, config)
+
+            val resultsPerTarget = handleEventsForTarget(singleTarget, events, decisionMaker, codePositionManager)
+
+            results.addAll(resultsPerTarget)
+        }
+    }
+
+    fun handleEventsForTarget(target: Unit, events: Set<FrameworkEvent?>, decisionMaker: DecisionMaker,
+                              codePositionManager: CodePositionManager) : HashSet<EnvironmentResult> {
+        var currentEvent = 0
+        val resultsPerApp = HashSet<EnvironmentResult>()
+
+        for (event in events) {
+            try {
+                ++currentEvent
+
+                //todo PAPER-EVAL ONLY
+                if (!FrameworkOptions.evaluationOnly)
+                // do server-side analyses
+                    decisionMaker.runPreAnalysisPhase()
+
+                // After the pre-analysis, we are able to get access to the code positions
+                // Log the code position
+                val codePos = codePositionManager.getCodePositionForUnit(target)
+
+                val info = String.format("Enclosing Method: %s | %d | %s",
+                        codePos.enclosingMethod, codePos.id, target.toString())
+                LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
+
+                LoggerHelper.logEvent(Level.INFO, String.format("%s: %s/%s events (%s) ready for process",
+                        codePos.id, currentEvent, events.size, event))
+
+                LoggerHelper.logEvent(MyLevel.EXECUTION_START, "")
+
+                repeatedlyExecuteAnalysis(decisionMaker, resultsPerApp, event)
+
+                LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
+
+                // If we have reached the goal, there is no need to try the other events
+                if (resultsPerApp.any { it.isTargetReached })
+                    break
+            } catch (ex: Exception) {
+                LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
+                ex.printStackTrace()
+            }
+
+        }
+        return resultsPerApp
+    }
+
+    fun makeForcedBinReadyForInstrument() {
+        val android_code_src_path = File(FrameworkOptions.frameworkDir + "bin/me/zhenhao/forced/android")
+        val android_code_dst_path = File(FrameworkOptions.frameworkDir + "android-bin/me/zhenhao/forced/android")
+        FileUtils.deleteDirectory(android_code_dst_path)
+        FileUtils.copyDirectory(android_code_src_path, android_code_dst_path)
+
+        val shared_code_src_path = File(FrameworkOptions.frameworkDir + "bin/me/zhenhao/forced/shared")
+        val shared_code_dst_path = File(FrameworkOptions.frameworkDir + "shared-bin/me/zhenhao/forced/shared")
+        FileUtils.deleteDirectory(shared_code_dst_path)
+        FileUtils.copyDirectory(shared_code_src_path, shared_code_dst_path)
+    }
 
 	private fun removeStatementsForAnalysis(currentTask: AnalysisTask) {
 		for (codePos in currentTask.statementsToRemove) {
@@ -179,9 +252,7 @@ class ForcedMain private constructor() {
 		}
 	}
 
-
-	private fun appPreparationPhase(codePositionManager: CodePositionManager,
-									config: DecisionMakerConfig) {
+	private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
 		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
 
 		UtilApk.removeOldAPKs()
@@ -201,22 +272,24 @@ class ForcedMain private constructor() {
 										  results: MutableSet<EnvironmentResult>, event: FrameworkEvent?) {
 		decisionMaker.initialize()
 
-		for (seed in 0..FrameworkOptions.nbSeeds - 1) {
+		for (seed in 0..FrameworkOptions.numSeeds -1) {
 			LoggerHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
 			DeterministicRandom.reinitialize(seed)
 			val curResult = decisionMaker.executeDecisionMaker(event)
 
 			results.add(curResult)
 			if (curResult.isTargetReached)
-				LoggerHelper.logEvent(MyLevel.RUNTIME, "target reached")
+				LoggerHelper.logEvent(MyLevel.RUNTIME, "Target reached")
 			else
-				LoggerHelper.logEvent(MyLevel.RUNTIME, "NO target was reached")
+				LoggerHelper.logEvent(MyLevel.RUNTIME, "Target not reached")
 		}
+
+        // print branch tracking info of all traces
+        decisionMaker.printBranchTrackingForThreadId(-1)
+
 		decisionMaker.tearDown()
 	}
 
-
-	@Throws(IOException::class, XmlPullParserException::class)
 	private fun initializeSoot(currentTask: AnalysisTask) {
 		val app = SetupApplication(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
 		app.calculateSourcesSinksEntrypoints(NullSourceSinkDefinitionProvider())
@@ -245,12 +318,9 @@ class ForcedMain private constructor() {
 				throw RuntimeException("Could not find local dex file")
 		}
 
-		//val binPath = FrameworkOptions.frameworkDir + "/bin"
-		//hooking specific
-		//processDir.add(UtilInstrumenter.HOOKING_LIBRARY)
+		// app code bin
 		processDir.add(UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN)
 		processDir.add(UtilInstrumenter.SHARED_CLASSES_BIN)
-		//processDir.add(binPath)
 		Options.v().set_process_dir(processDir)
 
 		Options.v().set_android_jars(FrameworkOptions.androidJarPath)
@@ -258,10 +328,9 @@ class ForcedMain private constructor() {
 
 		//the bin folder has to be added to the classpath in order to
 		//use the Java part for the instrumentation (JavaClassForInstrumentation)
-		val androidJar = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
+		val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
 		val sootClassPath = UtilInstrumenter.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
-				UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJar
-		//val sootClassPath = binPath + File.pathSeparator + androidJar
+				UtilInstrumenter.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
 		Options.v().set_soot_classpath(sootClassPath)
 
 		Scene.v().loadNecessaryClasses()
@@ -278,7 +347,6 @@ class ForcedMain private constructor() {
 		PackManager.v().runPacks()
 	}
 
-
 	private fun printTargetLocationInfo(config: DecisionMakerConfig, codePositionManager: CodePositionManager) {
 		LoggerHelper.logEvent(MyLevel.ANALYSIS, "Found " + config.allTargetLocations.size + " target location(s)")
 		for (unit in config.allTargetLocations) {
@@ -287,7 +355,6 @@ class ForcedMain private constructor() {
 			LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
 		}
 	}
-
 
 	private fun getFrameworkEvents(targetLocation: Unit, cfg: BackwardsInfoflowCFG): Set<FrameworkEvent?> {
 		val eventManager = FrameworkEventManager.eventManager
@@ -298,28 +365,14 @@ class ForcedMain private constructor() {
 	}
 
 	companion object {
-
 		private val SINGLETON = ForcedMain()
 
 		fun v(): ForcedMain {
 			return SINGLETON
 		}
 
-		fun hexStringToByteArray(s: String): ByteArray {
-			val len = s.length
-			val data = ByteArray(len / 2)
-			var i = 0
-			while (i < len) {
-				data[i / 2] = ((Character.digit(s[i], 16) shl 4) + Character.digit(s[i + 1], 16)).toByte()
-				i += 2
-			}
-			return data
-		}
-
-
 		@JvmStatic fun main(args: Array<String>) {
-			val timer = Timer()
-			timer.schedule(object : TimerTask() {
+			Timer().schedule(object : TimerTask() {
 				override fun run() {
 					LoggerHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
 					System.exit(0)

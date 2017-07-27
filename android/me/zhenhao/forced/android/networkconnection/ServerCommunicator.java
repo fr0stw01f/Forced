@@ -26,7 +26,6 @@ public class ServerCommunicator{
 		this.syncToken = syncToken;
 	}
 
-
 	public ServerResponse getResultForRequest(IClientRequest request) {
 		Log.i(SharedClassesSettings.TAG, "Getting request for" + request + "...");
 
@@ -44,7 +43,6 @@ public class ServerCommunicator{
 		}
 	}
 
-
 	public void send(final Collection<IClientRequest> request, final boolean waitForResponse) {
 		Log.i(SharedClassesSettings.TAG, "Server communicator sending request...");
 
@@ -61,7 +59,6 @@ public class ServerCommunicator{
 			e.printStackTrace();
 		}
 	}
-
 
 	private class GettingTask implements Runnable {
 

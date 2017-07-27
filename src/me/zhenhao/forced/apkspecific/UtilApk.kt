@@ -28,13 +28,13 @@ object UtilApk {
 		command[4] = "-digestalg"
 		command[5] = "SHA1"
 		command[6] = "-keystore"
-		command[7] = FrameworkOptions.KEYSTORE_PATH
+		command[7] = FrameworkOptions.keystorePath
 		command[8] = UtilInstrumenter.SOOT_OUTPUT_APK
-		command[9] = FrameworkOptions.KEYSTORE_NAME
+		command[9] = FrameworkOptions.keystoreName
 		command[10] = "-storepass"
-		command[11] = FrameworkOptions.KEYSTORE_PASSWORD
+		command[11] = FrameworkOptions.keystorePassword
 		command[12] = "-keypass"
-		command[13] = FrameworkOptions.KEYSTORE_PASSWORD
+		command[13] = FrameworkOptions.keystorePassword
 
 		val p: Process
 		try {
@@ -63,7 +63,7 @@ object UtilApk {
 		LoggerHelper.logInfo("Started zipalign...")
 		val command = arrayOfNulls<String>(5)
 
-		var toolsPath = FrameworkOptions.BUILD_TOOLS
+		var toolsPath = FrameworkOptions.buildTools
 		if (!toolsPath.endsWith(File.separator))
 			toolsPath = toolsPath + File.separator
 

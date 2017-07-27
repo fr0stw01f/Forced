@@ -637,6 +637,19 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 		eventManager.uninstallAppProcess(manifest!!.packageName)
 	}
 
+    fun printBranchTrackingForThreadId(threadId: Long) {
+        val threadTraceManager = getManagerForThreadId(threadId)
+        if (threadTraceManager != null)
+            for (clientHistory in threadTraceManager.clientHistories) {
+                val pathTrace = clientHistory.pathTrace
+                val codePosMgr = codePositionManager
+                for ((unit, decision) in pathTrace) {
+                    val codePos = codePosMgr.getCodePositionForUnit(unit)
+                    println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+                }
+            }
+    }
+
 	companion object {
 		private val GENETIC_MIN_GENE_POOL_SIZE = 5
 		private val GENETIC_RANDOM_OFFSET = 10000

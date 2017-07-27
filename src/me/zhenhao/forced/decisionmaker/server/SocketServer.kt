@@ -75,7 +75,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 					if (clientRequest is TraceItem)
 						handleTraceItem(clientRequest)
 
-					handleClientRequests(oos, clientRequest)
+					handleClientRequests(clientRequest, oos)
 
 					// Make sure we send out all our data
 					//oos.flush()
@@ -115,8 +115,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 			}
 		}
 
-
-		private fun handleClientRequests(oos: ObjectOutputStream, clientRequest: Any) {
+		private fun handleClientRequests(clientRequest: Any, oos: ObjectOutputStream) {
 			when (clientRequest) {
 				is DecisionRequest -> handleDecisionRequest(clientRequest, oos)
 				is PathTrackingTraceItem -> handlePathTracking(clientRequest, oos)
@@ -126,12 +125,12 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 				is TimingBombTraceItem -> handleTimingBombReceived(clientRequest, oos)
 				is DexFileTransferTraceItem -> handleDexFileReceived(clientRequest, oos)
 				is CrashReportItem -> handleCrash(clientRequest, oos)
-				is BinarySerializableObject -> handleBinary(oos, clientRequest)
+				is BinarySerializableObject -> handleBinary(clientRequest, oos)
 				else -> throw RuntimeException("Received an unknown data item from the app")
 			}
 		}
 
-		private fun handleBinary(oos: ObjectOutputStream, clientRequest: BinarySerializableObject) {
+		private fun handleBinary(clientRequest: BinarySerializableObject, oos: ObjectOutputStream) {
 			var bais: ByteArrayInputStream? = null
 			var ois: ObjectInputStream? = null
 			var innerRequest: Any? = null
@@ -149,7 +148,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 					ois.close()
 			}
 			if (innerRequest != null)
-				handleClientRequests(oos, innerRequest)
+				handleClientRequests(innerRequest, oos)
 		}
 	}
 

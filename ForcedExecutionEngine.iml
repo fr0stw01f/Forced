@@ -30,42 +30,8 @@
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
-    <orderEntry type="module-library">
-      <library name="zhook.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/zhook.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="soot-infoflow-android.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/soot-infoflow-android.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="soot-infoflow.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/soot-infoflow.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="soot-trunk.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/soot-trunk.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
+    <orderEntry type="library" name="android-jar" level="project" />
     <orderEntry type="module-library">
       <library name="axml-2.0.jar">
         <CLASSES>
@@ -75,37 +41,20 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="junit4">
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.12.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="jdktools.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/jdktools.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="commons-io-2.4.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/commons-io-2.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="commons-cli-1.4.jar" level="project" />
     <orderEntry type="module-library">
       <library name="commons-codec-1.10.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/libs/commons-codec-1.10.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="commons-io-2.5.jar">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/libs/commons-io-2.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -120,17 +69,23 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="guava-22.0" level="project" />
     <orderEntry type="module-library">
-      <library name="guava-19.0.jar">
+      <library name="jdktools.jar">
+        <CLASSES />
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="junit4">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/guava-19.0.jar!/" />
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.12.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
-    <orderEntry type="library" name="commons-cli-1.4.jar" level="project" />
-    <orderEntry type="library" name="android-jar" level="project" />
+    <orderEntry type="library" name="soot" level="project" />
   </component>
 </module>

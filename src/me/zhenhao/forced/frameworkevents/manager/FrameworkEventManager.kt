@@ -26,7 +26,7 @@ class FrameworkEventManager {
 		if (adb == null) {
 			AndroidDebugBridge.init(false)
 			//		AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
-			//				FrameworkOptions.PLATFORM_TOOLS + File.separator + "adb", true);
+			//				FrameworkOptions.platformTools + File.separator + "adb", true);
 			adb = AndroidDebugBridge.createBridge()
 		}
 
@@ -98,13 +98,14 @@ class FrameworkEventManager {
 		sendEvent(AddContactEvent(packageName))
 	}
 
-	fun extractInitialEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG, manifest: ProcessManifest): Set<FrameworkEvent> {
-		val headUnits = getAllInitalMethodCalls(targetLocation, backwardsCFG)
+	fun extractInitialEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG,
+                                              manifest: ProcessManifest): Set<FrameworkEvent> {
+		val headUnits = getAllInitialMethodCalls(targetLocation, backwardsCFG)
 		val androidEvents = getAndroidEventsFromManifest(backwardsCFG, headUnits, manifest)
 		return androidEvents
 	}
 
-	private fun getAllInitalMethodCalls(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG): Set<Unit> {
+	private fun getAllInitialMethodCalls(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG): Set<Unit> {
 		val headUnits = HashSet<Unit>()
 		val reachedUnits = HashSet<Unit>()
 		val worklist = LinkedList<Unit>()
@@ -158,8 +159,8 @@ class FrameworkEventManager {
 		return headUnits
 	}
 
-
-	private fun getAndroidEventsFromManifest(backwardsCFG: BackwardsInfoflowCFG, headUnits: Set<Unit>, manifest: ProcessManifest): Set<FrameworkEvent> {
+	private fun getAndroidEventsFromManifest(backwardsCFG: BackwardsInfoflowCFG, headUnits: Set<Unit>,
+                                             manifest: ProcessManifest): Set<FrameworkEvent> {
 		val events = HashSet<FrameworkEvent>()
 		for (head in headUnits) {
 			val sm = backwardsCFG.getMethodOf(head)
@@ -215,7 +216,7 @@ class FrameworkEventManager {
 			} else if (superClass.name == "android.app.Activity") {
 				//is it the main launchable activity; if yes, we do not have to add any android event since
 				//we are opening the app anyway
-				if (!isLaunchableAcitivity(sc, manifest)) {
+				if (!isLaunchableActivity(sc, manifest)) {
 					val packageName = manifest.packageName
 					val activityPath = sc.name
 					events.add(ActivityEvent(packageName, activityPath))
@@ -249,7 +250,7 @@ class FrameworkEventManager {
 		return fullyQualifiedName
 	}
 
-	private fun isLaunchableAcitivity(sc: SootClass, manifest: ProcessManifest): Boolean {
+	private fun isLaunchableActivity(sc: SootClass, manifest: ProcessManifest): Boolean {
 		val launchableActivities = manifest.launchableActivities
 		for (node in launchableActivities) {
 			if (node.hasAttribute("name")) {
@@ -263,7 +264,8 @@ class FrameworkEventManager {
 		return false
 	}
 
-	private fun getCorrectBroadCast(actionName: String, mimeType: String?, fullyQualifiedReceiverName: String, manifest: ProcessManifest): FrameworkEvent {
+	private fun getCorrectBroadCast(actionName: String, mimeType: String?, fullyQualifiedReceiverName: String,
+                                    manifest: ProcessManifest): FrameworkEvent {
 		val event: FrameworkEvent?
 
 		if (actionName.equals("android.provider.telephony.SMS_RECEIVED", ignoreCase = true))
@@ -460,7 +462,7 @@ class FrameworkEventManager {
 		while (adb!!.devices.isEmpty()) {
 			try {
 				Thread.sleep(5000)
-				LoggerHelper.logEvent(MyLevel.RUNTIME, "not possible to find a device...")
+				LoggerHelper.logEvent(MyLevel.RUNTIME, "Cannot find a device...")
 				count++
 			} catch (e: InterruptedException) {
 				LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)

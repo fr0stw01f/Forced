@@ -50,42 +50,42 @@ class FrameworkOptions {
 			apkMD5 = generateMD5OfFile(apkPath)
 
 			//optional options
-			if (cmd.hasOption("KEYSTORE_PATH")) {
-				KEYSTORE_PATH = cmd.getOptionValue("KEYSTORE_PATH")
+			if (cmd.hasOption("keystorePath")) {
+				keystorePath = cmd.getOptionValue("keystorePath")
 			}
-			if (cmd.hasOption("KEYSTORE_NAME")) {
-				KEYSTORE_NAME = cmd.getOptionValue("KEYSTORE_NAME")
+			if (cmd.hasOption("keystoreName")) {
+				keystoreName = cmd.getOptionValue("keystoreName")
 			}
-			if (cmd.hasOption("KEYSTORE_PASSWORD")) {
-				KEYSTORE_PASSWORD = cmd.getOptionValue("KEYSTORE_PASSWORD")
+			if (cmd.hasOption("keystorePassword")) {
+				keystorePassword = cmd.getOptionValue("keystorePassword")
 			}
-			if (cmd.hasOption("BUILD_TOOLS")) {
-				BUILD_TOOLS = cmd.getOptionValue("BUILD_TOOLS")
+			if (cmd.hasOption("buildTools")) {
+				buildTools = cmd.getOptionValue("buildTools")
 			}
-			if (cmd.hasOption("KEYSTORE_PATH") &&
-					cmd.hasOption("KEYSTORE_NAME") &&
-					cmd.hasOption("KEYSTORE_PASSWORD") &&
-					cmd.hasOption("BUILD_TOOLS"))
+			if (cmd.hasOption("keystorePath") &&
+					cmd.hasOption("keystoreName") &&
+					cmd.hasOption("keystorePassword") &&
+					cmd.hasOption("buildTools"))
 				deployApp = true
 
-			if (cmd.hasOption("PLATFORM_TOOLS")) {
-				PLATFORM_TOOLS = cmd.getOptionValue("PLATFORM_TOOLS")
+			if (cmd.hasOption("platformTools")) {
+				platformTools = cmd.getOptionValue("platformTools")
 			}
-			if (cmd.hasOption("Z3SCRIPT_LOCATION")) {
-				Z3SCRIPT_LOCATION = cmd.getOptionValue("Z3SCRIPT_LOCATION")
+			if (cmd.hasOption("z3scriptLocation")) {
+				z3scriptLocation = cmd.getOptionValue("z3scriptLocation")
 			}
-			if (cmd.hasOption("TEST_SERVER")) {
+			if (cmd.hasOption("testServer")) {
 				testServer = true
 			}
-			if (cmd.hasOption("RECORD_PATH_EXECUTION")) {
+			if (cmd.hasOption("recordPathExecution")) {
 				recordPathExecution = true
 			}
-			if (cmd.hasOption("MERGE_DATAFLOWS")) {
-				mergeDataFlows = true
+			if (cmd.hasOption("mergeDataflow")) {
+				mergeDataFlow = true
 			}
 
-			if (cmd.hasOption("nbSeeds")) {
-				nbSeeds = Integer.parseInt(cmd.getOptionValue("nbSeeds"))
+			if (cmd.hasOption("numSeeds")) {
+				numSeeds = Integer.parseInt(cmd.getOptionValue("numSeeds"))
 			}
 
 			if (cmd.hasOption("inactivityTimeout")) {
@@ -158,19 +158,19 @@ class FrameworkOptions {
 				.longOpt("devicePort")
 				.build())
 
-		options.addOption("KEYSTORE_PATH", true, "Path to your keystore")
-		options.addOption("KEYSTORE_NAME", true, "Name of your keystore")
-		options.addOption("KEYSTORE_PASSWORD", true, "Password of your keystore")
-		options.addOption("BUILD_TOOLS", true, "Path to build-tools folder in sdk")
-		options.addOption("PLATFORM_TOOLS", true, "Path to platform-tools folder")
-		options.addOption("TEST_SERVER", false, "runs only the server-component")
-		options.addOption("Z3SCRIPT_LOCATION", true, "path to the Z3str2 python script within the Z3str2 project (e.g. /root/project/Z3/Z3-str.py)")
-		options.addOption("RECORD_PATH_EXECUTION", "RECORD", true, "Path to a file location where of a .dot file. The .dot file contains the path execution (method-access, method-callers, conditions taken and return-stmts) of the app.")
+		options.addOption("keystorePath", true, "Path to your keystore")
+		options.addOption("keystoreName", true, "Name of your keystore")
+		options.addOption("keystorePassword", true, "Password of your keystore")
+		options.addOption("buildTools", true, "Path to build-tools folder in sdk")
+		options.addOption("platformTools", true, "Path to platform-tools folder")
+		options.addOption("testServer", false, "runs only the server-component")
+		options.addOption("z3scriptLocation", true, "path to the Z3str2 python script within the Z3str2 project (e.g. /root/project/Z3/Z3-str.py)")
+		options.addOption("record_path_execution", "RECORD", true, "Path to a file location where of a .dot file. The .dot file contains the path execution (method-access, method-callers, conditions taken and return-stmts) of the app.")
 		options.addOption("packageName", true, "Package name of your app")
-		options.addOption("nbSeeds", true, "How often to repeat the entire experiment with a different seed. Default: " + nbSeeds)
+		options.addOption("numSeeds", true, "How often to repeat the entire experiment with a different seed. Default: " + numSeeds)
 		options.addOption("inactivityTimeout", true, "After how many seconds of inactivity to restart the app. Default: " + inactivityTimeout)
 		options.addOption("maxRestarts", true, "Maximum number of restarts of the app (per experiment). -1 means infinitely often. Default: " + maxRestarts)
-		options.addOption("MERGE_DATAFLOWS", false, "Merging dataflows can improve the extraction of concrete fuzzing values")
+		options.addOption("mergeDataflow", false, "Merging dataflows can improve the extraction of concrete fuzzing values")
 		options.addOption("ORIGINAL_APK_PATH", true, "If one needs to analyse a modfied version of an apk, we still keep the original apk. Path to original apk stored in ORIGINAL_APK_PATH")
 		options.addOption("enableHooks", true, "enables specific hooks that are usually not enabled. Usability: enableHooks \"integrity\"")
 		options.addOption("enableLogcatViewer", false, "once enabled, we will log whether the VM crashes (useful for bug hunting)")
@@ -198,12 +198,12 @@ class FrameworkOptions {
 				nread = fis.read(dataBytes)
 			}
 
-			val mdbytes = md.digest()
+			val mdBytes = md.digest()
 
 			//convert the byte to hex format
 			val sb = StringBuffer("")
-			for (i in mdbytes.indices) {
-				sb.append(Integer.toString((mdbytes[i] and 0xff.toByte()) + 0x100, 16).substring(1))
+			for (i in mdBytes.indices) {
+				sb.append(Integer.toString((mdBytes[i] and 0xff.toByte()) + 0x100, 16).substring(1))
 			}
 
 			md5 = sb.toString()
@@ -228,7 +228,7 @@ class FrameworkOptions {
 		var apkPath = ""
 		var apkMD5 = ""
 
-		var nbSeeds = 1
+		var numSeeds = 1
 		var forceTimeout = 20	   //60
 		var inactivityTimeout = 10   //40
 		var maxRestarts = 1		 //5
@@ -236,16 +236,16 @@ class FrameworkOptions {
 		var uninstallWaitingTime = 3000
 		var tryStartAppWaitingTime = 3000
 
-		var KEYSTORE_PATH = homeDir + "/keystores/zhenhao.keystore"
-		var KEYSTORE_NAME = "zhenhao"
-		var KEYSTORE_PASSWORD = "pursuits23"
-		var BUILD_TOOLS = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
-		var PLATFORM_TOOLS = homeDir + "/Library/Android/Sdk/platform-tools/"
-		var Z3SCRIPT_LOCATION = homeDir + "/Work/Z3-str-master/Z3-str.py"
+		var keystorePath = homeDir + "/keystores/zhenhao.keystore"
+		var keystoreName = "zhenhao"
+		var keystorePassword = "pursuits23"
+		var buildTools = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
+		var platformTools = homeDir + "/Library/Android/Sdk/platform-tools/"
+		var z3scriptLocation = homeDir + "/Work/Z3-str-master/Z3-str.py"
 
 		var deployApp = true
 		var recordPathExecution = false
-		var mergeDataFlows = false
+		var mergeDataFlow = false
 
 		var testServer = false
 
