@@ -1,10 +1,11 @@
-bin
 CodePositions.log
-android-bin
-shared-bin
 sootOutput
 lib
 plot
 mainException.txt
 noLoggingPoint.txt
 .idea/workspace.xml
+sootInstrument
+src/main/resources
+src/test
+target
