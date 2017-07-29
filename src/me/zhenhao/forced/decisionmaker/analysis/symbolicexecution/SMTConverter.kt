@@ -21,7 +21,7 @@ import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import soot.jimple.infoflow.source.data.SourceSinkDefinition
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicValueInformation
 import me.zhenhao.forced.decisionmaker.analysis.smartconstantdataextractor.NotYetSupportedException
@@ -157,7 +157,7 @@ class SMTConverter(private val sources: Set<SourceSinkDefinition>) {
                 }
                 //in case we do not support a specific statement yet, we will not produce any SMT program!
                 if (stmtVisitor.notSupported) {
-                    LoggerHelper.logWarning("SMT formular is not generated!")
+                    LogHelper.logWarning("SMT formular is not generated!")
                     continue
                 }
                 smtPrograms.addAll(stmtVisitor.getSMTPrograms())
@@ -171,10 +171,10 @@ class SMTConverter(private val sources: Set<SourceSinkDefinition>) {
                 dynamicValueInfo.putAll(stmtVisitor.getDynamicValueInfos())
 
             } catch (ex: NotYetSupportedException) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                 ex.printStackTrace()
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                 ex.printStackTrace()
             }
 

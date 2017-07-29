@@ -4,7 +4,7 @@ import java.io.BufferedReader
 import java.io.FileReader
 import java.util.HashSet
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
 
@@ -22,7 +22,7 @@ object FileUtils {
                 }
             }
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(-1)
         }

@@ -4,7 +4,7 @@ import com.google.common.collect.HashBasedTable
 import com.google.common.collect.Table
 import me.zhenhao.forced.FrameworkOptions
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
@@ -307,7 +307,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
                                 sourceOfDataflow = assertInfo.sourceOfDataflow
                             if (sourceOfDataflow != null) {
                                 if (sourceOfDataflow.toString() != assertInfo.sourceOfDataflow.toString())
-                                    LoggerHelper.logWarning("sourceOfDataflow have to be the same all the time!")
+                                    LogHelper.logWarning("sourceOfDataflow have to be the same all the time!")
                             }
                         }
 
@@ -382,7 +382,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
                 val valueIt = dynamicValueBasedValuesToFuzz[codePosition]!!.iterator()
                 while (valueIt.hasNext()) {
                     val valueToFuzz = valueIt.next()
-                    LoggerHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- dyn-values (first run) : " + valueToFuzz)
+                    LogHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- dyn-values (first run) : " + valueToFuzz)
                     val sResponse = ServerResponse()
                     sResponse.analysisName = getAnalysisName()
                     sResponse.setResponseExist(true)
@@ -402,7 +402,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
             val valueIt = dynamicValueBasedValuesToFuzz[codePosition]!!.iterator()
             while (valueIt.hasNext()) {
                 val valueToFuzz = valueIt.next()
-                LoggerHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- dyn-values: " + valueToFuzz)
+                LogHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- dyn-values: " + valueToFuzz)
                 val sResponse = ServerResponse()
                 sResponse.setResponseExist(true)
                 sResponse.analysisName = getAnalysisName()
@@ -419,7 +419,7 @@ class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
             val valueIt = constantBasedValuesToFuzz[codePosition]!!.iterator()
             while (valueIt.hasNext()) {
                 val valueToFuzz = valueIt.next()
-                LoggerHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- static-values: " + valueToFuzz)
+                LogHelper.logEvent(MyLevel.SMT_SOLVER_VALUE, "<---- static-values: " + valueToFuzz)
                 val sResponse = ServerResponse()
                 sResponse.setResponseExist(true)
                 sResponse.analysisName = getAnalysisName()

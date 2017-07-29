@@ -9,7 +9,7 @@ import soot.jimple.infoflow.android.axml.AXmlNode
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import me.zhenhao.forced.FrameworkOptions
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
 object UtilApk {
@@ -18,7 +18,7 @@ object UtilApk {
     private var manifest: ProcessManifest? = null
 
     fun jarsigner() {
-        LoggerHelper.logInfo("Started jarsigner...")
+        LogHelper.logInfo("Started jarsigner...")
         val command = arrayOfNulls<String>(14)
 
         command[0] = "jarsigner"
@@ -51,16 +51,16 @@ object UtilApk {
 
             p.waitFor()
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(1)
         }
 
-        LoggerHelper.logInfo("Finished jarsigner...")
+        LogHelper.logInfo("Finished jarsigner...")
     }
 
     fun zipalign() {
-        LoggerHelper.logInfo("Started zipalign...")
+        LogHelper.logInfo("Started zipalign...")
         val command = arrayOfNulls<String>(5)
 
         var toolsPath = FrameworkOptions.buildTools
@@ -89,12 +89,12 @@ object UtilApk {
 
             p.waitFor()
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(1)
         }
 
-        LoggerHelper.logInfo("Finished zipalign...")
+        LogHelper.logInfo("Finished zipalign...")
     }
 
 
@@ -203,7 +203,7 @@ object UtilApk {
             try {
                 manifest = ProcessManifest(FrameworkOptions.apkPath)
             } catch (e: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem with the manifest: " + e.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem with the manifest: " + e.message)
                 e.printStackTrace()
                 System.exit(-1)
             }

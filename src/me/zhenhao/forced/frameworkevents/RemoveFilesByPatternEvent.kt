@@ -1,7 +1,7 @@
 package me.zhenhao.forced.frameworkevents
 
 import com.android.ddmlib.IDevice
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import java.util.concurrent.TimeUnit
 
@@ -12,7 +12,7 @@ class RemoveFilesByPatternEvent(private val pattern: String) : FrameworkEvent() 
         val shellCmd = String.format("rm " +  pattern)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), "file removed..."))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), "file removed..."))
         } catch (e: Exception) {
             e.printStackTrace()
         }

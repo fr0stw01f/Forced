@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
 class StartApkEvent(private val packageName: String) : FrameworkEvent() {
@@ -14,9 +14,9 @@ class StartApkEvent(private val packageName: String) : FrameworkEvent() {
         val shellCmd = String.format("monkey -p %s -c android.intent.category.LAUNCHER 1", packageName)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.OPEN_APK, "APK opened")
+            LogHelper.logEvent(MyLevel.OPEN_APK, "APK opened")
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "not able to start apk: " + e.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "not able to start apk: " + e.message)
             e.printStackTrace()
         }
 

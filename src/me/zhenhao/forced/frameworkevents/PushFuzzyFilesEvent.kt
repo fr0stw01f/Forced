@@ -4,7 +4,7 @@ import java.io.File
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.shared.SharedClassesSettings
 
@@ -21,7 +21,7 @@ class PushFuzzyFilesEvent(private val dirPath: String) : FrameworkEvent() {
             try {
                 device.pushFile(file.absolutePath, remoteFilePath)
             } catch (e: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, "Problem with pushing files onto device: " + e.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, "Problem with pushing files onto device: " + e.message)
                 e.printStackTrace()
             }
 

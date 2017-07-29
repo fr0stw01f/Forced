@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 import com.android.ddmlib.IDevice
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
 
@@ -22,7 +22,7 @@ class OnClickEvent(onClickListenerClass: String, private val packageName: String
                 onClickListenerClass, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), onClickListenerClass!!))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), onClickListenerClass!!))
         } catch (e: Exception) {
             e.printStackTrace()
         }

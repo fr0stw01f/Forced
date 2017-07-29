@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
 import me.zhenhao.forced.bootstrap.DexFile
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicIntValue
@@ -81,7 +81,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
                     //oos.flush()
                 }
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
                         "There is a problem in the client-server communication " + ex.message)
                 ex.printStackTrace()
             } finally {
@@ -176,7 +176,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
             }
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
                     "There is a problem in startSocketServerObjectTransfer: " + e.message)
             e.printStackTrace()
         } finally {
@@ -205,7 +205,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         // Run the analyses
         val response = decisionMaker.resolveRequest(decisionRequest)
         val logMessage = String.format("[DECISION_REQUEST] %s \n [DECISION_RESPONSE] %s", decisionRequest, response)
-        LoggerHelper.logEvent(MyLevel.DECISION_REQUEST_AND_RESPONSE, logMessage)
+        LogHelper.logEvent(MyLevel.DECISION_REQUEST_AND_RESPONSE, logMessage)
 
         println("Sending response to client-app...")
         println(response)
@@ -233,7 +233,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleDynamicCallgraph(cgItem: AbstractDynamicCFGItem, oos: ObjectOutputStream) {
-        LoggerHelper.logInfo("Received DynamicCallgraph")
+        LogHelper.logInfo("Received DynamicCallgraph")
         val currentManager = decisionMaker.initializeHistory()
         if (currentManager != null && decisionMaker.dynamicCallgraph != null) {
             decisionMaker.dynamicCallgraph!!.enqueueItem(cgItem)
@@ -245,7 +245,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleDexFileReceived(dexFileRequest: DexFileTransferTraceItem, oos: ObjectOutputStream) {
-        LoggerHelper.logInfo("Received DexFileTransferTraceItem")
+        LogHelper.logInfo("Received DexFileTransferTraceItem")
         val dexFile = dexFileRequest.dexFile
         try {
             // Write the received dex file to disk for debugging
@@ -255,23 +255,21 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
             if (!dir.exists())
                 dir.mkdir()
             val filePath = String.format("%s/dexFiles/%d_dexfile.dex", UtilInstrumenter.SOOT_OUTPUT, timestamp)
-            println(String.format("Dex-File: %s (code position: %d)", filePath,
+            println(String.format("DexFile: %s (code position: %d)", filePath,
                     dexFileRequest.lastExecutedStatement))
-            LoggerHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex-file %s/dexFiles/%d_dexfile.dex",
+            LogHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex file %s/dexFiles/%d_dexfile.dex",
                     UtilInstrumenter.SOOT_OUTPUT, timestamp))
             Files.write(Paths.get(filePath), dexFile)
 
             // We need to remove the statements that load the external code,
             // because we merge it into a single app. We must not take the
             // last executed statement, but the current one -> +1.
-            val codePos = decisionMaker.codePositionManager
-                    .getCodePositionByID(dexFileRequest
-                            .lastExecutedStatement)
+            val codePos = decisionMaker.codePositionManager.getCodePositionByID(dexFileRequest.lastExecutedStatement)
             val codePosUnit = decisionMaker.codePositionManager.getUnitForCodePosition(codePos)
 
             val statementsToRemove = HashSet<InstanceIndependentCodePosition>()
-            statementsToRemove.add(InstanceIndependentCodePosition(codePos.enclosingMethod,
-                    codePos.lineNumber, codePosUnit.toString()))
+            statementsToRemove.add(InstanceIndependentCodePosition(codePos.enclosingMethod, codePos.lineNumber,
+                    codePosUnit.toString()))
 
             // Register the new dex file and spawn an analysis task for it
             val dexFileObj = decisionMaker.dexFileManager.add(DexFile(dexFileRequest.fileName, filePath, dexFile))
@@ -319,7 +317,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleTimingBombReceived(timingBomb: TimingBombTraceItem, oos: ObjectOutputStream) {
-        LoggerHelper.logEvent(MyLevel.TIMING_BOMB, "Timing bomb, originally " + timingBomb.originalValue)
+        LogHelper.logEvent(MyLevel.TIMING_BOMB, "Timing bomb, originally " + timingBomb.originalValue)
 
         oos.writeObject("TimingBomb Ack")
         oos.flush()
@@ -328,7 +326,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
     private fun handleGoalReached(grItem: TargetReachedTraceItem, oos: ObjectOutputStream) {
         decisionMaker.setTargetReached(true)
-        LoggerHelper.logEvent(MyLevel.LOGGING_POINT_REACHED, "REACHED: " + grItem.lastExecutedStatement)
+        LogHelper.logEvent(MyLevel.LOGGING_POINT_REACHED, "REACHED: " + grItem.lastExecutedStatement)
 
         oos.writeObject("GoalReached Ack")
         oos.flush()
@@ -336,7 +334,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleCrash(crash: CrashReportItem, oos: ObjectOutputStream) {
-        LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME,
+        LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME,
                 String.format("%s | %s", crash.lastExecutedStatement, crash.exceptionMessage))
         val mgr = decisionMaker.initializeHistory()
         if (mgr != null) {
@@ -354,7 +352,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     }
 
     fun stop() {
-        LoggerHelper.logInfo("Stopping socket server")
+        LogHelper.logInfo("Stopping socket server")
         stopped = true
         try {
             if (serverSocket != null) serverSocket!!.close()

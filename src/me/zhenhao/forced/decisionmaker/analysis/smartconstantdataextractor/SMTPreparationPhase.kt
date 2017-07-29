@@ -179,7 +179,7 @@ class SMTPreparationPhase(private val cfg: IInfoflowCFG, private val results: In
 //                                            //This step is the weakness in this analysis
 //                                            //It does ALWAYS assume that the conditional-stmt is directly used by the condition
 //                                            //We either improve this with a slicing approach or we may produce wrong contraints
-//                                            LoggerHelper.logInfo("We might produce a wrong constraint here...");
+//                                            LogHelper.logInfo("We might produce a wrong constraint here...");
 //                                            if(conditionsForReachingTarget.size() == 1) {
 //                                                AssignStmt conditionAssignment = (AssignStmt)betweenStmt_Dataflow2;
 //                                                int condition = (conditionsForReachingTarget.iterator().next() == true) ? 1 : 0;

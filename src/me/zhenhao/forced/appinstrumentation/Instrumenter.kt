@@ -5,7 +5,7 @@ import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionWriter
 import me.zhenhao.forced.apkspecific.UtilApk
 import me.zhenhao.forced.appinstrumentation.transformer.*
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMakerConfig
 import org.xmlpull.v1.XmlPullParserException
@@ -89,7 +89,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                     Files.copy(x86Src, x86File)
             }
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in addFilesToZip:\n")
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in addFilesToZip:\n")
             e.printStackTrace()
         }
 
@@ -97,7 +97,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
 
 
     fun doInstrumentation() {
-        LoggerHelper.logInfo("Started instrumentation...")
+        LogHelper.logInfo("Started instrumentation...")
 
         //get the manifest
         var manifest: ProcessManifest? = null
@@ -134,9 +134,9 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 postProcessForPositionTracking()
             }
 
-            LoggerHelper.logInfo("Finished instrumentation...")
+            LogHelper.logInfo("Finished instrumentation...")
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in the instrumentation phase: " + e.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "There is a problem in the instrumentation phase: " + e.message)
             e.printStackTrace()
         }
 
@@ -268,7 +268,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
             //add the modified AndroidManifest into the original APK
             androidManifest.apk.addFilesToApk(files, paths)
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(-1)
         } finally {

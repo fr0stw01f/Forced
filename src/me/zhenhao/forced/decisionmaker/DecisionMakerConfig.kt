@@ -7,7 +7,7 @@ import java.util.HashSet
 import soot.Unit
 import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG
 import soot.jimple.infoflow.solver.cfg.InfoflowCFG
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
 import me.zhenhao.forced.dynamiccfg.utils.FileUtils
@@ -62,9 +62,9 @@ class DecisionMakerConfig {
 
                         allAnalyses.add(analysis)
                         nameToAnalysis.put(analysis.getAnalysisName(), analysis)
-                        LoggerHelper.logEvent(MyLevel.ANALYSIS, "[ANALYSIS-TYPE] " + it)
+                        LogHelper.logEvent(MyLevel.ANALYSIS, "[ANALYSIS-TYPE] " + it)
                     } catch (ex: Exception) {
-                        LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                        LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                         ex.printStackTrace()
                         return false
                     }
@@ -87,7 +87,7 @@ class DecisionMakerConfig {
                                 as? IProgressMetric ?:
                                 throw RuntimeException("There is a problem in the files/metricsNames.txt file!")
                         val metric = constructorObject
-                        LoggerHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + it)
+                        LogHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + it)
 
                         //currently, there can be only a single target
                         if (allTargetLocations.size != 1)
@@ -100,11 +100,11 @@ class DecisionMakerConfig {
                             metric.initialize()
                             progressMetrics.add(metric)
                         } else {
-                            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+                            LogHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
                             return false
                         }
                     } catch (ex: Exception) {
-                        LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                        LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                         ex.printStackTrace()
                         System.exit(-1)
                     }

@@ -6,7 +6,7 @@ import soot.jimple.infoflow.handlers.ResultsAvailableHandler
 import soot.jimple.infoflow.results.InfoflowResults
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.shared.networkconnection.FileFormat
 
@@ -48,7 +48,7 @@ class FileFuzzerResultsAvailableHandler(private val valuesToFuzz: MutableMap<Int
                             .map { codePositionManager.getCodePositionForUnit(it.source) }
                             .forEach { valuesToFuzz.put(it.id, FileFormat.DIRECTORY) }
                 } else
-                    LoggerHelper.logEvent(MyLevel.TODO, "WE NEED TO ADD A NEW FILE FORMAT: " + sinkInfo)//directory
+                    LogHelper.logEvent(MyLevel.TODO, "WE NEED TO ADD A NEW FILE FORMAT: " + sinkInfo)//directory
             } else
                 throw RuntimeException("this should not happen in FileFuzzerResultsAvailableHandler")
         }

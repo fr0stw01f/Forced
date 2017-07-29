@@ -2,7 +2,7 @@ package me.zhenhao.forced.decisionmaker.analysis.symbolicexecution
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import soot.Unit
 import soot.jimple.*
 import soot.jimple.infoflow.results.ResultSourceInfo
@@ -43,7 +43,7 @@ object UtilSMT {
                 else {
 
                     if (branchCondition.op2 == null) {
-                        LoggerHelper.logWarning("There is a \"null\" check in a condition; we do not consider this")
+                        LogHelper.logWarning("There is a \"null\" check in a condition; we do not consider this")
                         if (currentBranchTaken == 0)
                             conditionsToReturn.add(true)
                         else if (currentBranchTaken == 1)

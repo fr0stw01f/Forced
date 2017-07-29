@@ -1,7 +1,7 @@
 package me.zhenhao.forced.decisionmaker
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import soot.Scene
 import soot.Unit
@@ -13,12 +13,12 @@ import java.util.*
 import java.util.regex.Pattern
 
 
-object UtilDecisionMaker {
+object DecisionMakerUtil {
 
     private val TARGET_METHODS_FILENAME = "." + File.separator + "files" + File.separator + "targetMethods.txt"
 
+    // Extract all logging points from file
     fun extractAllTargetLocations(): Set<Unit> {
-        //extract all logging points from file
         val targetLocationsTmp = HashSet<String>()
 
         val targetMethods = HashSet<String>()
@@ -33,7 +33,7 @@ object UtilDecisionMaker {
                 }
             }
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(-1)
         }
@@ -44,10 +44,7 @@ object UtilDecisionMaker {
 
             val applicationClasses = Scene.v().applicationClasses
             applicationClasses
-                    .filter {
-                        //no need to look into our code
-                        UtilInstrumenter.isAppDeveloperCode(it)
-                    }
+                    .filter { UtilInstrumenter.isAppDeveloperCode(it) }
                     .flatMap { it.methods }
                     .filter { it.hasActiveBody() }
                     .map { it.retrieveActiveBody() }

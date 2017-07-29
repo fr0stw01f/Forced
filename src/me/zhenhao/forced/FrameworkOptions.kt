@@ -5,13 +5,13 @@ import java.io.FileInputStream
 import java.security.MessageDigest
 import java.util.regex.Pattern
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import org.apache.commons.cli.*
 import kotlin.experimental.and
 
 
-class FrameworkOptions {
+object FrameworkOptions {
     enum class TraceConstructionMode {
         AnalysesOnly,
         Genetic,
@@ -111,7 +111,7 @@ class FrameworkOptions {
                 evaluationOnly = true
             }
         } catch (e: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
             e.printStackTrace()
             showHelpMessage()
             System.exit(1)
@@ -208,7 +208,7 @@ class FrameworkOptions {
 
             md5 = sb.toString()
         } catch (ex: Exception) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
             ex.printStackTrace()
             System.exit(-1)
         }
@@ -216,53 +216,52 @@ class FrameworkOptions {
         return md5
     }
 
-    companion object {
-//        val homeDir = "/home/zhenhao"
-        val homeDir = "/Users/tom"
 
-        var androidJarPath = homeDir + "/Work/Android/Sdk/platforms/"
-        var resultsDir = homeDir + "/Work/FuzzDroid/"
-        var frameworkDir = homeDir + "/IdeaProjects/Forced/"
-        var devicePort = "5555"
+//  val homeDir = "/home/zhenhao"
+    val homeDir = "/Users/tom"
 
-        var apkPath = ""
-        var apkMD5 = ""
+    var androidJarPath = homeDir + "/Work/Android/Sdk/platforms/"
+    var resultsDir = homeDir + "/Work/FuzzDroid/"
+    var frameworkDir = homeDir + "/IdeaProjects/Forced/"
+    var devicePort = "5555"
 
-        var numSeeds = 1
-        var forceTimeout = 20       //60
-        var inactivityTimeout = 10   //40
-        var maxRestarts = 1         //5
+    var apkPath = ""
+    var apkMD5 = ""
 
-        var uninstallWaitingTime = 3000
-        var tryStartAppWaitingTime = 3000
+    var numSeeds = 1
+    var forceTimeout = 20       //60
+    var inactivityTimeout = 10   //40
+    var maxRestarts = 1         //5
 
-        var keystorePath = homeDir + "/keystores/zhenhao.keystore"
-        var keystoreName = "zhenhao"
-        var keystorePassword = "pursuits23"
-        var buildTools = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
-        var platformTools = homeDir + "/Library/Android/Sdk/platform-tools/"
-        var z3scriptLocation = homeDir + "/Work/Z3-str-master/Z3-str.py"
+    var uninstallWaitingTime = 3000
+    var tryStartAppWaitingTime = 3000
 
-        var deployApp = true
-        var recordPathExecution = false
-        var mergeDataFlow = false
+    var keystorePath = homeDir + "/keystores/zhenhao.keystore"
+    var keystoreName = "zhenhao"
+    var keystorePassword = "pursuits23"
+    var buildTools = homeDir + "/Library/Android/Sdk/build-tools/25.0.3/"
+    var platformTools = homeDir + "/Library/Android/Sdk/platform-tools/"
+    var z3scriptLocation = homeDir + "/Work/Z3-str-master/Z3-str.py"
 
-        var testServer = false
+    var deployApp = true
+    var recordPathExecution = false
+    var mergeDataFlow = false
 
-        var evaluationJustStartApp = false
-        var evaluationStartAppAndSimpleEvent = false
-        var evaluationOnly = false
+    var testServer = false
 
-        var enableLogcatViewer = true
-        var traceConstructionMode = TraceConstructionMode.Genetic
+    var evaluationJustStartApp = false
+    var evaluationStartAppAndSimpleEvent = false
+    var evaluationOnly = false
+
+    var enableLogcatViewer = true
+    var traceConstructionMode = TraceConstructionMode.Genetic
 
 
-        fun getApkName(): String {
-            val tokens = apkPath.split(Pattern.quote(File.separator))
-            val tmp = tokens[tokens.size - 1]
+    fun getApkName(): String {
+        val tokens = apkPath.split(Pattern.quote(File.separator))
+        val tmp = tokens[tokens.size - 1]
 
-            return tmp.substring(0, tmp.length - 4)
-        }
+        return tmp.substring(0, tmp.length - 4)
     }
 }
 

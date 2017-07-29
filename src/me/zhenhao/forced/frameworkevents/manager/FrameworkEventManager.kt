@@ -4,12 +4,13 @@ import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.logcat.LogCatReceiverTask
 import me.zhenhao.forced.FrameworkOptions
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.*
 import me.zhenhao.forced.frameworkevents.broadcastevents.*
 import soot.SootClass
 import soot.Unit
+import soot.jimple.infoflow.android.axml.AXmlNode
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG
 import java.util.*
@@ -22,7 +23,7 @@ class FrameworkEventManager {
     private var adb: AndroidDebugBridge? = null
 
     fun connectToAndroidDevice() {
-        LoggerHelper.logEvent(MyLevel.RUNTIME, "Connecting to ADB...")
+        LogHelper.logEvent(MyLevel.RUNTIME, "Connecting to ADB...")
         if (adb == null) {
             AndroidDebugBridge.init(false)
             //        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
@@ -34,15 +35,15 @@ class FrameworkEventManager {
         this.device = getDevice(FrameworkOptions.devicePort)
         //this.device = adb.getDevices()[0];
         if (this.device == null) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, String.format("Device with port %s not found! -- retry it", FrameworkOptions.devicePort))
+            LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, String.format("Device with port %s not found! -- retry it", FrameworkOptions.devicePort))
             connectToAndroidDevice()
         }
-        LoggerHelper.logEvent(MyLevel.RUNTIME, "Successfully connected to ADB...")
+        LogHelper.logEvent(MyLevel.RUNTIME, "Successfully connected to ADB...")
     }
 
     fun sendEvent(event: FrameworkEvent): Any? {
         if (device!!.isOffline) {
-            LoggerHelper.logWarning("Device is offline! Trying to restart it...")
+            LogHelper.logWarning("Device is offline! Trying to restart it...")
             connectToAndroidDevice()
         }
 
@@ -66,7 +67,7 @@ class FrameworkEventManager {
     }
 
     fun killAppProcess(packageName: String) {
-        LoggerHelper.logEvent(MyLevel.RUNTIME, "killing application")
+        LogHelper.logEvent(MyLevel.RUNTIME, "killing application")
         sendEvent(KillAppProcessEvent(packageName))
     }
 
@@ -101,8 +102,7 @@ class FrameworkEventManager {
     fun extractInitialEventsForReachingTarget(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG,
                                               manifest: ProcessManifest): Set<FrameworkEvent> {
         val headUnits = getAllInitialMethodCalls(targetLocation, backwardsCFG)
-        val androidEvents = getAndroidEventsFromManifest(backwardsCFG, headUnits, manifest)
-        return androidEvents
+        return getAndroidEventsFromManifest(backwardsCFG, headUnits, manifest)
     }
 
     private fun getAllInitialMethodCalls(targetLocation: Unit, backwardsCFG: BackwardsInfoflowCFG): Set<Unit> {
@@ -110,10 +110,11 @@ class FrameworkEventManager {
         val reachedUnits = HashSet<Unit>()
         val worklist = LinkedList<Unit>()
         var previousUnit: Unit? = null
+
         worklist.add(targetLocation)
 
         while (!worklist.isEmpty()) {
-            // get front element
+            // get the front element
             val currentUnit = worklist.removeFirst()
 
             if (reachedUnits.contains(currentUnit)) {
@@ -123,30 +124,27 @@ class FrameworkEventManager {
                 reachedUnits.add(currentUnit)
 
             val currentMethod = backwardsCFG.getMethodOf(currentUnit)
-            //we reached the head unit
+            // we reached the head unit
             if (currentMethod.declaringClass.toString() == "dummyMainClass") {
                 if (previousUnit == null)
                     throw RuntimeException("there should be a previous unit")
 
                 headUnits.add(previousUnit)
-
                 continue
             }
 
-            //in case we reached the start of the method (vice verse in backward analysis)
+            // in case we reached the start of the method (vice verse in backward analysis)
             if (backwardsCFG.isExitStmt(currentUnit)) {
                 val sm = backwardsCFG.getMethodOf(currentUnit)
-                //first: get all callers
+                // first: get all callers
                 val callers = backwardsCFG.getCallersOf(sm)
+                // get the predecessors (aka succs of cfg) of the callers and add them to the worklist
                 callers
-                        .map {
-                            //get the predecessors (aka succs of cfg) of the callers and add them to the worklist
-                            backwardsCFG.getSuccsOf(it)
-                        }
+                        .map { backwardsCFG.getSuccsOf(it) }
                         .flatMap { it }
                         .forEach { worklist.addFirst(it) }
                 previousUnit = currentUnit
-                //there is no need for further progress
+                // there is no need for further progress
                 continue
             }
 
@@ -176,43 +174,16 @@ class FrameworkEventManager {
                 for (receiver in manifest.receivers) {
                     if (receiver.hasAttribute("name")) {
                         val receiverName = receiver.getAttribute("name").value as String
-                        //now we have to find the correct name of the receiver class
+                        // now we have to find the correct name of the receiver class
                         val fullyQualifiedReceiverName = getFullyQualifiedName(manifest, receiverName)
 
-                        if (sc.name == fullyQualifiedReceiverName) {
-                            for (children1 in receiver.children) {
-                                if (children1.tag == "intent-filter") {
-                                    val actions = HashSet<String>()
-                                    val mimeTypes = HashSet<String>()
-                                    for (children2 in children1.children) {
-                                        if (children2.tag == "action") {
-                                            val actionName = children2.getAttribute("name").value as String
-                                            actions.add(actionName)
-                                        } else if (children2.tag == "data") {
-                                            val attr = children2.getAttribute("mimeType")
-                                            if (attr != null)
-                                                mimeTypes.add(attr.value as String)
-                                        }
-                                    }
-
-                                    var mimeType: String? = null
-                                    if (mimeTypes.size > 1) {
-                                        LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "THERE IS MORE THAN 1 DATA ELEMETN IN THE INTENT-FILTER")
-                                        mimeType = mimeTypes.iterator().next()
-                                    } else if (mimeTypes.size == 1)
-                                        mimeType = mimeTypes.iterator().next()
-
-                                    actions.mapTo(events) { getCorrectBroadCast(it, mimeType, fullyQualifiedReceiverName, manifest) }
-                                } else {
-                                    events.add(FakeBroadcastEvent(fullyQualifiedReceiverName, null, null, manifest.packageName))
-                                }//no intent defined in the manifest; maybe dynamically defined during runtime;
-                                //we try to call it anyway
-                            }
-                        }
+                        if (sc.name == fullyQualifiedReceiverName)
+                            handleBroadcastReceiver(fullyQualifiedReceiverName, receiver, manifest, events)
                     }
                 }
                 if (events.isEmpty())
-                    LoggerHelper.logEvent(MyLevel.TODO, "generateAndroidEvents: maybe a dynamic generated broadcast?")
+                    LogHelper.logEvent(MyLevel.TODO,
+                            "generateAndroidEvents: maybe a dynamic generated broadcast?")
             } else if (superClass.name == "android.app.Activity") {
                 //is it the main launchable activity; if yes, we do not have to add any android event since
                 //we are opening the app anyway
@@ -228,40 +199,75 @@ class FrameworkEventManager {
                         .filter { it.name == "android.view.View\$OnClickListener" }
                         .forEach { events.add(OnClickEvent(sc.name, manifest.packageName)) }
                 if (events.isEmpty())
-                    LoggerHelper.logEvent(MyLevel.TODO, "generateAndroidEvents: did not find a proper event for head: " + head.toString())
+                    LogHelper.logEvent(MyLevel.TODO,
+                            "generateAndroidEvents: did not find a proper event for head: " + head.toString())
             }
 
         }
         return events
     }
 
+    fun handleBroadcastReceiver(fullyQualifiedReceiverName: String, receiver: AXmlNode,
+                                manifest: ProcessManifest, events: MutableSet<FrameworkEvent>) {
+        for (child in receiver.children) {
+            if (child.tag == "intent-filter") {
+                val actions = HashSet<String>()
+                val mimeTypes = HashSet<String>()
+                for (child2 in child.children) {
+                    if (child2.tag == "action") {
+                        val actionName = child2.getAttribute("name").value as String
+                        actions.add(actionName)
+                    } else if (child2.tag == "data") {
+                        val attr = child2.getAttribute("mimeType")
+                        if (attr != null)
+                            mimeTypes.add(attr.value as String)
+                    }
+                }
+
+                var mimeType: String? = null
+                if (mimeTypes.size > 1) {
+                    LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
+                            "There is more than 1 data element in the intent-filter")
+                    mimeType = mimeTypes.iterator().next()
+                } else if (mimeTypes.size == 1)
+                    mimeType = mimeTypes.iterator().next()
+
+                actions.mapTo(events) { getCorrectBroadCast(it, mimeType, fullyQualifiedReceiverName, manifest) }
+            } else {
+                // no intent defined in the manifest; maybe dynamically defined during runtime
+                events.add(FakeBroadcastEvent(fullyQualifiedReceiverName, null, null, manifest.packageName))
+            }
+            // we try to call it anyway
+        }
+    }
+
     private fun getFullyQualifiedName(manifest: ProcessManifest, componentName: String): String {
-        val fullyQualifiedName: String?
+        val fullyQualifiedName: String
         if (componentName.startsWith(".")) {
-            val packageName = manifest.packageName
-            fullyQualifiedName = packageName + componentName
+            fullyQualifiedName = manifest.packageName + componentName
         } else if (componentName.contains(".")) {
             fullyQualifiedName = componentName
         } else {
-            val packageName = manifest.packageName
-            fullyQualifiedName = packageName + "." + componentName
-        }//not documented, but still working
-        //fully qualified name
+            fullyQualifiedName = manifest.packageName + "." + componentName
+        }   // not documented, but still working
+        // fully qualified name
         return fullyQualifiedName
     }
 
     private fun isLaunchableActivity(sc: SootClass, manifest: ProcessManifest): Boolean {
         val launchableActivities = manifest.launchableActivities
-        for (node in launchableActivities) {
-            if (node.hasAttribute("name")) {
-                var activityName = node.getAttribute("name").value as String
+
+        return launchableActivities.any { it ->
+            if (it.hasAttribute("name")) {
+                var activityName = it.getAttribute("name").value as String
                 activityName = getFullyQualifiedName(manifest, activityName)
 
                 if (activityName == sc.name)
                     return true
             }
+            return false
         }
-        return false
+
     }
 
     private fun getCorrectBroadCast(actionName: String, mimeType: String?, fullyQualifiedReceiverName: String,
@@ -447,14 +453,15 @@ class FrameworkEventManager {
             try {
                 Thread.sleep(ADB_CONNECT_TIME_STEP_MS)
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                 ex.printStackTrace()
             }
 
         }
 
         if (!adb!!.hasInitialDeviceList()) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, "NOT POSSIBLE TO CONNECT TO ADB -- giving up and closing program!")
+            LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME,
+                    "NOT POSSIBLE TO CONNECT TO ADB -- giving up and closing program!")
             System.exit(-1)
         }
 
@@ -462,17 +469,17 @@ class FrameworkEventManager {
         while (adb!!.devices.isEmpty()) {
             try {
                 Thread.sleep(5000)
-                LoggerHelper.logEvent(MyLevel.RUNTIME, "Cannot find a device...")
+                LogHelper.logEvent(MyLevel.RUNTIME, "Cannot find a device...")
                 count++
             } catch (e: InterruptedException) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
                 e.printStackTrace()
                 AndroidDebugBridge.terminate()
             }
 
             if (count > 50) {
-                LoggerHelper
-                        .logEvent(MyLevel.RUNTIME, "After 100 seconds not able to find an Android device. Shutting down...")
+                LogHelper.logEvent(MyLevel.RUNTIME,
+                                "After 100 seconds not able to find an Android device. Shutting down...")
                 AndroidDebugBridge.terminate()
             }
         }
@@ -480,8 +487,8 @@ class FrameworkEventManager {
 
     private fun getDevice(devicePort: String): IDevice? {
         for (iDev in adb!!.devices) {
-            if (/*iDev.isEmulator() && */iDev.serialNumber.contains(devicePort)) {
-                LoggerHelper.logEvent(MyLevel.RUNTIME, "Successfully connected to emulator: " + iDev.serialNumber)
+            if (iDev.serialNumber.contains(devicePort)) {
+                LogHelper.logEvent(MyLevel.RUNTIME, "Successfully connected to emulator: " + iDev.serialNumber)
                 return iDev
             }
         }
@@ -495,25 +502,21 @@ class FrameworkEventManager {
             e.printStackTrace()
         }
 
-        val lcrt = LogCatReceiverTask(device!!)
-        lcrt.addLogCatListener { msgList ->
-            for (lcmsg in msgList) {
-                val msg = lcmsg.message
-
-                if (/*msg.contains("Shutting down VM") ||*/msg.contains("VFY:"))
-                    LoggerHelper.logEvent(MyLevel.VMCRASH, String.format("############### VM CRASHED ###############\n%s", lcmsg.toString()))
+        val logCatReceiverTask = LogCatReceiverTask(device!!)
+        logCatReceiverTask.addLogCatListener { msgList ->
+            msgList.forEach { msg ->
+                if (msg.message.contains("VFY:"))
+                    LogHelper.logEvent(MyLevel.VMCRASH,
+                            String.format("############### VM CRASHED ###############\n%s",msg.toString()))
             }
         }
 
-        val logcatViewerThread = Thread(lcrt)
-        logcatViewerThread.start()
-
+        Thread(logCatReceiverTask).start()
     }
 
     companion object {
         private val ADB_CONNECT_TIMEOUT_MS: Long = 5000
         private val ADB_CONNECT_TIME_STEP_MS = ADB_CONNECT_TIMEOUT_MS / 10
-
 
         private var frameworkEventManager: FrameworkEventManager? = null
 

@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom
 import com.android.ddmlib.EmulatorConsole
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 
@@ -17,7 +17,7 @@ class IncomingCallEvent : FrameworkEvent() {
             senderNumber += ThreadLocalRandom.current().nextInt(0, 9 + 1)
 
         val emulatorConsole = EmulatorConsole.getConsole(device)
-        LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), String.format("incomingCall(%s)", senderNumber)))
+        LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), String.format("incomingCall(%s)", senderNumber)))
         //call a random number
         emulatorConsole?.call(senderNumber)
         //let it ring for 3 seconds

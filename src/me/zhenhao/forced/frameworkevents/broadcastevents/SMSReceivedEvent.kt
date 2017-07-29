@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom
 import com.android.ddmlib.EmulatorConsole
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 
@@ -21,12 +21,12 @@ class SMSReceivedEvent : FrameworkEvent() {
 
         val emulatorConsole = EmulatorConsole.getConsole(device)
         if (emulatorConsole == null) {
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), "ERROR: Could not send SMS"))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), "ERROR: Could not send SMS"))
             return null
         }
 
         emulatorConsole.sendSms(senderNumber, message)
-        LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), String.format("SMS received: Nr: %s | Msg: %s", senderNumber, message)))
+        LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), String.format("SMS received: Nr: %s | Msg: %s", senderNumber, message)))
         return null
     }
 

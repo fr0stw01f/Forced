@@ -8,8 +8,8 @@ import java.util.*
 import java.util.logging.*
 import java.util.logging.Formatter
 
-object LoggerHelper {
-    private val log = Logger.getLogger(LoggerHelper::class.java.name)
+object LogHelper {
+    private val log = Logger.getLogger(LogHelper::class.java.name)
     private var fh: FileHandler? = null
 
     fun logInfo(message: String) {
@@ -19,7 +19,7 @@ object LoggerHelper {
     }
 
     fun logWarning(message: String) {
-        //        log.log(Level.WARNING, message);
+        // log.log(Level.WARNING, message)
         System.err.println(message)
         if (fh != null)
             fh!!.flush()
@@ -33,16 +33,16 @@ object LoggerHelper {
 
     fun initialize() {
         log.useParentHandlers = false
-        val conHdlr = ConsoleHandler()
-        conHdlr.formatter = object : Formatter() {
+        val consoleHandler = ConsoleHandler()
+        consoleHandler.formatter = object : Formatter() {
             override fun format(record: LogRecord): String {
                 val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date(record.millis))
                 return "[" + timestamp + " - " + record.level + "] " + record.message + "\n"
             }
         }
-        log.addHandler(conHdlr)
+        log.addHandler(consoleHandler)
 
-        //analysis results:
+        // analysis results:
         try {
             val resultsDir = File(FrameworkOptions.resultsDir)
             if (!resultsDir.exists())

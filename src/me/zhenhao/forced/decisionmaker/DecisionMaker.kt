@@ -8,7 +8,7 @@ import me.zhenhao.forced.apkspecific.CodeModel.StaticCodeIndexer
 import me.zhenhao.forced.apkspecific.UtilApk
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
 import me.zhenhao.forced.bootstrap.DexFileManager
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.filefuzzer.FileFuzzer
@@ -83,9 +83,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
     private fun startAllPreAnalysis() {
         for (analysis in config.allAnalyses) {
-            LoggerHelper.logEvent(MyLevel.PRE_ANALYSIS_START, analysis.getAnalysisName())
+            LogHelper.logEvent(MyLevel.PRE_ANALYSIS_START, analysis.getAnalysisName())
             analysis.doPreAnalysis(config.allTargetLocations, traceManager)
-            LoggerHelper.logEvent(MyLevel.PRE_ANALYSIS_STOP, analysis.getAnalysisName())
+            LogHelper.logEvent(MyLevel.PRE_ANALYSIS_STOP, analysis.getAnalysisName())
         }
     }
 
@@ -96,7 +96,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             val response = currentManager.getNewestClientHistory()?.getResponseForRequest(request)
             if (response != null && response.serverResponse.doesResponseExist()) {
                 response.isDecisionUsed = true
-                LoggerHelper.logEvent(MyLevel.ANALYSIS_NAME, response.analysisName)
+                LogHelper.logEvent(MyLevel.ANALYSIS_NAME, response.analysisName)
                 return response.serverResponse
             }
         }
@@ -183,7 +183,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             }
         }
         if (removedCount > 0)
-            LoggerHelper.logInfo("Removed " + removedCount + " shadow histories, because they "
+            LogHelper.logInfo("Removed " + removedCount + " shadow histories, because they "
                     + "were prefixes of the decision we are trying now.")
 
         val serverResponse = finalDecision.serverResponse
@@ -337,9 +337,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                         || currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
 
                     if (result.restartCount < FrameworkOptions.maxRestarts || FrameworkOptions.maxRestarts == -1) {
-                        LoggerHelper.logEvent(MyLevel.RESTART,
+                        LogHelper.logEvent(MyLevel.RESTART,
                                 String.format("Restarted app due to timeout: %d", result.restartCount + 1))
-                        LoggerHelper.logEvent(MyLevel.RESTART,
+                        LogHelper.logEvent(MyLevel.RESTART,
                                 String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
 
                         eventManager.killAppProcess(manifest!!.packageName)
@@ -377,7 +377,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                         if (event != null)
                             eventManager.sendEvent(event)
                     } else {
-                        LoggerHelper.logEvent(MyLevel.RUNTIME, "Maximum number of restarts reached -- giving up.")
+                        LogHelper.logEvent(MyLevel.RUNTIME, "Maximum number of restarts reached -- giving up.")
                         trying = false
                     }
                 }
@@ -470,7 +470,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     if (manager.historyPlusShadowCount >= 2) {
                         forceGenetic = true
                         geneticOnlyMode = true
-                        LoggerHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
+                        LogHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
                     } else {
                         System.err.println("It's all empty now, but we don't have enough histories to combine. " +
                                 "Looks like we're seriously out of luck.")
@@ -485,14 +485,14 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     if (DeterministicRandom.theRandom.nextInt(GENETIC_RANDOM_OFFSET) <
                             GENETIC_GENE_POOL_EXTENSION_PROBABILITY * GENETIC_RANDOM_OFFSET) {
                         forceGenetic = true
-                        LoggerHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
+                        LogHelper.logEvent(MyLevel.GENTETIC_ONLY_MODE, "genetic only mode on")
                     }
                 }
             }
 
             // When we do genetic recombination, we pre-create a history object
             if (forceGenetic && FrameworkOptions.traceConstructionMode !== TraceConstructionMode.AnalysesOnly) {
-                LoggerHelper.logInfo("Using genetic recombination for generating a trace...")
+                LogHelper.logInfo("Using genetic recombination for generating a trace...")
 
                 // We also need to take the shadow histories into account. We take histories
                 // from all threads in case we are not on the main thread
@@ -506,7 +506,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 // Do the genetic combination
                 val combinedHistory = GeneticCombination.combineGenetically(histories)
                 if (combinedHistory == null) {
-                    LoggerHelper.logWarning("Genetic recombination failed.")
+                    LogHelper.logWarning("Genetic recombination failed.")
                     return null
                 }
                 combinedHistory.isShadowTrace = false
@@ -522,7 +522,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     System.err.println("In genetic only mode, but didn't recombine anything. Life ain't good, man :(")
 
                 // Create the new trace
-                LoggerHelper.logInfo("Creating a new empty trace...")
+                LogHelper.logInfo("Creating a new empty trace...")
                 this.dynamicCallgraph = DynamicCallgraphBuilder(manager.getNewestClientHistory()?.callgraph!!,
                         codePositionManager, codeIndexer)
             }// If we actually created a new trace, we must re-initialize the
@@ -590,9 +590,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     currentTime - startingTime > FrameworkOptions.forceTimeout * 1000) {
 
                 if (result.restartCount < FrameworkOptions.maxRestarts || FrameworkOptions.maxRestarts == -1) {
-                    LoggerHelper.logEvent(MyLevel.RESTART,
+                    LogHelper.logEvent(MyLevel.RESTART,
                             String.format("Restarted app due to timeout: %d", result.restartCount + 1))
-                    LoggerHelper.logEvent(MyLevel.RESTART,
+                    LogHelper.logEvent(MyLevel.RESTART,
                             String.format("timeDiff: %d\ncurr - starting: %d", timeDiff, currentTime - startingTime))
 
                     eventManager.killAppProcess(manifest!!.packageName)
@@ -626,7 +626,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                     if (event != null)
                         eventManager.sendEvent(event)
                 } else {
-                    LoggerHelper.logEvent(MyLevel.RUNTIME, "Maximum number of restarts reached -- giving up.")
+                    LogHelper.logEvent(MyLevel.RUNTIME, "Maximum number of restarts reached -- giving up.")
                     trying = false
                 }
             }

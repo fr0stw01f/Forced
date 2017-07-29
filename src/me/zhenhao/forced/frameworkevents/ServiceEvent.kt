@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
 
@@ -15,7 +15,7 @@ class ServiceEvent(private val packageName: String?, private val servicePath: St
         val shellCmd = String.format("am startservice %s/%s", packageName, servicePath)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
         } catch (e: Exception) {
             e.printStackTrace()
         }

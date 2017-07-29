@@ -12,7 +12,7 @@ import soot.Scene
 import soot.Unit
 import soot.jimple.infoflow.solver.cfg.InfoflowCFG
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import me.zhenhao.forced.shared.SharedClassesSettings
@@ -22,13 +22,14 @@ object UtilMain {
 
     private val BLACKLISTED_APKS = "." + File.separator + "files" + File.separator + "blacklistedAPKs.txt"
 
-    fun convertUnitsToIndependentCodePositions(units: Set<Unit>, cfg: InfoflowCFG): Set<InstanceIndependentCodePosition> {
+    fun convertUnitsToIndependentCodePositions(units: Set<Unit>,
+                                               cfg: InfoflowCFG): Set<InstanceIndependentCodePosition> {
         val positions = HashSet<InstanceIndependentCodePosition>()
 
         for (unit in units) {
-            //now we have access to the CFG, check if target is reachable:
+            // Check if target is reachable
             if (!cfg.isReachable(unit) || cfg.getMethodOf(unit) == null) {
-                LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+                LogHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
                 continue
             }
 
@@ -93,7 +94,7 @@ object UtilMain {
                     }
                 }
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                 ex.printStackTrace()
                 System.exit(-1)
             }

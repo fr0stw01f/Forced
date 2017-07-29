@@ -1,7 +1,7 @@
 package me.zhenhao.forced.decisionmaker.analysis.integritycheck
 
 import me.zhenhao.forced.FrameworkOptions
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
@@ -105,7 +105,7 @@ class AntiIntegrityCheckFuzzyAnalysis : FuzzyAnalysis() {
                 val sso = SignatureSerializableObject(cert.encoded)
                 certificates.add(sso)
             } catch (ex: Exception) {
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, ex.message)
                 ex.printStackTrace()
                 System.exit(0)
             }

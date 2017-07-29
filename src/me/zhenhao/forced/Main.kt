@@ -9,12 +9,12 @@ import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
 import me.zhenhao.forced.bootstrap.DexFileManager
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.DecisionMaker
 import me.zhenhao.forced.decisionmaker.DecisionMakerConfig
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
-import me.zhenhao.forced.decisionmaker.UtilDecisionMaker
+import me.zhenhao.forced.decisionmaker.DecisionMakerUtil
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import org.apache.commons.io.FileUtils
@@ -38,11 +38,10 @@ import java.util.logging.Level
 class Main private constructor() {
 
     private fun run(args: Array<String>): Set<EnvironmentResult>? {
-        val frameworkOptions = FrameworkOptions()
-        frameworkOptions.parse(args)
-        LoggerHelper.initialize()
-        LoggerHelper.logEvent(MyLevel.APKPATH, FrameworkOptions.apkPath)
-        LoggerHelper.logEvent(MyLevel.ANALYSIS,
+        FrameworkOptions.parse(args)
+        LogHelper.initialize()
+        LogHelper.logEvent(MyLevel.APKPATH, FrameworkOptions.apkPath)
+        LogHelper.logEvent(MyLevel.ANALYSIS,
                 String.format("Force timeout: %d || Inactivity timeout: %d || Max restarts: %d",
                         FrameworkOptions.forceTimeout, FrameworkOptions.inactivityTimeout, FrameworkOptions.maxRestarts))
 
@@ -69,7 +68,7 @@ class Main private constructor() {
         var currentTask: AnalysisTask? = analysisTaskManager.scheduleNextTask()
         var taskId = 0
         while (currentTask != null) {
-            LoggerHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
+            LogHelper.logInfo(String.format("Starting analysis for task %d with %d dex files",
                     taskId++, currentTask.dexFilesToMerge.size))
             try {
                 //needed for the extractAllTargetLocations method
@@ -86,9 +85,9 @@ class Main private constructor() {
             config.initializeCFG()
 
             //extract all target locations
-            val allTargetLocations = UtilDecisionMaker.extractAllTargetLocations()
+            val allTargetLocations = DecisionMakerUtil.extractAllTargetLocations()
             if (allTargetLocations.isEmpty()) {
-                LoggerHelper.logEvent(MyLevel.NO_TARGETS, "There are no reachable target locations")
+                LogHelper.logEvent(MyLevel.NO_TARGETS, "There are no reachable target locations")
                 UtilMain.writeToFile("noLoggingPoint.txt", FrameworkOptions.apkPath + "\n")
             }
 
@@ -107,7 +106,7 @@ class Main private constructor() {
                 //we need to do this step, because we reset soot
                 val singleTarget = UtilMain.convertIndependentCodePositionToUnit(singleTargetAsPos)
                 if (singleTarget == null) {
-                    LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
+                    LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "############ PLEASE DOUBLE CHECK TARGET LOCATION ")
                     continue
                 }
 
@@ -122,7 +121,7 @@ class Main private constructor() {
 
                 //now we have access to the CFG, check if target is reachable:
                 if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
-                    LoggerHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+                    LogHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
                     continue
                 }
 
@@ -139,7 +138,7 @@ class Main private constructor() {
                     } else
                         events = getFrameworkEvents(singleTarget, config.backwardsCFG) as MutableSet
                     if (events.isEmpty()) {
-                        LoggerHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
+                        LogHelper.logEvent(MyLevel.ADB_EVENT, "no events available")
                         events.add(null)
                     }
 
@@ -167,22 +166,22 @@ class Main private constructor() {
                             //let's log the code position
                             val codePos = codePositionManager.getCodePositionForUnit(singleTarget)
                             val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, singleTarget.toString())
-                            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
+                            LogHelper.logEvent(MyLevel.LOGGING_POINT, info)
 
                             if (events.isEmpty())
-                                LoggerHelper.logEvent(Level.INFO, String.format("%s: 0/0 events sent", codePos.id))
+                                LogHelper.logEvent(Level.INFO, String.format("%s: 0/0 events sent", codePos.id))
                             else
-                                LoggerHelper.logEvent(Level.INFO, String.format("%s: %s/%s events (%s) ready for process", codePos.id, currentEvent, totalEvents, event))
+                                LogHelper.logEvent(Level.INFO, String.format("%s: %s/%s events (%s) ready for process", codePos.id, currentEvent, totalEvents, event))
 
-                            LoggerHelper.logEvent(MyLevel.EXECUTION_START, "")
+                            LogHelper.logEvent(MyLevel.EXECUTION_START, "")
                             repeatedlyExecuteAnalysis(decisionMaker, resultsPerApp, event)
-                            LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "")
+                            LogHelper.logEvent(MyLevel.EXECUTION_STOP, "")
 
                             // If we have reached the goal, there is no need to try the other events
                             if (resultsPerApp.any { it.isTargetReached })
                                 break
                         } catch (ex: Exception) {
-                            LoggerHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
+                            LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME, ex.message)
                             ex.printStackTrace()
                         }
 
@@ -203,7 +202,7 @@ class Main private constructor() {
             // Get the method in which to remove the statement
             val sm = Scene.v().grabMethod(codePos.methodSignature)
             if (sm == null) {
-                LoggerHelper.logWarning("Method " + codePos.methodSignature + " not found")
+                LogHelper.logWarning("Method " + codePos.methodSignature + " not found")
                 continue
             }
 
@@ -227,14 +226,14 @@ class Main private constructor() {
 
 
     private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
-        LoggerHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
+        LogHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for fuzzing...")
 
         UtilApk.removeOldAPKs()
 
         val instrumenter = Instrumenter(codePositionManager, config)
-        LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_START, "")
+        LogHelper.logEvent(MyLevel.INSTRUMENTATION_START, "")
         instrumenter.doInstrumentation()
-        LoggerHelper.logEvent(MyLevel.INSTRUMENTATION_STOP, "")
+        LogHelper.logEvent(MyLevel.INSTRUMENTATION_STOP, "")
 
         if (FrameworkOptions.deployApp) {
             UtilApk.jarsigner()
@@ -247,15 +246,15 @@ class Main private constructor() {
         decisionMaker.initialize()
 
         for (seed in 0..FrameworkOptions.numSeeds - 1) {
-            LoggerHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
+            LogHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
             DeterministicRandom.reinitialize(seed)
             val curResult = decisionMaker.executeDecisionMaker(event)
 
             results.add(curResult)
             if (curResult.isTargetReached)
-                LoggerHelper.logEvent(MyLevel.RUNTIME, "target reached")
+                LogHelper.logEvent(MyLevel.RUNTIME, "target reached")
             else
-                LoggerHelper.logEvent(MyLevel.RUNTIME, "NO target was reached")
+                LogHelper.logEvent(MyLevel.RUNTIME, "NO target was reached")
         }
 
         // print branch tracking info of all traces
@@ -334,11 +333,11 @@ class Main private constructor() {
 
 
     private fun printTargetLocationInfo(config: DecisionMakerConfig, codePositionManager: CodePositionManager) {
-        LoggerHelper.logEvent(MyLevel.ANALYSIS, "Found " + config.allTargetLocations.size + " target location(s)")
+        LogHelper.logEvent(MyLevel.ANALYSIS, "Found " + config.allTargetLocations.size + " target location(s)")
         for (unit in config.allTargetLocations) {
             val codePos = codePositionManager.getCodePositionForUnit(unit)
             val info = String.format("Enclosing Method: %s | %d | %s", codePos.enclosingMethod, codePos.id, unit.toString())
-            LoggerHelper.logEvent(MyLevel.LOGGING_POINT, info)
+            LogHelper.logEvent(MyLevel.LOGGING_POINT, info)
         }
     }
 
@@ -384,7 +383,7 @@ class Main private constructor() {
         @JvmStatic fun main(args: Array<String>) {
             Timer().schedule(object : TimerTask() {
                 override fun run() {
-                    LoggerHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
+                    LogHelper.logEvent(MyLevel.TIMEOUT, "-1 | Complete analysis stopped due to timeout of 40 minutes")
                     System.exit(0)
                 }
             }, (40 * 60000).toLong())
@@ -398,11 +397,11 @@ class Main private constructor() {
                 val sw = StringWriter()
                 val pw = PrintWriter(sw)
                 ex.printStackTrace(pw)
-                LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, sw.toString())
+                LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, sw.toString())
                 UtilMain.writeToFile("mainException.txt", FrameworkOptions.apkPath + "\n")
             }
 
-            LoggerHelper.logEvent(MyLevel.EXECUTION_STOP, "Analysis successfully terminated")
+            LogHelper.logEvent(MyLevel.EXECUTION_STOP, "Analysis successfully terminated")
             //this is necessary otherwise we will wait for a max of 20 minutes for the TimerTask
             System.exit(0)
         }

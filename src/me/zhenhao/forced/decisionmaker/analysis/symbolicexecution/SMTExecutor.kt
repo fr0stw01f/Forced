@@ -1,6 +1,6 @@
 package me.zhenhao.forced.decisionmaker.analysis.symbolicexecution
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.symbolicexecution.datastructure.SMTProgram
 import java.io.*
@@ -56,7 +56,7 @@ class SMTExecutor(private val smtPrograms: Set<SMTProgram>, private val Z3script
                 line = stdInput.readLine()
             }
         } catch (e: IOException) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
             e.printStackTrace()
             System.exit(-1)
         } finally {
@@ -91,7 +91,7 @@ class SMTExecutor(private val smtPrograms: Set<SMTProgram>, private val Z3script
                 line = stdInput.readLine()
             }
         } catch (e: IOException) {
-            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
+            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, e.message)
             e.printStackTrace()
             System.exit(-1)
         } finally {

@@ -47,7 +47,7 @@ import soot.jimple.infoflow.data.AccessPath
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import soot.jimple.infoflow.source.data.SourceSinkDefinition
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicValueInformation
 import me.zhenhao.forced.decisionmaker.analysis.smartconstantdataextractor.NotYetSupportedException
 import me.zhenhao.forced.decisionmaker.analysis.symbolicexecution.datastructure.SMTAssertStatement
@@ -502,7 +502,7 @@ class JimpleStmtVisitorImpl(sources: Set<SourceSinkDefinition>,
                 //there is nothing to track
                 return
             } else {
-                LoggerHelper.logWarning("Arrays are not supported yet")
+                LogHelper.logWarning("Arrays are not supported yet")
             }
         } else if (leftOp is ArrayRef) {
             throw RuntimeException("SMTConverter: ArrayRef not implemented yet")

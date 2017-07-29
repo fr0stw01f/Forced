@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.GenericReceiver
@@ -20,7 +20,7 @@ class OutgoingCallEvent : FrameworkEvent() {
         val shellCmd = String.format("am broadcast -a android.intent.action.NEW_OUTGOING_CALL --es PHONE_NUMBER %s", numberToCall)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
         } catch (e: Exception) {
             e.printStackTrace()
         }

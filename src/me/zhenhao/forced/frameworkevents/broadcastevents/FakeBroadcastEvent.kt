@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 import com.android.ddmlib.IDevice
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.GenericReceiver
@@ -17,9 +17,9 @@ class FakeBroadcastEvent(private val receiverClassName: String?, val actionName:
         val shellCmd = prepareStartService()
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
         } catch (e: Exception) {
-            //            LoggerHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "not able to send a broadcast: " + e.getMessage());
+            //            LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS, "not able to send a broadcast: " + e.getMessage());
             e.printStackTrace()
         }
 

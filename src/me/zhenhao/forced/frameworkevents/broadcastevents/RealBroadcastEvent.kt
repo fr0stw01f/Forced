@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.commandlinelogger.LoggerHelper
+import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.GenericReceiver
@@ -16,7 +16,7 @@ class RealBroadcastEvent(private val extras: Map<String, Any>?, private val acti
         val shellCmd = String.format("am broadcast %s -a %s %s", prepareExtras(extras), action, prepareMimeType(mimeType))
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
-            LoggerHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
+            LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), shellCmd))
         } catch (e: Exception) {
             e.printStackTrace()
         }
