@@ -24,6 +24,7 @@ import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 import me.zhenhao.forced.shared.networkconnection.ServerResponse
+import soot.jimple.IfStmt
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import java.io.*
 import java.text.SimpleDateFormat
@@ -642,11 +643,24 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         val threadTraceManager = getManagerForThreadId(threadId)
         if (threadTraceManager != null)
             for (clientHistory in threadTraceManager.clientHistories) {
+                val conditionTrace = clientHistory.conditionTrace
                 val pathTrace = clientHistory.pathTrace
                 val codePosMgr = codePositionManager
+
+                println("======================= Condition Trace =======================")
+                for (unit in conditionTrace) {
+                    val codePos = codePosMgr.getCodePositionForUnit(unit)
+
+                    println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$unit")
+                }
+
+                println("=======================    Path Trace   =======================")
                 for ((unit, decision) in pathTrace) {
                     val codePos = codePosMgr.getCodePositionForUnit(unit)
-                    println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision \t$unit}")
+                    if (unit is IfStmt)
+                        println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit")
+                    else
+                        println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit")
                 }
             }
     }

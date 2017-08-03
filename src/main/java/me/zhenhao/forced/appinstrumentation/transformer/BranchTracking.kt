@@ -31,21 +31,24 @@ class BranchTracking : AbstractInstrumentationTransformer() {
 
     }
 
-    private fun instrumentEachBranchAccess(body: Body, unit: Unit) {
+    private fun instrumentEachBranchAccess(body: Body, ifStmt: IfStmt) {
         val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION)
 
-        // Create the method invocation
-        val reportMethod = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
-        //val reportMethod = sootClass.getMethod("reportConditionOutcome", listOf<Type>(BooleanType.v()))
-        val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(1)) //then -> true
-        val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportMethod.makeRef(), IntConstant.v(0)) //else -> false
-        val sieThenStmt = Jimple.v().newInvokeStmt(sieThenExpr)
-        sieThenStmt.addTag(InstrumentedCodeTag)
-        val sieElseStmt = Jimple.v().newInvokeStmt(sieElseExpr)
-        sieElseStmt.addTag(InstrumentedCodeTag)
+        val reportCondition = sootClass.getMethod("reportConditionSynchronous", emptyList())
+        val sieIfLogExpr = Jimple.v().newStaticInvokeExpr(reportCondition.makeRef())
+        val sieIfLogStmt = Jimple.v().newInvokeStmt(sieIfLogExpr)
+        sieIfLogStmt.addTag(InstrumentedCodeTag)
+
+        body.units.insertBefore(sieIfLogStmt, ifStmt)
+
+
+        val reportConditionOutcome = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
 
         //treatment of target statement ("true"-branch)
-        val ifStmt = unit as IfStmt
+        val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(), IntConstant.v(1)) //then -> true
+        val sieThenStmt = Jimple.v().newInvokeStmt(sieThenExpr)
+        sieThenStmt.addTag(InstrumentedCodeTag)
+
         val targetStmt = ifStmt.target
         if (!branchTargetStmt.contains(targetStmt.toString())) {
             branchTargetStmt.add(sieThenStmt.toString())
@@ -57,8 +60,13 @@ class BranchTracking : AbstractInstrumentationTransformer() {
             body.units.insertBeforeNoRedirect(gotoNop, sieThenStmt)
         }
 
+
         //treatment of "else"-branch
-        body.units.insertAfter(sieElseStmt, unit)
+        val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(), IntConstant.v(0)) //else -> false
+        val sieElseStmt = Jimple.v().newInvokeStmt(sieElseExpr)
+        sieElseStmt.addTag(InstrumentedCodeTag)
+
+        body.units.insertAfter(sieElseStmt, ifStmt)
     }
 
 }

@@ -162,6 +162,24 @@ public class BytecodeLogger {
 
         TraceItem traceItem = new PathTrackingTraceItem(lastStmt, decision);
         sendTraceItemSynchronous(context, traceItem);
+        dumpTracingDataSynchronous();
+    }
+
+    @SuppressWarnings("unused")
+    public static void reportConditionSynchronous() {
+        reportConditionSynchronous(getAppContext());
+    }
+
+
+    private static void reportConditionSynchronous(Context context) {
+        // Create the trace item to be enqueued
+        int lastStmt = getLastExecutedStatement();
+
+        Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt));
+
+        TraceItem traceItem = new ConditionTraceItem(lastStmt+1);
+        sendTraceItemSynchronous(context, traceItem);
+        dumpTracingDataSynchronous();
     }
 
 
@@ -232,8 +250,7 @@ public class BytecodeLogger {
             Log.i(SharedClassesSettings.TAG, "Done.");
         }
         catch (RuntimeException ex) {
-            Log.e(SharedClassesSettings.TAG, "Binder communication failed: "
-                    + ex.getMessage());
+            Log.e(SharedClassesSettings.TAG, "Binder communication failed: " + ex.getMessage());
         }
     }
 

@@ -30,14 +30,7 @@ import me.zhenhao.forced.shared.networkconnection.CloseConnectionRequest
 import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 import me.zhenhao.forced.shared.networkconnection.ServerResponse
 import me.zhenhao.forced.shared.networkconnection.serializables.BinarySerializableObject
-import me.zhenhao.forced.shared.tracing.DexFileTransferTraceItem
-import me.zhenhao.forced.shared.tracing.DynamicIntValueTraceItem
-import me.zhenhao.forced.shared.tracing.DynamicStringValueTraceItem
-import me.zhenhao.forced.shared.tracing.DynamicValueTraceItem
-import me.zhenhao.forced.shared.tracing.PathTrackingTraceItem
-import me.zhenhao.forced.shared.tracing.TargetReachedTraceItem
-import me.zhenhao.forced.shared.tracing.TimingBombTraceItem
-import me.zhenhao.forced.shared.tracing.TraceItem
+import me.zhenhao.forced.shared.tracing.*
 import me.zhenhao.forced.shared.util.NetworkSettings
 
 
@@ -118,6 +111,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         private fun handleClientRequests(clientRequest: Any, oos: ObjectOutputStream) {
             when (clientRequest) {
                 is DecisionRequest -> handleDecisionRequest(clientRequest, oos)
+                is ConditionTraceItem -> handleConditionTracking(clientRequest, oos)
                 is PathTrackingTraceItem -> handlePathTracking(clientRequest, oos)
                 is AbstractDynamicCFGItem -> handleDynamicCallgraph(clientRequest, oos)
                 is TargetReachedTraceItem -> handleGoalReached(clientRequest, oos)
@@ -212,6 +206,20 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
         // send the response to the client
         oos.writeObject(response)
+        oos.flush()
+    }
+
+    private fun handleConditionTracking(traceItem: ConditionTraceItem, oos: ObjectOutputStream) {
+        //println("Received a PathTrackingTraceItem")
+        val codePositionUnit = decisionMaker.codePositionManager
+                .getUnitForCodePosition(traceItem.lastExecutedStatement)
+        val mgr = decisionMaker.initializeHistory()
+        if (mgr != null) {
+            val currentClientHistory = mgr.getNewestClientHistory()
+            if (codePositionUnit != null)
+                currentClientHistory?.addConditionTrace(codePositionUnit)
+        }
+        oos.writeObject("PathTracking Ack")
         oos.flush()
     }
 
