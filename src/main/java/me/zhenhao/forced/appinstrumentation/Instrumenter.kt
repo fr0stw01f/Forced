@@ -120,18 +120,18 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         executeTransformers(manifest)
         //todo PAPER-EVAL ONLY
         if(!FrameworkOptions.evaluationOnly)
-            initializeBytecodeLogger(manifest)
+            instrumentApplicationClass(manifest)
 
         PackManager.v().writeOutput()
 
         try {
             //todo PAPER-EVAL ONLY
             if (!FrameworkOptions.evaluationOnly) {
-                //hooking & path-tracking
-                //postProcessForHookingFunctionality(UtilInstrumenter.SOOT_OUTPUT_APK);
                 manipulateManifest(UtilInstrumenter.SOOT_OUTPUT_APK)
                 //codePositionTracking
-                postProcessForPositionTracking()
+                logCodePosition("CodePositions.log")
+                instrumentForBranchSwitching()
+                logCodePosition("CodePositions2.log")
             }
 
             LogHelper.logInfo("Finished instrumentation...")
@@ -159,18 +159,18 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         val dynamicValues = DynamicValueTransformer(true)
         val classLoaders = ClassLoaderTransformer()
 
-        for (sc in Scene.v().applicationClasses)
-            for (sm in sc.methods)
-                if (sm.isConcrete) {
-                    val body = sm.activeBody
-                    //todo PAPER-EVAL ONLY
+        Scene.v().applicationClasses
+                .flatMap { it.methods }
+                .filter { it.isConcrete }
+                .map { it.activeBody }
+                .forEach {
                     if (!FrameworkOptions.evaluationOnly) {
-                        conditionTracking.transform(body)
+                        conditionTracking.transform(it)
                         //dynamicCallGraphTracking.transform(body)
                     }
-                    codePositionTracking.transform(body)
+                    codePositionTracking.transform(it)
                     //if (FrameworkOptions.recordPathExecution)
-                        //pathExecutionTransformer.transform(body)
+                    //    pathExecutionTransformer.transform(body)
                     //goalReachedTracking.transform(body)
                     //todo PAPER-EVAL ONLY
                     if (!FrameworkOptions.evaluationOnly) {
@@ -178,7 +178,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                         //dummyMethods.transform(body)
                         //dynamicValues.transform(body)
                     }
-                    classLoaders.transform(body)
+                    classLoaders.transform(it)
 
 //                  body.validate()
                 }
@@ -188,7 +188,21 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         GlobalInstanceTransformer().transform()
     }
 
-    private fun initializeBytecodeLogger(manifest: ProcessManifest) {
+    private fun instrumentForBranchSwitching() {
+        val branchSwitching = BranchSwitching(codePositionManager)
+        Scene.v().applicationClasses
+                .flatMap { it.methods }
+                .filter { it.isConcrete }
+                .map { it.activeBody }
+                .forEach {
+                    //todo PAPER-EVAL ONLY
+                    if (!FrameworkOptions.evaluationOnly) {
+                        branchSwitching.transform(it)
+                    }
+                }
+    }
+
+    private fun instrumentApplicationClass(manifest: ProcessManifest) {
         var applicationName: String? = manifest.applicationName
         //case 1
         if (applicationName != null) {
@@ -277,10 +291,10 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         }
     }
 
-    private fun postProcessForPositionTracking() {
+    private fun logCodePosition(fileName: String) {
         val writer = CodePositionWriter(codePositionManager)
         try {
-            writer.writeCodePositions("CodePositions.log")
+            writer.writeCodePositions(fileName)
         } catch (e: FileNotFoundException) {
             System.err.println("Could not write code position file")
             e.printStackTrace()

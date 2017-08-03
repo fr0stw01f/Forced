@@ -128,7 +128,7 @@ android.view.View$OnHoverListener
 android.view.View$OnKeyListener
 android.view.View$OnLayoutChangeListener
 android.view.View$OnLongClickListener
-android.view.View$OnSystemUiVisibilityChangeListener´
+android.view.View$OnSystemUiVisibilityChangeListenerÂ´
 android.view.View$OnTouchListener
 android.view.ViewGroup$OnHierarchyChangeListener
 android.view.ViewStub$OnInflateListener
@@ -178,4 +178,4 @@ android.widget.SlidingDrawer$OnDrawerScrollListener
 android.widget.TabHost$OnTabChangeListener
 android.widget.TextView$OnEditorActionListener
 android.widget.TimePicker$OnTimeChangedListener
-android.widget.ZoomButtonsController$OnZoomListener 
+android.widget.ZoomButtonsController$OnZoomListener

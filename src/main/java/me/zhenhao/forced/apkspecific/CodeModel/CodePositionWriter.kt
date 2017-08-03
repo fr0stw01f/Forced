@@ -12,9 +12,10 @@ class CodePositionWriter(private val codePositionManager: CodePositionManager) {
         var writer: PrintWriter? = null
         try {
             writer = PrintWriter(File(fileName))
-            for (signature in codePositionManager.methodsWithCodePositions) {
-                writer.write("METHOD " + signature + "\n")
-                writer.write("OFFSET " + codePositionManager.getMethodOffset(signature) + "\n")
+
+            for ((unit, codePos) in codePositionManager.unitToCodePosition) {
+                writer.write("[UNIT] " + unit + "\n")
+                writer.write(" [POS]  " + codePos + "\n")
                 writer.write("\n")
             }
         } finally {

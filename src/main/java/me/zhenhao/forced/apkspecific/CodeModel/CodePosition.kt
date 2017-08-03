@@ -16,4 +16,8 @@ class CodePosition(id: Int, enclosingMethod: String, lineNumber: Int,
         this.sourceLineNumber = sourceLineNumber
     }
 
+    override fun toString(): String {
+        return "$id"
+    }
+
 }

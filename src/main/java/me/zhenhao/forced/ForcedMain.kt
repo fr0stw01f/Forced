@@ -137,7 +137,7 @@ class ForcedMain private constructor() {
 
         // Now we have access to the CFG, check if target is reachable:
         if (config.backwardsCFG.getMethodOf(singleTarget) == null) {
-            LogHelper.logEvent(MyLevel.LOGGING_POINT, "target is not statically reachable!")
+            LogHelper.logEvent(MyLevel.LOGGING_POINT, "Target is not statically reachable!")
             return
         }
 
@@ -250,7 +250,7 @@ class ForcedMain private constructor() {
     }
 
     private fun appPreparationPhase(codePositionManager: CodePositionManager, config: DecisionMakerConfig) {
-        LogHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for force execution...")
+        LogHelper.logEvent(MyLevel.ANALYSIS, "Prepare app for forced execution...")
 
         UtilApk.removeOldAPKs()
 
@@ -269,7 +269,7 @@ class ForcedMain private constructor() {
                                           results: MutableSet<EnvironmentResult>, event: FrameworkEvent?) {
         decisionMaker.initialize()
 
-        for (seed in 0..FrameworkOptions.numSeeds -1) {
+        for (seed in 0..FrameworkOptions.numSeeds-1) {
             LogHelper.logEvent(MyLevel.ANALYSIS, "Running analysis with seed " + seed)
             DeterministicRandom.reinitialize(seed)
             val curResult = decisionMaker.executeDecisionMaker(event)

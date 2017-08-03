@@ -8,7 +8,7 @@ import soot.Unit
 class CodePositionManager private constructor() {
 
     private val methodToLastCodePosition = HashMap<String, Int>()
-    private val unitToCodePosition = HashMap<Unit, CodePosition>()
+    val unitToCodePosition = HashMap<Unit, CodePosition>()
     private val codePositionToUnit = HashMap<CodePosition, Unit>()
     private val idToCodePosition = HashMap<Int, CodePosition>()
     private val methodToOffset = HashMap<String, Int>()
@@ -43,8 +43,7 @@ class CodePositionManager private constructor() {
     }
 
     internal fun getMethodOffset(methodSignature: String): Int {
-        return (this.methodToOffset as MutableMap<String, Int>).computeIfAbsent(methodSignature) {
-            lastOffset++ * methodOffsetMultiplier }
+        return this.methodToOffset.computeIfAbsent(methodSignature) { lastOffset++ * methodOffsetMultiplier }
     }
 
     internal val methodsWithCodePositions: Set<String>

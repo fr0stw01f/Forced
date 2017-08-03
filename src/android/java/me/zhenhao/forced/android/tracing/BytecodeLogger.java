@@ -293,7 +293,7 @@ public class BytecodeLogger {
         dumpTracingDataSynchronous(context);
     }
 
-
+    @SuppressWarnings("unused")
     public static void sendDexFileToServer(String dexFileName, byte[] dexFile) {
         sendDexFileToServer(dexFileName, dexFile, getAppContext());
     }
