@@ -133,51 +133,36 @@ public class BytecodeLogger {
         }
     }
 
-    @SuppressWarnings("unused")
-    public static void reportConditionOutcome(boolean decision) {
-        reportConditionOutcome(decision, getAppContext());
-    }
 
     @SuppressWarnings("unused")
-    private static void reportConditionOutcome(boolean decision, Context context) {
-        Intent serviceIntent = new Intent(context, TracingService.class);
-        serviceIntent.setAction(TracingService.ACTION_ENQUEUE_TRACE_ITEM);
-        serviceIntent.putExtra(TracingService.EXTRA_ITEM_TYPE, TracingService.ITEM_TYPE_PATH_TRACKING);
-        serviceIntent.putExtra(TracingService.EXTRA_TRACE_ITEM, (Parcelable)
-                new PathTrackingTraceItem(getLastExecutedStatement(), decision));
-        context.startService(serviceIntent);
+    public static void reportConditionOutcomeSynchronous(int branchId, boolean decision) {
+        reportConditionOutcomeSynchronous(branchId, decision, getAppContext());
     }
 
-    @SuppressWarnings("unused")
-    public static void reportConditionOutcomeSynchronous(boolean decision) {
-        reportConditionOutcomeSynchronous(decision, getAppContext());
-    }
-
-
-    private static void reportConditionOutcomeSynchronous(boolean decision, Context context) {
+    private static void reportConditionOutcomeSynchronous(int branchId, boolean decision, Context context) {
         // Create the trace item to be enqueued
         int lastStmt = getLastExecutedStatement();
 
         Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
 
-        TraceItem traceItem = new PathTrackingTraceItem(lastStmt, decision);
+        TraceItem traceItem = new PathTrackingTraceItem(branchId, lastStmt, decision);
         sendTraceItemSynchronous(context, traceItem);
         dumpTracingDataSynchronous();
     }
 
     @SuppressWarnings("unused")
-    public static void reportConditionSynchronous() {
-        reportConditionSynchronous(getAppContext());
+    public static void reportConditionSynchronous(int branchId) {
+        reportConditionSynchronous(branchId, getAppContext());
     }
 
 
-    private static void reportConditionSynchronous(Context context) {
+    private static void reportConditionSynchronous(int branchId, Context context) {
         // Create the trace item to be enqueued
         int lastStmt = getLastExecutedStatement();
 
         Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt));
 
-        TraceItem traceItem = new ConditionTraceItem(lastStmt+1);
+        TraceItem traceItem = new ConditionTraceItem(branchId, lastStmt + 1);
         sendTraceItemSynchronous(context, traceItem);
         dumpTracingDataSynchronous();
     }
@@ -305,8 +290,7 @@ public class BytecodeLogger {
 
         sendTraceItemSynchronous(context, new TargetReachedTraceItem(getLastExecutedStatement()));
 
-        // This is usually the end of the analysis, so make sure to get our
-        // data out
+        // This is usually the end of the analysis, so make sure to get our data out
         dumpTracingDataSynchronous(context);
     }
 

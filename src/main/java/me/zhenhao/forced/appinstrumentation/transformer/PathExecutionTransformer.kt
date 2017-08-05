@@ -14,13 +14,12 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
     private val branchTargetStmt = HashSet<String>()
 
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(body.method))
+        if (!isInstrumentTarget(body.method))
             return
 
         instrumentInfoAboutNonAPICall(body)
 
-        //important to use snapshotIterator here
+        // important to use snapshotIterator here
         val iterator = body.units.snapshotIterator()
         while (iterator.hasNext()) {
             val unit = iterator.next()
@@ -38,7 +37,7 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
         val methodSignature = body.method.signature
         val generatedJimpleCode = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutNonApiMethodAccess", RefType.v("java.lang.String"), StringConstant.v(methodSignature))
         generatedJimpleCode.addTag(InstrumentedCodeTag)
-        //super-method call has to be the first statement
+        // super-method call has to be the first statement
         if (methodSignature.contains("<init>(") || methodSignature.contains("<clinit>"))
             body.units.insertAfter(generatedJimpleCode, getUnitAfterIdentities(body))
         else
@@ -68,7 +67,7 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
 
 
     private fun instrumentInfoAboutNonApiCaller(body: Body, unit: Unit) {
-        //our instrumented code
+        // our instrumented code
         if (unit.hasTag(InstrumentedCodeTag.name))
             return
 

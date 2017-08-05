@@ -12,8 +12,7 @@ import soot.jimple.Stmt
 class CodePositionTracking(private val codePositionManager: CodePositionManager) : AbstractInstrumentationTransformer() {
 
     override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(b.method))
+        if (!isInstrumentTarget(b.method))
             return
 
         // Make a reference to the tracker method
@@ -25,18 +24,14 @@ class CodePositionTracking(private val codePositionManager: CodePositionManager)
                 true)
         val methodSig = b.method.signature
 
-        // Iterate over all the units and add a unit that sets the current
-        // execution pointer
+        // Iterate over all the units and add a unit that sets the current execution pointer
         var curLineNum = 0
         val unitIt = b.units.snapshotIterator()
         while (unitIt.hasNext()) {
             val curUnit = unitIt.next()
 
-            // If we're still inside the IdentityStmt block, there's nothing to
-            // instrument
-            if (curUnit is IdentityStmt ||
-                    // If this unit was instrumented by another transformer, there's nothing to instrument
-                    curUnit.hasTag(InstrumentedCodeTag.name))
+            // If we're still inside the IdentityStmt block, there's nothing to instrument
+            if (curUnit is IdentityStmt || curUnit.hasTag(InstrumentedCodeTag.name))
                 continue
 
             // Get the current code positions

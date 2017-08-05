@@ -12,7 +12,6 @@ import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
-import me.zhenhao.forced.decisionmaker.analysis.filefuzzer.FileFuzzer
 import me.zhenhao.forced.decisionmaker.server.SocketServer
 import me.zhenhao.forced.decisionmaker.server.ThreadTraceManager
 import me.zhenhao.forced.decisionmaker.server.TraceManager
@@ -24,9 +23,11 @@ import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 import me.zhenhao.forced.shared.networkconnection.ServerResponse
-import soot.jimple.IfStmt
 import soot.jimple.infoflow.android.manifest.ProcessManifest
-import java.io.*
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.io.PrintWriter
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.Map.Entry
@@ -639,7 +640,9 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         eventManager.uninstallAppProcess(manifest!!.packageName)
     }
 
-    fun printBranchTrackingForThreadId(threadId: Long) {
+    fun logBranchTrackingForThreadId(threadId: Long) {
+        val printWriter = PrintWriter("BranchTracking.log")
+
         val threadTraceManager = getManagerForThreadId(threadId)
         if (threadTraceManager != null)
             for (clientHistory in threadTraceManager.clientHistories) {
@@ -647,20 +650,16 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
                 val pathTrace = clientHistory.pathTrace
                 val codePosMgr = codePositionManager
 
-                println("======================= Condition Trace =======================")
-                for (unit in conditionTrace) {
+                printWriter.write("======================= Condition Trace =======================\n")
+                for ((branchId, unit) in conditionTrace) {
                     val codePos = codePosMgr.getCodePositionForUnit(unit)
-
-                    println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$unit")
+                    printWriter.write("$branchId 0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$unit\n")
                 }
 
-                println("=======================    Path Trace   =======================")
-                for ((unit, decision) in pathTrace) {
+                printWriter.write("=======================    Path Trace   =======================\n")
+                for ((branchId, unit, decision) in pathTrace) {
                     val codePos = codePosMgr.getCodePositionForUnit(unit)
-                    if (unit is IfStmt)
-                        println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit")
-                    else
-                        println("0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit")
+                    printWriter.write("$branchId\t 0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit\n")
                 }
             }
     }

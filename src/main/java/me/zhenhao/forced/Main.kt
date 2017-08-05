@@ -282,7 +282,7 @@ class Main private constructor() {
         }
 
         // print branch tracking info of all traces
-        decisionMaker.printBranchTrackingForThreadId(-1)
+        decisionMaker.logBranchTrackingForThreadId(-1)
 
         decisionMaker.tearDown()
     }

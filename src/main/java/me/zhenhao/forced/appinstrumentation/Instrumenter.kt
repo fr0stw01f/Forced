@@ -149,11 +149,11 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 .map { "<$it: void <init>()>" }
                 .toSet()
 
-        val conditionTracking = BranchTracking()
+        val branchTracking = BranchTracking()
         val codePositionTracking = CodePositionTracking(codePositionManager)
         val dynamicCallGraphTracking = DynamicCallGraphTracking(codePositionManager)
         val pathExecutionTransformer = PathExecutionTransformer()
-        val goalReachedTracking = GoalReachedTracking(config.allTargetLocations)
+        val targetReachedTracking = TargetReachedTracking(config.allTargetLocations)
         val timingBombs = TimingBombTransformer()
         val dummyMethods = DummyMethodHookTransformer()
         val dynamicValues = DynamicValueTransformer(true)
@@ -165,23 +165,24 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 .map { it.activeBody }
                 .forEach {
                     if (!FrameworkOptions.evaluationOnly) {
-                        conditionTracking.transform(it)
-                        //dynamicCallGraphTracking.transform(body)
+                        branchTracking.transform(it)
+                        dynamicCallGraphTracking.transform(it)
                     }
                     codePositionTracking.transform(it)
-                    //if (FrameworkOptions.recordPathExecution)
-                    //    pathExecutionTransformer.transform(body)
-                    //goalReachedTracking.transform(body)
+                    if (FrameworkOptions.recordPathExecution)
+                        pathExecutionTransformer.transform(it)
+                    targetReachedTracking.transform(it)
                     //todo PAPER-EVAL ONLY
                     if (!FrameworkOptions.evaluationOnly) {
-                        //timingBombs.transform(body)
-                        //dummyMethods.transform(body)
-                        //dynamicValues.transform(body)
+                        timingBombs.transform(it)
+                        dummyMethods.transform(it)
+                        dynamicValues.transform(it)
                     }
                     classLoaders.transform(it)
-
-//                  body.validate()
+                    it.validate()
                 }
+
+        println("${branchTracking.getBranchId()} branches are instrumented.")
         //todo PAPER-EVAL ONLY
         if (!FrameworkOptions.evaluationOnly)
             CrashReporterInjection(constructors).transform()

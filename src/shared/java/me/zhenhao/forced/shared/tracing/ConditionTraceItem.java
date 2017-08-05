@@ -23,12 +23,19 @@ public class ConditionTraceItem extends TraceItem {
 
     };
 
+    private int branchId;
+
     private ConditionTraceItem() {
         super();
     }
 
-    public ConditionTraceItem(int lastExecutedStatement) {
+    public ConditionTraceItem(int branchId, int lastExecutedStatement) {
         super(lastExecutedStatement);
+        this.branchId = branchId;
+    }
+
+    public int getBranchId() {
+        return branchId;
     }
 
     @Override
@@ -39,11 +46,13 @@ public class ConditionTraceItem extends TraceItem {
     @Override
     public void writeToParcel(Parcel parcel, int arg1) {
         super.writeToParcel(parcel, arg1);
+        parcel.writeInt(branchId);
     }
 
     @Override
     protected void readFromParcel(Parcel parcel) {
         super.readFromParcel(parcel);
+        branchId = parcel.readInt();
     }
 
 }

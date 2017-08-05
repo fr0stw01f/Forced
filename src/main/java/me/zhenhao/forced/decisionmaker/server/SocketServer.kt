@@ -217,7 +217,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
             if (codePositionUnit != null)
-                currentClientHistory?.addConditionTrace(codePositionUnit)
+                currentClientHistory?.addConditionTrace(traceItem.branchId, codePositionUnit)
         }
         oos.writeObject("PathTracking Ack")
         oos.flush()
@@ -233,7 +233,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
             if (codePositionUnit != null)
-                currentClientHistory?.addPathTrace(codePositionUnit, decision)
+                currentClientHistory?.addPathTrace(traceItem.branchId, codePositionUnit, decision)
         }
         oos.writeObject("PathTracking Ack")
         oos.flush()

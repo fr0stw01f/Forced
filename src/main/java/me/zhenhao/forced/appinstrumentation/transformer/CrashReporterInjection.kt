@@ -12,7 +12,6 @@ import soot.jimple.Jimple
 class CrashReporterInjection(private val methodsToInstrument: Set<String>) : SceneTransformer() {
 
     override fun internalTransform(phaseName: String, options: Map<String, String>) {
-        // Make a reference to the registration method
         val ref = Scene.v().makeMethodRef(
                 Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_CRASH_REPORTING),
                 "registerExceptionHandler",
@@ -28,8 +27,7 @@ class CrashReporterInjection(private val methodsToInstrument: Set<String>) : Sce
                 while (unitIt.hasNext()) {
                     val curUnit = unitIt.next()
 
-                    // If we're still inside the IdentityStmt block, there's nothing to
-                    // instrument
+                    // If we're still inside the IdentityStmt block, there's nothing to instrument
                     if (curUnit is IdentityStmt)
                         continue
 

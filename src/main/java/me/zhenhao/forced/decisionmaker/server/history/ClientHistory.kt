@@ -15,9 +15,9 @@ class ClientHistory : Cloneable {
 
     val codePositions = ArrayList<Unit>()
 
-    val conditionTrace = ArrayList<Unit>()
+    val conditionTrace = ArrayList<Pair<Int, Unit>>()
 
-    val pathTrace = ArrayList<Pair<Unit, Boolean>>()
+    val pathTrace = ArrayList<Triple<Int, Unit, Boolean>>()
 
     val decisionAndResponse = ArrayList<Pair<DecisionRequest, AnalysisDecision>>()
 
@@ -59,12 +59,12 @@ class ClientHistory : Cloneable {
             addCodePosition(unit)
     }
 
-    fun addConditionTrace(ifStmt: Unit) {
-        conditionTrace.add(ifStmt)
+    fun addConditionTrace(branchId: Int, ifStmt: Unit) {
+        conditionTrace.add(Pair(branchId, ifStmt))
     }
 
-    fun addPathTrace(ifStmt: Unit, decision: Boolean) {
-        pathTrace.add(Pair(ifStmt, decision))
+    fun addPathTrace(branchId: Int, unit: Unit, decision: Boolean) {
+        pathTrace.add(Triple(branchId, unit, decision))
     }
 
 

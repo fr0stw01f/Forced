@@ -33,6 +33,8 @@ object UtilInstrumenter {
     val SOOT_OUTPUT_APK = SOOT_OUTPUT + File(FrameworkOptions.getApkName()).name + ".apk"
     val SOOT_OUTPUT_DEPLOYED_APK = SOOT_OUTPUT + File(FrameworkOptions.getApkName()).name + "_deployed.apk"
 
+    val parameterArrayType = ArrayType.v(RefType.v("java.lang.Object"), 1)!!
+
 
     fun isApiCall(invokeExpr: InvokeExpr): Boolean {
         return invokeExpr.method.declaringClass.isLibraryClass || invokeExpr.method.declaringClass.isJavaLibraryClass
@@ -214,12 +216,4 @@ object UtilInstrumenter {
         return lg.generateLocal(type)
     }
 
-
-    val parameterArrayType: Type
-        get() {
-            val parameterArrayType = RefType.v("java.lang.Object")
-            val parameterArray = ArrayType.v(parameterArrayType, 1)
-
-            return parameterArray
-        }
 }

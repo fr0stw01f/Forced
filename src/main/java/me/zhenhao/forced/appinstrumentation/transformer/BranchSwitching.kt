@@ -11,9 +11,6 @@ import kotlin.collections.HashSet
 
 class BranchSwitching(val codePositionManager: CodePositionManager) : AbstractInstrumentationTransformer() {
 
-    private val branchTargetStmts = HashSet<String>()
-
-    //val predicates = ArrayList<Pair<Int, Boolean>>()
     val positives = ArrayList<Int>()
     val negatives = ArrayList<Int>()
     val switches  = ArrayList<Int>()
@@ -21,12 +18,10 @@ class BranchSwitching(val codePositionManager: CodePositionManager) : AbstractIn
     val executed  = HashSet<Stmt>()
 
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(body.method))
+        if (!isInstrumentTarget(body.method))
             return
 
-        // var codePos = 0
-
+        // load switches from previous
         loadSwitches()
 
         val iterator = body.units.snapshotIterator()
@@ -38,10 +33,10 @@ class BranchSwitching(val codePositionManager: CodePositionManager) : AbstractIn
                 val codePos = codePositionManager.getCodePositionForUnit(unit)
                 var condition: Value = unit.condition
                 if (positives.contains(codePos.id)) {
-                    condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(0))
+                    condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(0))    // true
                     executed.add(unit.target)
                 } else if (negatives.contains(codePos.id)) {
-                    condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(1))
+                    condition = Jimple.v().newEqExpr(IntConstant.v(0), IntConstant.v(1))    // false
                     executed.add(getUnitAfter(body, unit))
                 } else if (switches.contains(codePos.id)) {
                     when (condition) {
@@ -52,12 +47,9 @@ class BranchSwitching(val codePositionManager: CodePositionManager) : AbstractIn
                         is GeExpr -> { condition = Jimple.v().newLtExpr(condition.op1, condition.op2) }
                         is LeExpr -> { condition = Jimple.v().newGtExpr(condition.op1, condition.op2) }
                     }
-                    executed.add(unit.target)
                 } else {
                     continue
                 }
-
-                //predicates.add(counter++, condition)
                 switchBranch(unit, condition)
             }
         }

@@ -98,8 +98,7 @@ class GlobalInstanceTransformer : SceneTransformer() {
                 val argList = ArrayList<Value>()
                 argList.add(locClass)
                 argList.add(locThis)
-                val stmtRegister = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
-                        smRegistrarRef, argList))
+                val stmtRegister = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(smRegistrarRef, argList))
                 stmtRegister.addTag(InstrumentedCodeTag)
                 b.units.insertBefore(stmtRegister, lastUnit)
             }

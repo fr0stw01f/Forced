@@ -24,20 +24,26 @@ public class PathTrackingTraceItem extends TraceItem {
 
     };
 
+    private int branchId;
     private boolean lastConditionResult;
 
     private PathTrackingTraceItem() {
         super();
     }
 
-    public PathTrackingTraceItem(int lastExecutedStatement, boolean lastConditionResult) {
+    public PathTrackingTraceItem(int branchId, int lastExecutedStatement, boolean lastConditionResult) {
         super(lastExecutedStatement);
+        this.branchId = branchId;
         this.lastConditionResult = lastConditionResult;
     }
 
     @Override
     public String toString() {
-        return "PathTrackingTraceItem(" + getLastExecutedStatement() + "->" + getLastConditionalResult() + ")";
+        return "PathTrackingTraceItem([" + branchId + ", " + getLastExecutedStatement() + "]->" + getLastConditionalResult() + ")";
+    }
+
+    public int getBranchId() {
+        return branchId;
     }
 
     public boolean getLastConditionalResult() {
@@ -47,13 +53,15 @@ public class PathTrackingTraceItem extends TraceItem {
     @Override
     public void writeToParcel(Parcel parcel, int arg1) {
         super.writeToParcel(parcel, arg1);
+        parcel.writeInt(branchId);
         parcel.writeByte((byte) (lastConditionResult ? 0 : 1));
     }
 
     @Override
     protected void readFromParcel(Parcel parcel) {
         super.readFromParcel(parcel);
-        this.lastConditionResult = parcel.readByte() == 1;
+        branchId = parcel.readInt();
+        lastConditionResult = parcel.readByte() == 1;
     }
 
 }

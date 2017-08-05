@@ -9,7 +9,7 @@ import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
 
 class SubpathNCoverage(val targetUnits: Collection<Unit>, val fragmentLength: Int) : IProgressMetric {
 
-    private val coveredPathFragment = HashSet<List<Pair<Unit, Boolean>>>()
+    private val coveredPathFragment = HashSet<List<Triple<Int, Unit, Boolean>>>()
 
     lateinit private var cfg: InfoflowCFG
 
@@ -34,7 +34,7 @@ class SubpathNCoverage(val targetUnits: Collection<Unit>, val fragmentLength: In
         return getNumCovered()
     }
 
-    private fun update(l: List<Pair<Unit, Boolean>>): Boolean {
+    private fun update(l: List<Triple<Int, Unit, Boolean>>): Boolean {
         var retval = false
         if (coveredPathFragment.add(ArrayList(l))) {
             retval = true

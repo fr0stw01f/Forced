@@ -10,14 +10,13 @@ import soot.jimple.*
 
 class TimingBombTransformer : AbstractInstrumentationTransformer() {
 
-    override fun internalTransform(body: Body, phaseName: String,
-                                   options: Map<String, String>) {
-
-        if (!canInstrumentMethod(body.method))
+    override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
+        if (!isInstrumentTarget(body.method))
             return
 
         // Get a reference to the reporter method
-        val reporterRef = Scene.v().getMethod("<me.zhenhao.forced.android.tracing.BytecodeLogger: " + "void reportTimingBomb(long,long)>").makeRef()
+        val reporterRef = Scene.v().getMethod("<me.zhenhao.forced.android.tracing.BytecodeLogger: " +
+                "void reportTimingBomb(long,long)>").makeRef()
 
         val unitIt = body.units.snapshotIterator()
         while (unitIt.hasNext()) {
@@ -48,7 +47,6 @@ class TimingBombTransformer : AbstractInstrumentationTransformer() {
         val addTime = Jimple.v().newAddExpr(longLocal, LongConstant.v(2000L))
         val timeAssign = Jimple.v().newAssignStmt(longLocal, addTime)
 
-
         body.units.insertBefore(timeInitialize, setStmt)
         body.units.insertBefore(timeAssign, setStmt)
 
@@ -57,8 +55,7 @@ class TimingBombTransformer : AbstractInstrumentationTransformer() {
         expr.setArg(1, longLocal)
 
         // Report the change
-        val reportStmt = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
-                reportRef, oldVal, longLocal))
+        val reportStmt = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(reportRef, oldVal, longLocal))
         reportStmt.addTag(InstrumentedCodeTag)
         body.units.insertAfter(reportStmt, setStmt)
     }
@@ -72,8 +69,7 @@ class TimingBombTransformer : AbstractInstrumentationTransformer() {
         expr.setArg(1, newValue)
 
         // Report the change
-        val reportStmt = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
-                reportRef, oldValue, newValue))
+        val reportStmt = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(reportRef, oldValue, newValue))
         reportStmt.addTag(InstrumentedCodeTag)
         body.units.insertAfter(reportStmt, invokeStmt)
     }

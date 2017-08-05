@@ -6,12 +6,10 @@ import soot.Unit
 import soot.jimple.Jimple
 import soot.jimple.Stmt
 
-class GoalReachedTracking(private val targetSignatures: Set<Unit>) : AbstractInstrumentationTransformer() {
+class TargetReachedTracking(private val targetSignatures: Set<Unit>) : AbstractInstrumentationTransformer() {
 
-    override fun internalTransform(b: Body, phaseName: String,
-                                   options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(b.method))
+    override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
+        if (!isInstrumentTarget(b.method))
             return
 
         // Create method references

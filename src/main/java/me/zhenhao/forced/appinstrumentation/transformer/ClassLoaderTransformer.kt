@@ -15,12 +15,11 @@ class ClassLoaderTransformer : AbstractInstrumentationTransformer() {
     private val methodDexFileLoadClass = Scene.v().getMethod(
             "<dalvik.system.DexFile: java.lang.Class loadClass(java.lang.String,java.lang.ClassLoader)>")
     private val methodOwnLoader = Scene.v().getMethod(
-            "<me.zhenhao.forced.android.classloading.InterceptingClassLoader: " + "java.lang.Class loadClass(dalvik.system.DexFile,java.lang.String,java.lang.ClassLoader)>")
+            "<me.zhenhao.forced.android.classloading.InterceptingClassLoader: " +
+                    "java.lang.Class loadClass(dalvik.system.DexFile,java.lang.String,java.lang.ClassLoader)>")
 
-    override fun internalTransform(b: Body, phaseName: String,
-                                   options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(b.method))
+    override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
+        if (!isInstrumentTarget(b.method))
             return
 
         // Check for calls to DexFile.loadClass
@@ -33,11 +32,11 @@ class ClassLoaderTransformer : AbstractInstrumentationTransformer() {
                 continue
 
             if (stmt.containsInvokeExpr()) {
-                val iexpr = stmt.getInvokeExpr()
-                if (iexpr.method === methodDexFileLoadClass) {
+                val iExpr = stmt.getInvokeExpr()
+                if (iExpr.method === methodDexFileLoadClass) {
                     val args = ArrayList<Value>()
-                    args.add((iexpr as InstanceInvokeExpr).base)
-                    args.addAll(iexpr.getArgs())
+                    args.add((iExpr as InstanceInvokeExpr).base)
+                    args.addAll(iExpr.getArgs())
                     val newLoadExpr = Jimple.v().newStaticInvokeExpr(methodOwnLoader.makeRef(), args)
                     b.units.swapWith(stmt, Jimple.v().newAssignStmt(stmt.leftOp, newLoadExpr))
                 }

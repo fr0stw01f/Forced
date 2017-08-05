@@ -8,10 +8,11 @@ import soot.Value
 import soot.jimple.*
 import java.util.*
 
+
 class DummyMethodHookTransformer : AbstractInstrumentationTransformer() {
 
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
-        if (!canInstrumentMethod(body.method))
+        if (!isInstrumentTarget(body.method))
             return
 
         val smLogI = Scene.v().getMethod("<android.util.Log: int i(java.lang.String,java.lang.String)>")
@@ -38,8 +39,7 @@ class DummyMethodHookTransformer : AbstractInstrumentationTransformer() {
                     }
                 } else if (curAssignStmt.containsInvokeExpr()) {
                     val invokeExpr = curAssignStmt.invokeExpr
-                    val sm = invokeExpr.method
-                    val mSig = sm.signature
+                    val mSig = invokeExpr.method.signature
 
                     if (mSig == "<android.content.pm.PackageManager: android.content.pm.PackageInfo getPackageInfo(java.lang.String,int)>") {
                         if (invokeExpr is VirtualInvokeExpr) {

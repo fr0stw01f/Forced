@@ -9,3 +9,4 @@ sootInstrument
 src/main/resources
 src/test
 target
+BranchTracking.log

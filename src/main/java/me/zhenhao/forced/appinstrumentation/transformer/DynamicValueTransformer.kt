@@ -6,49 +6,27 @@ import soot.*
 import soot.javaToJimple.LocalGenerator
 import soot.jimple.*
 import java.io.File
-import java.util.*
 
 
-class DynamicValueTransformer(instrumentOnlyComparisons: Boolean) : AbstractInstrumentationTransformer() {
+class DynamicValueTransformer(val instrumentOnlyComparisons: Boolean) : AbstractInstrumentationTransformer() {
 
-    private var instrumentOnlyComparisons = false
+    val refString = Scene.v().makeMethodRef(
+            Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+            "reportDynamicValue",
+            arrayListOf(RefType.v("java.lang.String"), IntType.v()),
+            VoidType.v(),
+            true)!!
 
-    lateinit private var refString: SootMethodRef
-    lateinit private var refInt: SootMethodRef
+    val refInt = Scene.v().makeMethodRef(
+            Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+            "reportDynamicValue",
+            arrayListOf<Type>(IntType.v(), IntType.v()),
+            VoidType.v(),
+            true)!!
 
-    init {
-        this.instrumentOnlyComparisons = instrumentOnlyComparisons
 
-        // Make references to the tracker methods
-        val stringType = RefType.v("java.lang.String")
-        run {
-            val paramTypeList = ArrayList<Type>()
-            paramTypeList.add(stringType)
-            paramTypeList.add(IntType.v())
-            refString = Scene.v().makeMethodRef(
-                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
-                    "reportDynamicValue",
-                    paramTypeList,
-                    VoidType.v(),
-                    true)
-        }
-        run {
-            val paramTypeList = ArrayList<Type>()
-            paramTypeList.add(IntType.v())
-            paramTypeList.add(IntType.v())
-            refInt = Scene.v().makeMethodRef(
-                    Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
-                    "reportDynamicValue",
-                    paramTypeList,
-                    VoidType.v(),
-                    true)
-        }
-    }
-
-    override fun internalTransform(b: Body, phaseName: String,
-                                   options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(b.method))
+    override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
+        if (!isInstrumentTarget(b.method))
             return
 
         // Iterate over all statements. For each definition statement that
@@ -57,11 +35,8 @@ class DynamicValueTransformer(instrumentOnlyComparisons: Boolean) : AbstractInst
         while (unitIt.hasNext()) {
             val curUnit = unitIt.next()
 
-            // If we're still inside the IdentityStmt block, there's nothing to
-            // instrument
-            if (curUnit is IdentityStmt ||
-                    // If this unit was instrumented by another transformer, there's nothing to instrument
-                    curUnit.hasTag(InstrumentedCodeTag.name))
+            // If we're still inside the IdentityStmt block, there's nothing to instrument
+            if (curUnit is IdentityStmt || curUnit.hasTag(InstrumentedCodeTag.name))
                 continue
 
             if (instrumentOnlyComparisons) {
@@ -73,7 +48,7 @@ class DynamicValueTransformer(instrumentOnlyComparisons: Boolean) : AbstractInst
                 if (comparisonSignatures.contains(invExpr.method.signature)) {
                     if (invExpr is InstanceInvokeExpr)
                         checkAndReport(b, curStmt, invExpr.base, -1)
-                    for (i in 0..invExpr.argCount - 1)
+                    for (i in 0..invExpr.argCount-1)
                         checkAndReport(b, curStmt, invExpr.getArg(i), i)
                 }
 

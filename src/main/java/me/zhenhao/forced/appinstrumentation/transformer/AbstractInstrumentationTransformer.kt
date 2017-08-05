@@ -8,7 +8,7 @@ import soot.SootMethod
 
 abstract class AbstractInstrumentationTransformer : BodyTransformer() {
 
-    protected fun canInstrumentMethod(sm: SootMethod): Boolean {
+    protected fun isInstrumentTarget(sm: SootMethod): Boolean {
         // Check whether this is actually user code
         val sClass = sm.declaringClass
         if (!UtilInstrumenter.isAppDeveloperCode(sClass))

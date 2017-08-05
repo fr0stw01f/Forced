@@ -2,7 +2,6 @@ package me.zhenhao.forced.appinstrumentation.transformer
 
 import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
 import soot.*
-import soot.Unit
 import soot.jimple.IfStmt
 import soot.jimple.IntConstant
 import soot.jimple.Jimple
@@ -13,9 +12,10 @@ class BranchTracking : AbstractInstrumentationTransformer() {
 
     private val branchTargetStmt = HashSet<String>()
 
+    private var branchId: Int = 0
+
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(body.method))
+        if (!isInstrumentTarget(body.method))
             return
 
         //important to use snapshotIterator here
@@ -34,18 +34,19 @@ class BranchTracking : AbstractInstrumentationTransformer() {
     private fun instrumentEachBranchAccess(body: Body, ifStmt: IfStmt) {
         val sootClass = Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION)
 
-        val reportCondition = sootClass.getMethod("reportConditionSynchronous", emptyList())
-        val sieIfLogExpr = Jimple.v().newStaticInvokeExpr(reportCondition.makeRef())
+        val reportCondition = sootClass.getMethod("reportConditionSynchronous", listOf<Type>(IntType.v()))
+        val sieIfLogExpr = Jimple.v().newStaticInvokeExpr(reportCondition.makeRef(), IntConstant.v(branchId))
         val sieIfLogStmt = Jimple.v().newInvokeStmt(sieIfLogExpr)
         sieIfLogStmt.addTag(InstrumentedCodeTag)
 
         body.units.insertBefore(sieIfLogStmt, ifStmt)
 
+        val reportConditionOutcome = sootClass.getMethod("reportConditionOutcomeSynchronous",
+                arrayListOf<Type>(IntType.v(), BooleanType.v()))
 
-        val reportConditionOutcome = sootClass.getMethod("reportConditionOutcomeSynchronous", listOf<Type>(BooleanType.v()))
-
-        //treatment of target statement ("true"-branch)
-        val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(), IntConstant.v(1)) //then -> true
+        // treatment of target statement ("true"-branch)
+        val sieThenExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(),
+                IntConstant.v(branchId), IntConstant.v(1)) //then -> true
         val sieThenStmt = Jimple.v().newInvokeStmt(sieThenExpr)
         sieThenStmt.addTag(InstrumentedCodeTag)
 
@@ -61,12 +62,19 @@ class BranchTracking : AbstractInstrumentationTransformer() {
         }
 
 
-        //treatment of "else"-branch
-        val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(), IntConstant.v(0)) //else -> false
+        // treatment of "else"-branch
+        val sieElseExpr = Jimple.v().newStaticInvokeExpr(reportConditionOutcome.makeRef(),
+                IntConstant.v(branchId), IntConstant.v(0)) //else -> false
         val sieElseStmt = Jimple.v().newInvokeStmt(sieElseExpr)
         sieElseStmt.addTag(InstrumentedCodeTag)
 
         body.units.insertAfter(sieElseStmt, ifStmt)
+
+        branchId += 1
+    }
+
+     fun getBranchId(): Int {
+        return branchId
     }
 
 }

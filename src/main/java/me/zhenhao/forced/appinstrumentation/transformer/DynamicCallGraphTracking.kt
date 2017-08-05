@@ -10,8 +10,7 @@ import soot.jimple.*
 class DynamicCallGraphTracking(private val codePositionManager: CodePositionManager) : AbstractInstrumentationTransformer() {
 
     override fun internalTransform(b: Body, phaseName: String, options: Map<String, String>) {
-        // Do not instrument methods in framework classes
-        if (!canInstrumentMethod(b.method))
+        if (!isInstrumentTarget(b.method))
             return
 
         // Create method references
@@ -58,8 +57,7 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
                 started = false
             }
 
-            // Does the control flow leave the current method at the current
-            // statement?
+            // Does the control flow leave the current method at the current statement?
             val stmtLeavesMethod = stmt is ReturnStmt
                     || stmt is ReturnVoidStmt
                     || stmt is ThrowStmt

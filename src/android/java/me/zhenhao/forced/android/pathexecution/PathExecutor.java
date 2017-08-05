@@ -12,13 +12,15 @@ public class PathExecutor {
 
     public static void logInfoAboutNonApiMethodAccess(String methodSignature) {
         long codePosition = BytecodeLogger.getLastExecutedStatement();
-        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || method access", SharedClassesSettings.METHOD_CALLEE_LABEL, codePosition, methodSignature));
+        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || method access",
+                SharedClassesSettings.METHOD_CALLEE_LABEL, codePosition, methodSignature));
     }
 
 
     private static void logInfoAboutReturnStatement(String methodSignature, Object returnValue) {
         long codePosition = BytecodeLogger.getLastExecutedStatement();
-        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || return %s", SharedClassesSettings.METHOD_RETURN_LABEL, codePosition, methodSignature, concreteParameterValue(returnValue)));
+        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || return %s",
+                SharedClassesSettings.METHOD_RETURN_LABEL, codePosition, methodSignature, concreteParameterValue(returnValue)));
     }
 
 
@@ -30,28 +32,29 @@ public class PathExecutor {
     public static void logInfoAboutNonApiMethodCaller(String methodSignature, String invokeExprMethodSignature, Object... parameter)
     {
         long codePosition = BytecodeLogger.getLastExecutedStatement();
-        String invokeExprInfo = invokeExprMethodSignature + "(";
+        StringBuilder invokeExprInfo = new StringBuilder(invokeExprMethodSignature + "(");
 
         if(parameter != null){
             for(int i = 0; i < parameter.length; i++){
                 if(i < parameter.length-1){
                     if(parameter[i] != null)
-                        invokeExprInfo += concreteParameterValue(parameter[i]) + ", ";
+                        invokeExprInfo.append(concreteParameterValue(parameter[i])).append(", ");
                     else
-                        invokeExprInfo += "null, ";
+                        invokeExprInfo.append("null, ");
                 }
                 else{
                     if(parameter[i] != null)
-                        invokeExprInfo += concreteParameterValue(parameter[i]);
+                        invokeExprInfo.append(concreteParameterValue(parameter[i]));
                     else
-                        invokeExprInfo += "null";
+                        invokeExprInfo.append("null");
                 }
 
             }
         }
-        invokeExprInfo += ")";
+        invokeExprInfo.append(")");
 
-        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || InvokeExpr: %s", SharedClassesSettings.METHOD_CALLER_LABEL, codePosition, methodSignature, invokeExprInfo));
+        Log.i(SharedClassesSettings.TAG, String.format("%s || CodePos: %d || Method-Sign: %s || InvokeExpr: %s",
+                SharedClassesSettings.METHOD_CALLER_LABEL, codePosition, methodSignature, invokeExprInfo.toString()));
     }
 
 
@@ -59,9 +62,11 @@ public class PathExecutor {
         long codePosition = BytecodeLogger.getLastExecutedStatement();
         //before branch-condition
         if(branchInfo == null && condition != null)
-            Log.i(SharedClassesSettings.TAG, String.format("[branch access condition] || CodePos: %d || Method-Sign: %s || %s", codePosition, methodSignature, condition));
+            Log.i(SharedClassesSettings.TAG, String.format("[branch access condition] || CodePos: %d || Method-Sign: %s || %s",
+                    codePosition, methodSignature, condition));
         else if(condition == null && branchInfo != null)
-            Log.i(SharedClassesSettings.TAG, String.format("[branch access decision] || CodePos: %d || Method-Sign: %s || %s",codePosition, methodSignature, branchInfo));
+            Log.i(SharedClassesSettings.TAG, String.format("[branch access decision] || CodePos: %d || Method-Sign: %s || %s",
+                    codePosition, methodSignature, branchInfo));
         else
             throw new RuntimeException("there is a issue with the logInfoAboutBranchAccess method");
     }
