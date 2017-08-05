@@ -16,6 +16,7 @@ class ClientHistory : Cloneable {
     private val progressMetrics = HashMap<String, Int>()
 
     val codePositions = ArrayList<Unit>()
+    val branchChoices = HashSet<Triple<Int, Unit, Boolean>>()
     val conditionTrace = ArrayList<Pair<Int, Unit>>()
     val pathTrace = ArrayList<Triple<Int, Unit, Boolean>>()
     val decisionAndResponse = ArrayList<Pair<DecisionRequest, AnalysisDecision>>()
@@ -28,6 +29,7 @@ class ClientHistory : Cloneable {
 
     constructor()
 
+    // for clone
     private constructor(original: ClientHistory) {
         this.codePositions.addAll(original.codePositions)
         this.pathTrace.addAll(original.pathTrace)
@@ -41,7 +43,7 @@ class ClientHistory : Cloneable {
 
     fun addCodePosition(codePosition: Unit) {
         // The client might notify us of the same code position several times
-        if (codePositions.isEmpty() || codePositions[codePositions.size - 1] !== codePosition)
+        if (codePositions.isEmpty() || codePositions[codePositions.size-1] !== codePosition)
             codePositions.add(codePosition)
     }
 
@@ -49,6 +51,10 @@ class ClientHistory : Cloneable {
         val unit = manager.getUnitForCodePosition(codePosition)
         if (unit != null)
             addCodePosition(unit)
+    }
+
+    fun addBranchChoices(branchId: Int, unit: Unit, decision: Boolean) {
+        branchChoices.add(Triple(branchId, unit, decision))
     }
 
     fun addConditionTrace(branchId: Int, ifStmt: Unit) {

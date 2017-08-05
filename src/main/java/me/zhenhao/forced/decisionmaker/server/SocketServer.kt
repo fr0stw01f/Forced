@@ -93,7 +93,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         }
 
         fun handleTraceItem(clientRequest: TraceItem) {
-            val manager = decisionMaker.initializeHistory()
+            val manager = decisionMaker.initThreadTrace()
             if (manager != null) {
                 val currentClientHistory = manager.getNewestClientHistory()
                 if (currentClientHistory != null) {
@@ -213,7 +213,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         //println("Received a PathTrackingTraceItem")
         val codePositionUnit = decisionMaker.codePositionManager
                 .getUnitForCodePosition(traceItem.lastExecutedStatement)
-        val mgr = decisionMaker.initializeHistory()
+        val mgr = decisionMaker.initThreadTrace()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
             if (codePositionUnit != null)
@@ -229,7 +229,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         val codePositionUnit = decisionMaker.codePositionManager
                 .getUnitForCodePosition(traceItem.lastExecutedStatement)
         val decision = traceItem.lastConditionalResult
-        val mgr = decisionMaker.initializeHistory()
+        val mgr = decisionMaker.initThreadTrace()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
             if (codePositionUnit != null)
@@ -242,7 +242,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
     private fun handleDynamicCallgraph(cgItem: AbstractDynamicCFGItem, oos: ObjectOutputStream) {
         LogHelper.logInfo("Received DynamicCallgraph")
-        val currentManager = decisionMaker.initializeHistory()
+        val currentManager = decisionMaker.initThreadTrace()
         if (currentManager != null && decisionMaker.dynamicCallgraph != null) {
             decisionMaker.dynamicCallgraph!!.enqueueItem(cgItem)
         }
@@ -298,7 +298,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
     private fun handleDynamicValueReceived(dynamicValue: DynamicValueTraceItem, oos: ObjectOutputStream) {
         // Get the current trace
-        val mgr = decisionMaker.initializeHistory()
+        val mgr = decisionMaker.initThreadTrace()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
 
@@ -344,7 +344,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     private fun handleCrash(crash: CrashReportItem, oos: ObjectOutputStream) {
         LogHelper.logEvent(MyLevel.EXCEPTION_RUNTIME,
                 String.format("%s | %s", crash.lastExecutedStatement, crash.exceptionMessage))
-        val mgr = decisionMaker.initializeHistory()
+        val mgr = decisionMaker.initThreadTrace()
         if (mgr != null) {
             val currentClientHistory = mgr.getNewestClientHistory()
             currentClientHistory?.crashException = crash.exceptionMessage

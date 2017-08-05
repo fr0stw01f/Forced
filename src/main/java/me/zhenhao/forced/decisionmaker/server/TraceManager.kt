@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentMap
 class TraceManager {
 
     private val threadToManager = ConcurrentHashMap<Long, ThreadTraceManager>()
-
     private val onCreateHandler = HashSet<ThreadTraceManagerCreatedHandler>()
 
 
@@ -16,11 +15,9 @@ class TraceManager {
         return threadToManager.values
     }
 
-
     fun getThreadTraceManager(threadId: Long): ThreadTraceManager? {
         return threadToManager[threadId]
     }
-
 
     fun getOrCreateThreadTraceManager(threadId: Long): ThreadTraceManager {
         val newManager = ThreadTraceManager(threadId)
@@ -32,7 +29,6 @@ class TraceManager {
         } else
             return existingManager
     }
-
 
     fun addThreadTraceCreateHandler(handler: ThreadTraceManagerCreatedHandler) {
         this.onCreateHandler.add(handler)

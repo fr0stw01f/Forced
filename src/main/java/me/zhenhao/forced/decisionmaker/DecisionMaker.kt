@@ -98,9 +98,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
 
         // Compute the analyses for the current request
         val allDecisions = config.allAnalyses
-                .map {
-                    it.resolveRequest(request, currentManager)  // We only add decisions that actually value values
-                }
+                .map { it.resolveRequest(request, currentManager) } // We only add decisions that actually value values
                 .flatMap { it }
                 .filter { it.serverResponse.doesResponseExist() }
                 .toMutableList()
@@ -191,7 +189,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         println("Incoming decision request: " + request)
 
         // Get the current trace we're working on
-        val currentManager = initializeHistory() ?: return ServerResponse.getEmptyResponse()
+        val currentManager = initThreadTrace() ?: return ServerResponse.getEmptyResponse()
 
         // If we need a decision at a certain statement, we have reached that statement
         currentManager.getNewestClientHistory()?.addCodePosition(request.codePosition, codePositionManager)
@@ -199,36 +197,26 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         // Make sure that we have updated the dynamic callgraph
         dynamicCallgraph?.updateCFG()
 
-        // Make sure that our metrics are up to date
-        for (metric in config.progressMetrics) {
-            val clientHistory = currentManager.getNewestClientHistory()
-            if (clientHistory != null)
-                metric.update(clientHistory)
+        // Update the Analysis Progress Metric
+        // Log the new data to file
+        val metricsFileWriter = FileWriter(logFileProgressName, true)
+
+        val clientHistory = currentManager.getNewestClientHistory()
+        if (clientHistory != null) {
+            config.progressMetrics
+                    .forEach {
+                        val newlyCovered = it.update(clientHistory)
+                        println("Metric for " + it.getMetricName() + ":" + newlyCovered)
+                        metricsFileWriter.write(Integer.toString(newlyCovered) + '\t')
+                    }
         }
+        metricsFileWriter.write(System.getProperty("line.separator"))
+        metricsFileWriter.close()
 
         // Compute the decision
         var response: ServerResponse? = computeResponse(request, currentManager)
         if (response == null)
             response = ServerResponse.getEmptyResponse()
-
-        //updating the Analysis Progress Metric
-        //logging the new data to file
-        val logFileProgress: FileWriter
-        try {
-            logFileProgress = FileWriter(logFileProgressName, true)
-            for (metric in config.progressMetrics) {
-                val clientHistory = currentManager.getNewestClientHistory()
-                if (clientHistory != null) {
-                    val newlyCovered = metric.update(clientHistory)
-                    println("Metric for " + metric.getMetricName() + ":" + newlyCovered)
-                    logFileProgress.write(Integer.toString(newlyCovered) + '\t')
-                }
-            }
-            logFileProgress.write(System.getProperty("line.separator"))
-            logFileProgress.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
 
         return response!!
     }
@@ -441,12 +429,12 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     }
 
 
-    fun getManagerForThreadId(threadId: Long): ThreadTraceManager? {
+    fun getThreadTrace(threadId: Long): ThreadTraceManager? {
         return traceManager.getThreadTraceManager(threadId)
     }
 
 
-    @Synchronized fun initializeHistory(): ThreadTraceManager? {
+    @Synchronized fun initThreadTrace(): ThreadTraceManager? {
         val manager = traceManager.getOrCreateThreadTraceManager(-1)
 
         // Only perform genetic recombination when actually generating new traces
@@ -634,7 +622,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
     fun logBranchTrackingForThreadId(threadId: Long) {
         val printWriter = PrintWriter("BranchTracking.log")
 
-        val threadTraceManager = getManagerForThreadId(threadId)
+        val threadTraceManager = getThreadTrace(threadId)
         if (threadTraceManager != null)
             for (clientHistory in threadTraceManager.clientHistories) {
                 val conditionTrace = clientHistory.conditionTrace

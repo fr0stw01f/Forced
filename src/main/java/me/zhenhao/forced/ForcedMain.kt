@@ -284,6 +284,8 @@ class ForcedMain private constructor() {
         // print branch tracking info of all traces
         decisionMaker.logBranchTrackingForThreadId(-1)
 
+        decisionMaker.config.progressMetrics
+
         decisionMaker.tearDown()
     }
 

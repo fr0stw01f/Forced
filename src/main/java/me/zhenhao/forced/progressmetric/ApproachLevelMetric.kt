@@ -16,9 +16,7 @@ import me.zhenhao.forced.shared.util.Pair
 class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val cfg: InfoflowCFG) : IProgressMetric {
 
     private val targetBasedDistanceMap = HashBasedTable.create<Unit, Unit, Int>()
-
     private var bestSoFar: Int? = Integer.MAX_VALUE
-
     private var currentTargetLocation: Unit? = null
 
     private data class ApproachLevelItem(val currentUnit: Unit, val approachLevel: Int)
@@ -27,7 +25,7 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
         if (currentTargetLocation == null)
             throw RuntimeException("we have to have a target!")
 
-        //we have to do this for every target unit
+        // init for each target unit
         targetUnits
                 //check if this method is reachable; otherwise we can not create an inter-procedural CFG
                 .filter { cfg.isReachable(it) }
