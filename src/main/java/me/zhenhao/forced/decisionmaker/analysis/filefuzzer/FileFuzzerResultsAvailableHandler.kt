@@ -12,7 +12,7 @@ import me.zhenhao.forced.shared.networkconnection.FileFormat
 
 
 class FileFuzzerResultsAvailableHandler(private val valuesToFuzz: MutableMap<Int, FileFormat>) : ResultsAvailableHandler {
-    internal var codePositionManager = CodePositionManager.codePositionManagerInstance
+    internal var codePositionManager = CodePositionManager.singleton
 
     internal var PROPERTIES_SINKS: Set<String> = object : HashSet<String>() {
         init {

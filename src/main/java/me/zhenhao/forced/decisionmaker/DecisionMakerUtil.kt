@@ -1,6 +1,6 @@
 package me.zhenhao.forced.decisionmaker
 
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import soot.Scene
@@ -44,7 +44,7 @@ object DecisionMakerUtil {
 
             val applicationClasses = Scene.v().applicationClasses
             applicationClasses
-                    .filter { UtilInstrumenter.isAppDeveloperCode(it) }
+                    .filter { InstrumenterUtil.isAppDeveloperCode(it) }
                     .flatMap { it.methods }
                     .filter { it.hasActiveBody() }
                     .map { it.retrieveActiveBody() }

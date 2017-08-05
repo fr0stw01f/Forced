@@ -1,7 +1,7 @@
 package me.zhenhao.forced.decisionmaker.analysis.sourceconstantfuzzer
 
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
@@ -57,7 +57,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
         ifCFG = InfoflowCFG()
 
         Scene.v().classes
-                .filter { UtilInstrumenter.isAppDeveloperCode(it) }
+                .filter { InstrumenterUtil.isAppDeveloperCode(it) }
                 .forEach { sc ->
                     sc.methods
                             .filter { it.hasActiveBody() }
@@ -247,7 +247,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
 
         // pick a new return value:
 
-        val codePosMgr = CodePositionManager.codePositionManagerInstance
+        val codePosMgr = CodePositionManager.singleton
         val codeUnit = codePosMgr.getUnitForCodePosition(codePosition)
 
         val originMethod = ifCFG!!.getMethodOf(codeUnit) ?: return ArrayList()

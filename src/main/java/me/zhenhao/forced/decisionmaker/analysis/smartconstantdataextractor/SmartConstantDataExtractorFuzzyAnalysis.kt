@@ -47,7 +47,7 @@ import java.util.*
 
 class SmartConstantDataExtractorFuzzyAnalysis : FuzzyAnalysis() {
 
-    internal var codePositionManager = CodePositionManager.codePositionManagerInstance
+    internal var codePositionManager = CodePositionManager.singleton
     internal var constantBasedValuesToFuzz: MutableMap<Int, MutableSet<Any>> = HashMap()
     internal var dynamicValueBasedValuesToFuzz: MutableMap<Int, MutableSet<Any>> = HashMap()
 

@@ -20,7 +20,7 @@ import me.zhenhao.forced.shared.util.Pair
 
 class DynamicValueAnalysis : FuzzyAnalysis() {
 
-    private val codePositionManager = CodePositionManager.codePositionManagerInstance
+    private val codePositionManager = CodePositionManager.singleton
 
     override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {
         // nothing to do here

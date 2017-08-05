@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import soot.Body
 import soot.LongType
 import soot.Scene
@@ -39,7 +39,7 @@ class TimingBombTransformer : AbstractInstrumentationTransformer() {
     private fun prepareAlarmManagerSet(body: Body, setStmt: InvokeStmt, reportRef: SootMethodRef) {
         val oldVal = setStmt.invokeExpr.getArg(1)
 
-        val longLocal = UtilInstrumenter.generateFreshLocal(body, LongType.v())
+        val longLocal = InstrumenterUtil.generateFreshLocal(body, LongType.v())
         val currentTimeMillis = Scene.v().getMethod("<java.lang.System: long currentTimeMillis()>")
         val timeInvoke = Jimple.v().newStaticInvokeExpr(currentTimeMillis.makeRef())
         val timeInitialize = Jimple.v().newAssignStmt(longLocal, timeInvoke)

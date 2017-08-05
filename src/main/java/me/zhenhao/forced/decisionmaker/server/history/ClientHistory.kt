@@ -13,24 +13,18 @@ import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 
 class ClientHistory : Cloneable {
 
+    private val progressMetrics = HashMap<String, Int>()
+
     val codePositions = ArrayList<Unit>()
-
     val conditionTrace = ArrayList<Pair<Int, Unit>>()
-
     val pathTrace = ArrayList<Triple<Int, Unit, Boolean>>()
-
     val decisionAndResponse = ArrayList<Pair<DecisionRequest, AnalysisDecision>>()
 
     var callgraph = Callgraph()
-
     var isShadowTrace = false
-
     var crashException: String? = null
-
     var dynamicValues = DynamicValueContainer()
-        get
 
-    private val progressMetrics = HashMap<String, Int>()
 
     constructor()
 
@@ -45,13 +39,11 @@ class ClientHistory : Cloneable {
         this.dynamicValues = dynamicValues.clone()
     }
 
-
     fun addCodePosition(codePosition: Unit) {
         // The client might notify us of the same code position several times
         if (codePositions.isEmpty() || codePositions[codePositions.size - 1] !== codePosition)
             codePositions.add(codePosition)
     }
-
 
     fun addCodePosition(codePosition: Int, manager: CodePositionManager) {
         val unit = manager.getUnitForCodePosition(codePosition)
@@ -72,7 +64,6 @@ class ClientHistory : Cloneable {
         decisionAndResponse.add(Pair(request, response))
     }
 
-
     fun setProgressValue(metric: String, value: Int) {
         // We always take the best value we have seen so far
         val oldValue = this.progressMetrics[metric]
@@ -82,19 +73,16 @@ class ClientHistory : Cloneable {
         this.progressMetrics.put(metric, newValue)
     }
 
-
     fun getProgressValue(metric: String): Int {
         val value = progressMetrics[metric]
         return value ?: Integer.MAX_VALUE
     }
-
 
     fun getResponseForRequest(request: DecisionRequest): AnalysisDecision? {
         return decisionAndResponse
                 .firstOrNull { it.first == request && it.second.serverResponse.doesResponseExist() }
                 ?.second
     }
-
 
     fun hasOnlyEmptyDecisions(): Boolean {
         if (decisionAndResponse.isEmpty())
@@ -136,11 +124,9 @@ class ClientHistory : Cloneable {
         return true
     }
 
-
     fun length(): Int {
         return decisionAndResponse.size
     }
-
 
     fun isPrefixOf(existingHistory: ClientHistory): Boolean {
         // The given history must be at least as long as the current one
@@ -157,15 +143,9 @@ class ClientHistory : Cloneable {
         return true
     }
 
-
     public override fun clone(): ClientHistory {
         return ClientHistory(this)
     }
-
-
-    val allDecisionRequestsAndResponses: List<Pair<DecisionRequest, AnalysisDecision>>
-        get() = this.decisionAndResponse
-
 
     fun removeUnusedDecisions() {
         val pairIt = decisionAndResponse.iterator()

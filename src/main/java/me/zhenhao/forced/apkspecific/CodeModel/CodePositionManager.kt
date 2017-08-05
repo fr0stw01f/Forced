@@ -7,12 +7,12 @@ import soot.Unit
 
 class CodePositionManager private constructor() {
 
-    private val methodToLastCodePosition = HashMap<String, Int>()
+    val methodToLastCodePosition = HashMap<String, Int>()
     val unitToCodePosition = HashMap<Unit, CodePosition>()
-    private val codePositionToUnit = HashMap<CodePosition, Unit>()
-    private val idToCodePosition = HashMap<Int, CodePosition>()
-    private val methodToOffset = HashMap<String, Int>()
-    private var lastOffset = 1
+    val codePositionToUnit = HashMap<CodePosition, Unit>()
+    val idToCodePosition = HashMap<Int, CodePosition>()
+    val methodToOffset = HashMap<String, Int>()
+    var lastOffset = 1
 
     fun getCodePositionForUnit(u: Unit): CodePosition {
         return unitToCodePosition[u]!!
@@ -63,16 +63,8 @@ class CodePositionManager private constructor() {
     }
 
     companion object {
-
         private val methodOffsetMultiplier = 1000
-        private var codePositionManager: CodePositionManager? = null
-
-        val codePositionManagerInstance: CodePositionManager
-            get() {
-                if (codePositionManager == null)
-                    codePositionManager = CodePositionManager()
-                return codePositionManager!!
-            }
+        val singleton = CodePositionManager()
     }
 
 }

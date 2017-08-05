@@ -18,7 +18,7 @@ import java.util.*
 
 class FileValuesAnalysis : FuzzyAnalysis() {
 
-    private val codePositionManager = CodePositionManager.codePositionManagerInstance
+    private val codePositionManager = CodePositionManager.singleton
     private var values: Set<String>? = null
 
     override fun doPreAnalysis(targetUnits: MutableSet<Unit>, traceManager: TraceManager) {

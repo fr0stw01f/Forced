@@ -2,7 +2,7 @@ package me.zhenhao.forced.appinstrumentation.transformer
 
 import me.zhenhao.forced.apkspecific.CodeModel.CodePosition
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import soot.*
 import soot.jimple.*
 
@@ -15,25 +15,25 @@ class DynamicCallGraphTracking(private val codePositionManager: CodePositionMana
 
         // Create method references
         val callMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodCallSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val returnMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodReturnSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val enterMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodEnterSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),
                 true)
         val leaveMethodRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportMethodLeaveSynchronous",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),

@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import soot.Body
 import soot.IdentityUnit
 import soot.RefType
@@ -35,7 +35,7 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
 
     private fun instrumentInfoAboutNonAPICall(body: Body) {
         val methodSignature = body.method.signature
-        val generatedJimpleCode = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutNonApiMethodAccess", RefType.v("java.lang.String"), StringConstant.v(methodSignature))
+        val generatedJimpleCode = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutNonApiMethodAccess", RefType.v("java.lang.String"), StringConstant.v(methodSignature))
         generatedJimpleCode.addTag(InstrumentedCodeTag)
         // super-method call has to be the first statement
         if (methodSignature.contains("<init>(") || methodSignature.contains("<clinit>"))
@@ -51,15 +51,15 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
             val generated = ArrayList<Unit>()
 
             val methodSignature = body.method.signature
-            val generatedJimpleCode = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutReturnStatement",
+            val generatedJimpleCode = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutReturnStatement",
                     RefType.v("java.lang.String"), StringConstant.v(methodSignature),
-                    RefType.v("java.lang.Object"), UtilInstrumenter.generateCorrectObject(body, returnStmt.op, generated))
+                    RefType.v("java.lang.Object"), InstrumenterUtil.generateCorrectObject(body, returnStmt.op, generated))
             generatedJimpleCode.addTag(InstrumentedCodeTag)
             generated.add(generatedJimpleCode)
             body.units.insertBefore(generated, returnStmt)
         } else if (unit is ReturnVoidStmt) {
             val methodSignature = body.method.signature
-            val generatedJimpleCode = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutReturnStatement", RefType.v("java.lang.String"), StringConstant.v(methodSignature))
+            val generatedJimpleCode = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutReturnStatement", RefType.v("java.lang.String"), StringConstant.v(methodSignature))
             generatedJimpleCode.addTag(InstrumentedCodeTag)
             body.units.insertBefore(generatedJimpleCode, unit)
         }
@@ -82,20 +82,20 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
         }
 
         if (invokeExpr != null) {
-            if (!UtilInstrumenter.isApiCall(invokeExpr)) {
+            if (!InstrumenterUtil.isApiCall(invokeExpr)) {
                 val invokeExprMethodSignature = invokeExpr.method.signature
 
                 val parameter = invokeExpr.args
                 val generated = ArrayList<Unit>()
-                val arrayRefAndInstrumentation = UtilInstrumenter.generateParameterArray(parameter, body)
+                val arrayRefAndInstrumentation = InstrumenterUtil.generateParameterArray(parameter, body)
 
                 val generatedArrayInstrumentation = arrayRefAndInstrumentation.second
                 val arrayRef = arrayRefAndInstrumentation.first
 
-                val generatedInvokeStmt = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutNonApiMethodCaller",
+                val generatedInvokeStmt = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutNonApiMethodCaller",
                         RefType.v("java.lang.String"), StringConstant.v(body.method.signature),
                         RefType.v("java.lang.String"), StringConstant.v(invokeExprMethodSignature),
-                        UtilInstrumenter.parameterArrayType, if (parameter.isEmpty()) NullConstant.v() else arrayRef)
+                        InstrumenterUtil.parameterArrayType, if (parameter.isEmpty()) NullConstant.v() else arrayRef)
                 generatedInvokeStmt.addTag(InstrumentedCodeTag)
                 generated.addAll(generatedArrayInstrumentation)
                 generated.add(generatedInvokeStmt)
@@ -109,21 +109,21 @@ class PathExecutionTransformer : AbstractInstrumentationTransformer() {
     private fun instrumentEachBranchAccess(body: Body, ifStmt: IfStmt) {
         val methodSignature = body.method.signature
         val condition = ifStmt.condition.toString()
-        val generatedJimpleCodeForBranch = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
+        val generatedJimpleCodeForBranch = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
                 RefType.v("java.lang.String"), StringConstant.v(methodSignature),
                 RefType.v("java.lang.String"), StringConstant.v(condition),
                 RefType.v("java.lang.String"), NullConstant.v()
         )
         generatedJimpleCodeForBranch.addTag(InstrumentedCodeTag)
 
-        val generatedJimpleCodeThenBranch = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
+        val generatedJimpleCodeThenBranch = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
                 RefType.v("java.lang.String"), StringConstant.v(methodSignature),
                 RefType.v("java.lang.String"), NullConstant.v(),
                 RefType.v("java.lang.String"), StringConstant.v("then branch")
         )
         generatedJimpleCodeThenBranch.addTag(InstrumentedCodeTag)
 
-        val generatedJimpleCodeElseBranch = UtilInstrumenter.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
+        val generatedJimpleCodeElseBranch = InstrumenterUtil.makeJimpleStaticCallForPathExecution("logInfoAboutBranchAccess",
                 RefType.v("java.lang.String"), StringConstant.v(methodSignature),
                 RefType.v("java.lang.String"), NullConstant.v(),
                 RefType.v("java.lang.String"), StringConstant.v("else branch")

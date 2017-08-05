@@ -7,7 +7,7 @@ import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import java.util.*
 
 class StringToPrimitiveTypeExtractorDataflowHandler(private val valuesToFuzz: MutableMap<Int, Set<Any>>) : ResultsAvailableHandler {
-    internal var codePositionManager = CodePositionManager.codePositionManagerInstance
+    internal var codePositionManager = CodePositionManager.singleton
 
     override fun onResultsAvailable(cfg: IInfoflowCFG, results: InfoflowResults) {
         for (sinkInfo in results.results.keySet()) {

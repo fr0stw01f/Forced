@@ -17,15 +17,11 @@ import me.zhenhao.forced.progressmetric.IProgressMetric
 class DecisionMakerConfig {
 
     val analysesNames = FileUtils.textFileToLineSet(ANALYSES_FILENAME)
-
     val progressMetricNames = FileUtils.textFileToLineSet(METRICS_FILENAME)
 
     val allAnalyses: MutableSet<FuzzyAnalysis> = HashSet()
-
-    private val nameToAnalysis: MutableMap<String, FuzzyAnalysis> = HashMap()
-
+    val nameToAnalysis: MutableMap<String, FuzzyAnalysis> = HashMap()
     val progressMetrics: MutableSet<IProgressMetric> = HashSet()
-
     val allTargetLocations: MutableSet<Unit> = HashSet()
 
     lateinit var backwardsCFG: BackwardsInfoflowCFG
@@ -80,23 +76,25 @@ class DecisionMakerConfig {
                 .forEach {
                     try {
                         val metricClass = Class.forName(it)
-                        val defaultConstructor = metricClass.getConstructor(
-                                Collection::class.java, InfoflowCFG::class.java)
-                        defaultConstructor.isAccessible
+                        val defaultConstructor = metricClass.getConstructor(Collection::class.java, InfoflowCFG::class.java)
+
+                        if (!defaultConstructor.isAccessible)
+                            defaultConstructor.isAccessible = true
+
                         val constructorObject = defaultConstructor.newInstance(allTargetLocations, backwardsCFG)
                                 as? IProgressMetric ?:
                                 throw RuntimeException("There is a problem in the files/metricsNames.txt file!")
                         val metric = constructorObject
                         LogHelper.logEvent(MyLevel.ANALYSIS, "[METRIC-TYPE] " + it)
 
-                        //currently, there can be only a single target
+                        // currently, there can be only a single target
                         if (allTargetLocations.size != 1)
                             throw RuntimeException("There can be only 1 target location per run")
                         val target = allTargetLocations.iterator().next()
                         if (backwardsCFG.getMethodOf(target) != null) {
                             metric.setCurrentTargetLocation(target)
 
-                            //initialize the metric, otherwise it is empty!
+                            // initialize the metric, otherwise it is empty!
                             metric.initialize()
                             progressMetrics.add(metric)
                         } else {

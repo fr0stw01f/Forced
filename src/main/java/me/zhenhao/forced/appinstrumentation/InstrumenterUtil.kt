@@ -13,7 +13,7 @@ import java.io.File
 import java.util.*
 
 
-object UtilInstrumenter {
+object InstrumenterUtil {
 
     val ROOT_PACKAGE_OF_FORCED_CODE = "me.zhenhao.forced."
     val ROOT_PACKAGE_OF_ADDITIONAL_CODE = ROOT_PACKAGE_OF_FORCED_CODE + "android."

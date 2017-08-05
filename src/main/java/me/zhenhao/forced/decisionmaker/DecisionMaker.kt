@@ -35,27 +35,19 @@ import kotlin.collections.Map.Entry
 
 class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFileManager,
                     val analysisTaskManager: AnalysisTaskManager) {
+    private val traceManager = TraceManager()
+    val codePositionManager = CodePositionManager.singleton
 
     lateinit private var result: EnvironmentResult
-
-    private var manifest: ProcessManifest? = null
-
-    private var socketServer: SocketServer? = null
-
     lateinit private var eventManager: FrameworkEventManager
-
     lateinit private var codeIndexer: StaticCodeIndexer
-
-    private val traceManager = TraceManager()
-
     lateinit private var logFileProgressName: String
 
+    private var manifest: ProcessManifest? = null
+    private var socketServer: SocketServer? = null
     private var geneticOnlyMode = false
 
     var dynamicCallgraph: DynamicCallgraphBuilder? = null
-        private set
-
-    lateinit var codePositionManager: CodePositionManager
         private set
 
     fun runPreAnalysisPhase() {
@@ -273,11 +265,10 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         this.manifest = UtilApk.getManifest()
 
         // Get a code model
-        codePositionManager = CodePositionManager.codePositionManagerInstance
         codeIndexer = StaticCodeIndexer()
 
         //start server...
-        socketServer = SocketServer.getInstance(this)
+        socketServer = SocketServer.singleton(this)
         val r1 = { socketServer!!.startSocketServerObjectTransfer() }
         val backgroundThreadForObjectTransfer = Thread(r1)
         backgroundThreadForObjectTransfer.start()
@@ -410,7 +401,7 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
             for (hist in tm.clientHistories) {
                 historyCount++
                 val progressVal = hist.getProgressValue("ApproachLevel")
-                for (pair in hist.allDecisionRequestsAndResponses) {
+                for (pair in hist.decisionAndResponse) {
                     val name = pair.second.analysisName
                     val oldVal = analysisToBestScore[name]
                     if (oldVal == null || oldVal < progressVal)

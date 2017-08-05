@@ -16,7 +16,7 @@ import java.util.HashSet
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import me.zhenhao.forced.bootstrap.DexFile
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LogHelper
@@ -258,15 +258,15 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         try {
             // Write the received dex file to disk for debugging
             val timestamp = System.currentTimeMillis()
-            val dirPath = String.format("%s/dexFiles/", UtilInstrumenter.SOOT_OUTPUT)
+            val dirPath = String.format("%s/dexFiles/", InstrumenterUtil.SOOT_OUTPUT)
             val dir = File(dirPath)
             if (!dir.exists())
                 dir.mkdir()
-            val filePath = String.format("%s/dexFiles/%d_dexfile.dex", UtilInstrumenter.SOOT_OUTPUT, timestamp)
+            val filePath = String.format("%s/dexFiles/%d_dexfile.dex", InstrumenterUtil.SOOT_OUTPUT, timestamp)
             println(String.format("DexFile: %s (code position: %d)", filePath,
                     dexFileRequest.lastExecutedStatement))
             LogHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex file %s/dexFiles/%d_dexfile.dex",
-                    UtilInstrumenter.SOOT_OUTPUT, timestamp))
+                    InstrumenterUtil.SOOT_OUTPUT, timestamp))
             Files.write(Paths.get(filePath), dexFile)
 
             // We need to remove the statements that load the external code,
@@ -376,16 +376,15 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     }
 
     companion object {
+        private var instance: SocketServer? = null
 
-        private var socketServerInstance: SocketServer? = null
-
-        fun getInstance(decisionMaker: DecisionMaker): SocketServer? {
-            if (socketServerInstance == null)
-                socketServerInstance = SocketServer(decisionMaker)
+        fun singleton(decisionMaker: DecisionMaker): SocketServer? {
+            if (instance == null)
+                instance = SocketServer(decisionMaker)
 
             // re-initialize status
-            socketServerInstance?.stopped = false
-            return socketServerInstance
+            instance?.stopped = false
+            return instance
         }
     }
 }

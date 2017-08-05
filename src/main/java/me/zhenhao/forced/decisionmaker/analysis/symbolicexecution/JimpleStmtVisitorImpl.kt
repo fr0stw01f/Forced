@@ -46,7 +46,7 @@ import soot.jimple.ThrowStmt
 import soot.jimple.infoflow.data.AccessPath
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import soot.jimple.infoflow.source.data.SourceSinkDefinition
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.decisionmaker.analysis.dynamicValues.DynamicValueInformation
 import me.zhenhao.forced.decisionmaker.analysis.smartconstantdataextractor.NotYetSupportedException
@@ -302,7 +302,7 @@ class JimpleStmtVisitorImpl(sources: Set<SourceSinkDefinition>,
         val declaringClass = invokeExpr.method.declaringClass
         if (exprVisitor.isExpressionThatNeedsToBeConvertedToSMT(invokeExpr))
             exprVisitor.convertSpecialExpressionsToSMT(invokeExpr, stmt)
-        else if (UtilInstrumenter.isAppDeveloperCode(declaringClass)) {
+        else if (InstrumenterUtil.isAppDeveloperCode(declaringClass)) {
             val method = invokeExpr.method
             val body = method.retrieveActiveBody()
 
@@ -611,7 +611,7 @@ class JimpleStmtVisitorImpl(sources: Set<SourceSinkDefinition>,
             //special handling of non-api calls:
             //the tainted value provided by flowdroid is actually the identity statement in the body and not the
             //argument, but we need the argument in this case. Therefore, we have to identify the correct tainted argument
-            if (UtilInstrumenter.isAppDeveloperCode(sootMethod.declaringClass)) {
+            if (InstrumenterUtil.isAppDeveloperCode(sootMethod.declaringClass)) {
                 val accessPath = getCorrectAccessPathForStmt(stmt)
                 val identityStmtTaintValue = accessPath.plainValue
 

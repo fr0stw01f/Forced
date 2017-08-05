@@ -127,7 +127,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
         try {
             //todo PAPER-EVAL ONLY
             if (!FrameworkOptions.evaluationOnly) {
-                manipulateManifest(UtilInstrumenter.SOOT_OUTPUT_APK)
+                manipulateManifest(InstrumenterUtil.SOOT_OUTPUT_APK)
                 //codePositionTracking
                 logCodePosition("CodePositions.log")
                 instrumentForBranchSwitching()
@@ -225,7 +225,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                     val unitsToInstrument = ArrayList<Unit>()
                     val hookingHelperApplicationClassAttachMethodName =
                             String.format("<%s: void initialize(android.content.Context)>",
-                                    UtilInstrumenter.JAVA_CLASS_FOR_INSTRUMENTATION)
+                                    InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION)
                     val hookingHelperApplicationClassAttachMethod = Scene.v().
                             getMethod(hookingHelperApplicationClassAttachMethodName) ?:
                             throw RuntimeException("this should not happen")
@@ -242,7 +242,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                     body.units.insertAfter(unitsToInstrument, instrumentAfterUnit)
                 } else {
                     attachMethodName = String.format("<%s: void attachBaseContext(android.content.Context)>",
-                            UtilInstrumenter.HELPER_APPLICATION_FOR_FORCED_CODE_INIT)
+                            InstrumenterUtil.HELPER_APPLICATION_FOR_FORCED_CODE_INIT)
                     attachMethod = Scene.v().grabMethod(attachMethodName)
                     if (attachMethod == null)
                         throw RuntimeException("this should not happen")
@@ -257,7 +257,7 @@ class Instrumenter(private val codePositionManager: CodePositionManager, private
                 }//case 2
 
                 //there is no need for our Application class
-                Scene.v().getSootClass(UtilInstrumenter.HELPER_APPLICATION_FOR_FORCED_CODE_INIT).setLibraryClass()
+                Scene.v().getSootClass(InstrumenterUtil.HELPER_APPLICATION_FOR_FORCED_CODE_INIT).setLibraryClass()
             } else {
                 throw RuntimeException("There is a problem with the Application class!")
             }

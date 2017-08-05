@@ -1,6 +1,5 @@
 package me.zhenhao.forced.decisionmaker.analysis.filefuzzer
 
-import me.zhenhao.forced.FrameworkOptions
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
 import me.zhenhao.forced.decisionmaker.analysis.FuzzyAnalysis
@@ -26,7 +25,7 @@ import java.util.*
 
 
 class FileFuzzer : FuzzyAnalysis() {
-    internal var codePositionManager = CodePositionManager.codePositionManagerInstance
+    internal var codePositionManager = CodePositionManager.singleton
 
     //code position to file format map
     private val fileFormatsFromDataflow = HashMap<Int, FileFormat>()

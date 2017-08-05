@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.appinstrumentation.UtilInstrumenter
+import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 import me.zhenhao.forced.frameworkevents.FrameworkEvent
@@ -67,10 +67,10 @@ class FakeBroadcastEvent(private val receiverClassName: String?, val actionName:
     private fun prepareStartService(): String {
         if (mimeType != null) {
             return String.format("am startservice --es \"className\" %s" + " --es \"action\" %s --es \"task\" \"broadcast\" --es \"mimeType\" %s -n %s/%s",
-                    receiverClassName, actionName, mimeType, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
+                    receiverClassName, actionName, mimeType, packageName, InstrumenterUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         } else {
             return String.format("am startservice --es \"className\" %s" + " --es \"action\" %s --es \"task\" \"broadcast\"  -n %s/%s",
-                    receiverClassName, actionName, packageName, UtilInstrumenter.HELPER_SERVICE_FOR_COMPONENT_CALLER)
+                    receiverClassName, actionName, packageName, InstrumenterUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         }
     }
 
