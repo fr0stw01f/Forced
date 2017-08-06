@@ -19,7 +19,7 @@ import soot.jimple.infoflow.data.AccessPath
 import soot.jimple.infoflow.results.ResultSourceInfo
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG
 import soot.jimple.infoflow.source.data.SourceSinkDefinition
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
@@ -47,7 +47,7 @@ class SMTConverter(private val sources: Set<SourceSinkDefinition>) {
                 val assignment = stmt
                 if (assignment.rightOp is InvokeExpr) {
                     val invoke = assignment.rightOp as InvokeExpr
-                    if (!InstrumenterUtil.isAppDeveloperCode(invoke.method.declaringClass)) {
+                    if (!InstrumentUtil.isAppDeveloperCode(invoke.method.declaringClass)) {
                         if (assignment.rightOp.type === BooleanType.v()) {
                             indexesForConditions.add(i)
                         }

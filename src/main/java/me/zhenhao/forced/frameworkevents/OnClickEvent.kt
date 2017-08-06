@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import com.android.ddmlib.IDevice
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
@@ -19,7 +19,7 @@ class OnClickEvent(onClickListenerClass: String, private val packageName: String
 
     override fun onEventReceived(device: IDevice): Any? {
         val shellCmd = String.format("am startservice --es \"className\" \"%s\"" + " --es \"task\" \"onClick\" -n %s/%s",
-                onClickListenerClass, packageName, InstrumenterUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER)
+                onClickListenerClass, packageName, InstrumentUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER)
         try {
             device.executeShellCommand(shellCmd, GenericReceiver(), 10000, TimeUnit.MILLISECONDS)
             LogHelper.logEvent(MyLevel.ADB_EVENT, adbEventFormat(toString(), onClickListenerClass!!))
@@ -59,7 +59,7 @@ class OnClickEvent(onClickListenerClass: String, private val packageName: String
     }
 
     override fun toString(): String {
-        return "(Fake) OnClickEvent"
+        return "(Fake) OnClickEvent-$packageName"
     }
 
 }

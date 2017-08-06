@@ -14,7 +14,6 @@ class BranchSwitching(val codePositionManager: CodePositionManager) : AbstractIn
     val positives = ArrayList<Int>()
     val negatives = ArrayList<Int>()
     val switches  = ArrayList<Int>()
-
     val executed  = HashSet<Stmt>()
 
     override fun internalTransform(body: Body, phaseName: String, options: Map<String, String>) {

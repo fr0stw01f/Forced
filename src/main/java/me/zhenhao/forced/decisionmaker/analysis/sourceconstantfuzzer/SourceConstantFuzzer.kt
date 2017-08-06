@@ -1,7 +1,7 @@
 package me.zhenhao.forced.decisionmaker.analysis.sourceconstantfuzzer
 
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.decisionmaker.DeterministicRandom
 import me.zhenhao.forced.decisionmaker.analysis.AnalysisDecision
@@ -57,7 +57,7 @@ class SourceConstantFuzzer : FuzzyAnalysis() {
         ifCFG = InfoflowCFG()
 
         Scene.v().classes
-                .filter { InstrumenterUtil.isAppDeveloperCode(it) }
+                .filter { InstrumentUtil.isAppDeveloperCode(it) }
                 .forEach { sc ->
                     sc.methods
                             .filter { it.hasActiveBody() }

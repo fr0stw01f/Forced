@@ -23,6 +23,7 @@ import me.zhenhao.forced.frameworkevents.FrameworkEvent
 import me.zhenhao.forced.frameworkevents.manager.FrameworkEventManager
 import me.zhenhao.forced.shared.networkconnection.DecisionRequest
 import me.zhenhao.forced.shared.networkconnection.ServerResponse
+import soot.Unit
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import java.io.File
 import java.io.FileWriter
@@ -619,27 +620,44 @@ class DecisionMaker(val config: DecisionMakerConfig, val dexFileManager: DexFile
         eventManager.uninstallAppProcess(manifest!!.packageName)
     }
 
-    fun logBranchTrackingForThreadId(threadId: Long) {
-        val printWriter = PrintWriter("BranchTracking.log")
+    fun logBranchTrackingForThreadId(threadId: Long, eventName: String) {
 
         val threadTraceManager = getThreadTrace(threadId)
         if (threadTraceManager != null)
-            for (clientHistory in threadTraceManager.clientHistories) {
+            for ((index, clientHistory) in threadTraceManager.clientHistories.withIndex()) {
+                val printWriter = PrintWriter("log/BT-$eventName-$index.log")
                 val conditionTrace = clientHistory.conditionTrace
                 val pathTrace = clientHistory.pathTrace
+                val branchChoices = clientHistory.branchChoices
                 val codePosMgr = codePositionManager
 
                 printWriter.write("======================= Condition Trace =======================\n")
                 for ((branchId, unit) in conditionTrace) {
                     val codePos = codePosMgr.getCodePositionForUnit(unit)
-                    printWriter.write("$branchId 0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$unit\n")
+                    printWriter.write("$branchId\t\t0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$unit\n")
                 }
 
                 printWriter.write("=======================    Path Trace   =======================\n")
                 for ((branchId, unit, decision) in pathTrace) {
                     val codePos = codePosMgr.getCodePositionForUnit(unit)
-                    printWriter.write("$branchId\t 0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit\n")
+                    printWriter.write("$branchId\t\t0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit\n")
                 }
+
+                printWriter.write("=====================    Branch Choices   =====================\n")
+                val sortedSet = branchChoices.toSortedSet(
+                        Comparator<Triple<Int, Unit, Boolean>> { (first0, _, _), (first1, _, _) ->
+                            first0.compareTo(first1)
+                        }.then(Comparator<Triple<Int, Unit, Boolean>> { (_, second0, _), (_, _, second1) ->
+                            second0.toString().compareTo(second1.toString())
+                        }).then(Comparator<Triple<Int, Unit, Boolean>> { (_, _, third0), (_, _, third1) ->
+                            third0.compareTo(third1)
+                        })
+                )
+                for ((branchId, unit, decision) in sortedSet) {
+                    val codePos = codePosMgr.getCodePositionForUnit(unit)
+                    printWriter.write("$branchId\t\t0x${codePos.id.toString(16)}\t\t${codePos.id}\t\t$decision\t\t$unit\n")
+                }
+                printWriter.close()
             }
     }
 

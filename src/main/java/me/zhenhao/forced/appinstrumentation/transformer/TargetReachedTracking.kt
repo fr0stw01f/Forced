@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.*
 import soot.Unit
 import soot.jimple.Jimple
@@ -14,7 +14,7 @@ class TargetReachedTracking(private val targetSignatures: Set<Unit>) : AbstractI
 
         // Create method references
         val targetReachedRef = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "reportTargetReachedSynchronous",
                 emptyList<Type>(),
                 VoidType.v(),

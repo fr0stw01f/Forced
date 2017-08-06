@@ -1,6 +1,6 @@
 package me.zhenhao.forced.decisionmaker.analysis.symbolicexecution
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import soot.Unit
@@ -161,7 +161,7 @@ object UtilSMT {
 
                 //special handling for non-api calls
                 val sm = invokeExpr!!.method
-                if (InstrumenterUtil.isAppDeveloperCode(sm.declaringClass)) {
+                if (InstrumentUtil.isAppDeveloperCode(sm.declaringClass)) {
                     val callees = cfg.getCalleesOfCallAt(currentUnit)
                     callees
                             .map { cfg.getStartPointsOf(it) }
@@ -332,7 +332,7 @@ object UtilSMT {
 
                 //special handling for non-api calls
                 val sm = invokeExpr!!.method
-                if (InstrumenterUtil.isAppDeveloperCode(sm.declaringClass)) {
+                if (InstrumentUtil.isAppDeveloperCode(sm.declaringClass)) {
                     val callees = cfg.getCalleesOfCallAt(currentUnit)
                     callees
                             .map { cfg.getStartPointsOf(it) }
@@ -520,7 +520,7 @@ object UtilSMT {
 
                 //special handling for non-api calls
                 val sm = invokeExpr!!.method
-                if (InstrumenterUtil.isAppDeveloperCode(sm.declaringClass)) {
+                if (InstrumentUtil.isAppDeveloperCode(sm.declaringClass)) {
                     val callees = cfg.getCalleesOfCallAt(currentUnit)
                     callees
                             .map { cfg.getStartPointsOf(it) }

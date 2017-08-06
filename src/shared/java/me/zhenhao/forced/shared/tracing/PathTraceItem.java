@@ -4,22 +4,22 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 
-public class PathTrackingTraceItem extends TraceItem {
+public class PathTraceItem extends TraceItem {
 
     private static final long serialVersionUID = -8948293905139569335L;
 
-    public static final Parcelable.Creator<PathTrackingTraceItem> CREATOR = new Parcelable.Creator<PathTrackingTraceItem>() {
+    public static final Parcelable.Creator<PathTraceItem> CREATOR = new Parcelable.Creator<PathTraceItem>() {
 
         @Override
-        public PathTrackingTraceItem createFromParcel(Parcel parcel) {
-            PathTrackingTraceItem ti = new PathTrackingTraceItem();
+        public PathTraceItem createFromParcel(Parcel parcel) {
+            PathTraceItem ti = new PathTraceItem();
             ti.readFromParcel(parcel);
             return ti;
         }
 
         @Override
-        public PathTrackingTraceItem[] newArray(int size) {
-            return new PathTrackingTraceItem[size];
+        public PathTraceItem[] newArray(int size) {
+            return new PathTraceItem[size];
         }
 
     };
@@ -27,11 +27,11 @@ public class PathTrackingTraceItem extends TraceItem {
     private int branchId;
     private boolean lastConditionResult;
 
-    private PathTrackingTraceItem() {
+    private PathTraceItem() {
         super();
     }
 
-    public PathTrackingTraceItem(int branchId, int lastExecutedStatement, boolean lastConditionResult) {
+    public PathTraceItem(int branchId, int lastExecutedStatement, boolean lastConditionResult) {
         super(lastExecutedStatement);
         this.branchId = branchId;
         this.lastConditionResult = lastConditionResult;
@@ -39,7 +39,7 @@ public class PathTrackingTraceItem extends TraceItem {
 
     @Override
     public String toString() {
-        return "PathTrackingTraceItem([" + branchId + ", " + getLastExecutedStatement() + "]->" + getLastConditionalResult() + ")";
+        return "PathTraceItem([" + branchId + ", " + getLastExecutedStatement() + "]->" + getLastConditionalResult() + ")";
     }
 
     public int getBranchId() {

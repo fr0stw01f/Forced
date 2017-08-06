@@ -2,7 +2,7 @@ package me.zhenhao.forced.apkspecific.CodeModel
 
 import java.util.HashMap
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import soot.Scene
 import soot.SootMethod
@@ -19,7 +19,7 @@ class StaticCodeIndexer {
 
     private fun initializeUnitToMethod() {
         Scene.v().applicationClasses
-                .filter { InstrumenterUtil.isAppDeveloperCode(it) && it.isConcrete }
+                .filter { InstrumentUtil.isAppDeveloperCode(it) && it.isConcrete }
                 .forEach { it.methods
                             .filter { it.isConcrete }
                             .forEach { sm ->

@@ -4,7 +4,7 @@ import com.android.ddmlib.AndroidDebugBridge
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.apkspecific.UtilApk
 import me.zhenhao.forced.appinstrumentation.Instrumenter
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
@@ -34,6 +34,7 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.*
 import java.util.logging.Level
+import kotlin.collections.HashSet
 
 
 class ForcedMain private constructor() {
@@ -52,7 +53,7 @@ class ForcedMain private constructor() {
         makeForcedBinReadyForInstrument()
 
         //remove all files in sootOutput folder
-        FileUtils.cleanDirectory(File(InstrumenterUtil.SOOT_OUTPUT))
+        FileUtils.cleanDirectory(File(InstrumentUtil.SOOT_OUTPUT))
 
         if (UtilMain.blacklistedAPKs.contains(FrameworkOptions.apkPath))
             return null
@@ -179,9 +180,9 @@ class ForcedMain private constructor() {
         for (event in events) {
             try {
                 //todo PAPER-EVAL ONLY
-                if (!FrameworkOptions.evaluationOnly)
+                //if (!FrameworkOptions.evaluationOnly)
                     // do server-side analyses
-                    decisionMaker.runPreAnalysisPhase()
+                    //decisionMaker.runPreAnalysisPhase()
 
                 // After the pre-analysis, log the code position
                 val codePos = codePositionManager.getCodePositionForUnit(target)
@@ -282,9 +283,7 @@ class ForcedMain private constructor() {
         }
 
         // print branch tracking info of all traces
-        decisionMaker.logBranchTrackingForThreadId(-1)
-
-        decisionMaker.config.progressMetrics
+        decisionMaker.logBranchTrackingForThreadId(-1, event.toString())
 
         decisionMaker.tearDown()
     }
@@ -318,8 +317,8 @@ class ForcedMain private constructor() {
         }
 
         // app code bin
-        processDir.add(InstrumenterUtil.ADDITIONAL_APP_CLASSES_BIN)
-        processDir.add(InstrumenterUtil.SHARED_CLASSES_BIN)
+        processDir.add(InstrumentUtil.ADDITIONAL_APP_CLASSES_BIN)
+        processDir.add(InstrumentUtil.SHARED_CLASSES_BIN)
         Options.v().set_process_dir(processDir)
 
         Options.v().set_android_jars(FrameworkOptions.androidJarPath)
@@ -328,8 +327,8 @@ class ForcedMain private constructor() {
         // The bin folder has to be added to the classpath in order to
         // use the Java part for the instrumentation (JavaClassForInstrumentation)
         val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
-        val sootClassPath = InstrumenterUtil.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
-                InstrumenterUtil.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
+        val sootClassPath = InstrumentUtil.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
+                InstrumentUtil.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
         Options.v().set_soot_classpath(sootClassPath)
 
         Scene.v().loadNecessaryClasses()

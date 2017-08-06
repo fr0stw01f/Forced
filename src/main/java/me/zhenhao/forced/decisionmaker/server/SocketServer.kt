@@ -16,7 +16,7 @@ import java.util.HashSet
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.bootstrap.DexFile
 import me.zhenhao.forced.bootstrap.InstanceIndependentCodePosition
 import me.zhenhao.forced.commandlinelogger.LogHelper
@@ -58,13 +58,13 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
                     // Terminate the connection if requested
                     if (clientRequest is CloseConnectionRequest) {
-                        println("Received a CloseConnectionRequest")
-                        oos.writeObject("CloseConnection Ack")
-                        oos.flush()
+                        LogHelper.logInfo("Received a CloseConnectionRequest")
+                        //oos.writeObject("CloseConnection Ack")
+                        //oos.flush()
                         break
                     }
 
-                    // For every trace item, register the last position
+                    // For each trace item, register the last position
                     if (clientRequest is TraceItem)
                         handleTraceItem(clientRequest)
 
@@ -76,7 +76,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
             } catch (ex: Exception) {
                 LogHelper.logEvent(MyLevel.EXCEPTION_ANALYSIS,
                         "There is a problem in the client-server communication " + ex.message)
-                ex.printStackTrace()
+                //ex.printStackTrace()
             } finally {
                 try {
                     if (!socket.isOutputShutdown)
@@ -111,8 +111,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         private fun handleClientRequests(clientRequest: Any, oos: ObjectOutputStream) {
             when (clientRequest) {
                 is DecisionRequest -> handleDecisionRequest(clientRequest, oos)
-                is ConditionTraceItem -> handleConditionTracking(clientRequest, oos)
-                is PathTrackingTraceItem -> handlePathTracking(clientRequest, oos)
+                is ConditionTraceItem -> handleConditionTrace(clientRequest, oos)
+                is PathTraceItem -> handlePathTrace(clientRequest, oos)
                 is AbstractDynamicCFGItem -> handleDynamicCallgraph(clientRequest, oos)
                 is TargetReachedTraceItem -> handleGoalReached(clientRequest, oos)
                 is DynamicValueTraceItem -> handleDynamicValueReceived(clientRequest, oos)
@@ -189,7 +189,7 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
 
 
     private fun handleDecisionRequest(decisionRequest: DecisionRequest, oos: ObjectOutputStream) {
-        println("Received a DecisionRequest")
+        LogHelper.logInfo("Received a DecisionRequest")
         if (decisionRequest.codePosition == -1) {
             oos.writeObject(ServerResponse.getEmptyResponse())
             oos.flush()
@@ -209,8 +209,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         oos.flush()
     }
 
-    private fun handleConditionTracking(traceItem: ConditionTraceItem, oos: ObjectOutputStream) {
-        //println("Received a PathTrackingTraceItem")
+    private fun handleConditionTrace(traceItem: ConditionTraceItem, oos: ObjectOutputStream) {
+        //println("Received a PathTraceItem")
         val codePositionUnit = decisionMaker.codePositionManager
                 .getUnitForCodePosition(traceItem.lastExecutedStatement)
         val mgr = decisionMaker.initThreadTrace()
@@ -224,8 +224,8 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
     }
 
 
-    private fun handlePathTracking(traceItem: PathTrackingTraceItem, oos: ObjectOutputStream) {
-        //println("Received a PathTrackingTraceItem")
+    private fun handlePathTrace(traceItem: PathTraceItem, oos: ObjectOutputStream) {
+        //println("Received a PathTraceItem")
         val codePositionUnit = decisionMaker.codePositionManager
                 .getUnitForCodePosition(traceItem.lastExecutedStatement)
         val decision = traceItem.lastConditionalResult
@@ -258,15 +258,15 @@ class SocketServer private constructor(private val decisionMaker: DecisionMaker)
         try {
             // Write the received dex file to disk for debugging
             val timestamp = System.currentTimeMillis()
-            val dirPath = String.format("%s/dexFiles/", InstrumenterUtil.SOOT_OUTPUT)
+            val dirPath = String.format("%s/dexFiles/", InstrumentUtil.SOOT_OUTPUT)
             val dir = File(dirPath)
             if (!dir.exists())
                 dir.mkdir()
-            val filePath = String.format("%s/dexFiles/%d_dexfile.dex", InstrumenterUtil.SOOT_OUTPUT, timestamp)
+            val filePath = String.format("%s/dexFiles/%d_dexfile.dex", InstrumentUtil.SOOT_OUTPUT, timestamp)
             println(String.format("DexFile: %s (code position: %d)", filePath,
                     dexFileRequest.lastExecutedStatement))
             LogHelper.logEvent(MyLevel.DEXFILE, String.format("Received dex file %s/dexFiles/%d_dexfile.dex",
-                    InstrumenterUtil.SOOT_OUTPUT, timestamp))
+                    InstrumentUtil.SOOT_OUTPUT, timestamp))
             Files.write(Paths.get(filePath), dexFile)
 
             // We need to remove the statements that load the external code,

@@ -8,7 +8,7 @@ import soot.jimple.infoflow.solver.cfg.InfoflowCFG
 
 import com.google.common.collect.HashBasedTable
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.decisionmaker.server.history.ClientHistory
 import me.zhenhao.forced.shared.util.Pair
 
@@ -80,7 +80,7 @@ class ApproachLevelMetric(private val targetUnits: Collection<Unit>, private val
                             // in case of a non-api call
                             cfg.isCallStmt(currentUnit) -> {
                                 cfg.getCalleesOfCallAt(currentUnit)
-                                        .filter { InstrumenterUtil.isAppDeveloperCode(it.declaringClass) }
+                                        .filter { InstrumentUtil.isAppDeveloperCode(it.declaringClass) }
                                         .flatMap { cfg.getStartPointsOf(it) }
                                         .filter { cfg.getMethodOf(it) != null }
                                         .mapTo(worklist) { ApproachLevelItem(it, currentMetricValue) }

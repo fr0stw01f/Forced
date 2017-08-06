@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.util.Log;
 import me.zhenhao.forced.android.networkconnection.NetworkConnectionInitiator;
 import me.zhenhao.forced.android.networkconnection.ServerCommunicator;
@@ -145,7 +144,7 @@ public class BytecodeLogger {
 
         Log.i(SharedClassesSettings.TAG_FORCED, lastStmt + "\t0x" + Integer.toHexString(lastStmt) + "\t" + decision);
 
-        TraceItem traceItem = new PathTrackingTraceItem(branchId, lastStmt, decision);
+        TraceItem traceItem = new PathTraceItem(branchId, lastStmt, decision);
         sendTraceItemSynchronous(context, traceItem);
         dumpTracingDataSynchronous();
     }

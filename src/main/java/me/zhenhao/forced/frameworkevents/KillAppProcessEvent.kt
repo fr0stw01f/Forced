@@ -23,7 +23,7 @@ class KillAppProcessEvent(private val packageName: String) : FrameworkEvent() {
     }
 
     override fun toString(): String {
-        return "KillApkEvent"
+        return "KillApkEvent-$packageName"
     }
 
 }

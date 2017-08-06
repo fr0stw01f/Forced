@@ -1,7 +1,7 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.*
 import soot.jimple.IdentityStmt
 import soot.jimple.IntConstant
@@ -17,7 +17,7 @@ class CodePositionTracking(private val codePositionManager: CodePositionManager)
 
         // Make a reference to the tracker method
         val ref = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
+                Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
                 "setLastExecutedStatement",
                 listOf<Type>(IntType.v()),
                 VoidType.v(),

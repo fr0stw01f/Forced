@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.dynamiccfg.utils.FileUtils
 import soot.*
 import soot.javaToJimple.LocalGenerator
@@ -11,14 +11,14 @@ import java.io.File
 class DynamicValueTransformer(val instrumentOnlyComparisons: Boolean) : AbstractInstrumentationTransformer() {
 
     val refString = Scene.v().makeMethodRef(
-            Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
+            Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
             "reportDynamicValue",
             arrayListOf(RefType.v("java.lang.String"), IntType.v()),
             VoidType.v(),
             true)!!
 
     val refInt = Scene.v().makeMethodRef(
-            Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
+            Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_INSTRUMENTATION),
             "reportDynamicValue",
             arrayListOf<Type>(IntType.v(), IntType.v()),
             VoidType.v(),

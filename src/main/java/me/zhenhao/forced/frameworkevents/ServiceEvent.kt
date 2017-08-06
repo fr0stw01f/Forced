@@ -52,7 +52,7 @@ class ServiceEvent(private val packageName: String?, private val servicePath: St
     }
 
     override fun toString(): String {
-        return "ServiceStartEvent"
+        return "ServiceStartEvent-$servicePath"
     }
 
 }

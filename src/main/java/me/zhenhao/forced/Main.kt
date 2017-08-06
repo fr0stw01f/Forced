@@ -4,7 +4,7 @@ import com.android.ddmlib.AndroidDebugBridge
 import me.zhenhao.forced.apkspecific.CodeModel.CodePositionManager
 import me.zhenhao.forced.apkspecific.UtilApk
 import me.zhenhao.forced.appinstrumentation.Instrumenter
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.appinstrumentation.transformer.InstrumentedCodeTag
 import me.zhenhao.forced.bootstrap.AnalysisTask
 import me.zhenhao.forced.bootstrap.AnalysisTaskManager
@@ -52,7 +52,7 @@ class Main private constructor() {
         makeForcedBinReadyForInstrument()
 
         //remove all files in sootOutput folder
-        FileUtils.cleanDirectory(File(InstrumenterUtil.SOOT_OUTPUT))
+        FileUtils.cleanDirectory(File(InstrumentUtil.SOOT_OUTPUT))
 
         if (UtilMain.blacklistedAPKs.contains(FrameworkOptions.apkPath))
             return null
@@ -282,7 +282,7 @@ class Main private constructor() {
         }
 
         // print branch tracking info of all traces
-        decisionMaker.logBranchTrackingForThreadId(-1)
+        decisionMaker.logBranchTrackingForThreadId(-1, event.toString())
 
         decisionMaker.tearDown()
     }
@@ -316,8 +316,8 @@ class Main private constructor() {
         }
 
         // app code bin
-        processDir.add(InstrumenterUtil.ADDITIONAL_APP_CLASSES_BIN)
-        processDir.add(InstrumenterUtil.SHARED_CLASSES_BIN)
+        processDir.add(InstrumentUtil.ADDITIONAL_APP_CLASSES_BIN)
+        processDir.add(InstrumentUtil.SHARED_CLASSES_BIN)
         Options.v().set_process_dir(processDir)
 
         Options.v().set_android_jars(FrameworkOptions.androidJarPath)
@@ -326,8 +326,8 @@ class Main private constructor() {
         // The bin folder has to be added to the classpath in order to
         // use the Java part for the instrumentation (JavaClassForInstrumentation)
         val androidJarPath = Scene.v().getAndroidJarPath(FrameworkOptions.androidJarPath, FrameworkOptions.apkPath)
-        val sootClassPath = InstrumenterUtil.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
-                InstrumenterUtil.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
+        val sootClassPath = InstrumentUtil.ADDITIONAL_APP_CLASSES_BIN + File.pathSeparator +
+                InstrumentUtil.SHARED_CLASSES_BIN + File.pathSeparator + androidJarPath
         Options.v().set_soot_classpath(sootClassPath)
 
         Scene.v().loadNecessaryClasses()

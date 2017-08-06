@@ -22,7 +22,7 @@ class UninstallAppEvent(private val packageName: String) : FrameworkEvent() {
     }
 
     override fun toString(): String {
-        return "UninstallApkEvent"
+        return "UninstallApkEvent-$packageName"
     }
 
 }

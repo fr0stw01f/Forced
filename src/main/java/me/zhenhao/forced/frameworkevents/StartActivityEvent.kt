@@ -24,7 +24,7 @@ class StartActivityEvent(private val packageName: String, private val activityNa
     }
 
     override fun toString(): String {
-        return "StartActivityEvent"
+        return "StartActivityEvent-$activityName"
     }
 
 }

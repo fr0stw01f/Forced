@@ -8,7 +8,7 @@ import soot.jimple.infoflow.android.axml.AXmlAttribute
 import soot.jimple.infoflow.android.axml.AXmlNode
 import soot.jimple.infoflow.android.manifest.ProcessManifest
 import me.zhenhao.forced.FrameworkOptions
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import me.zhenhao.forced.commandlinelogger.LogHelper
 import me.zhenhao.forced.commandlinelogger.MyLevel
 
@@ -29,7 +29,7 @@ object UtilApk {
         command[5] = "SHA1"
         command[6] = "-keystore"
         command[7] = FrameworkOptions.keystorePath
-        command[8] = InstrumenterUtil.SOOT_OUTPUT_APK
+        command[8] = InstrumentUtil.SOOT_OUTPUT_APK
         command[9] = FrameworkOptions.keystoreName
         command[10] = "-storepass"
         command[11] = FrameworkOptions.keystorePassword
@@ -70,8 +70,8 @@ object UtilApk {
         command[0] = toolsPath + "zipalign"
         command[1] = "-v"
         command[2] = "4"
-        command[3] = InstrumenterUtil.SOOT_OUTPUT_APK
-        command[4] = InstrumenterUtil.SOOT_OUTPUT_DEPLOYED_APK
+        command[3] = InstrumentUtil.SOOT_OUTPUT_APK
+        command[4] = InstrumentUtil.SOOT_OUTPUT_DEPLOYED_APK
 
 
         val p: Process
@@ -149,7 +149,7 @@ object UtilApk {
 
     private fun addComponentCallerService(androidManifest: ProcessManifest) {
         val componentCallerService = AXmlNode("service", null, androidManifest.application)
-        val nameAttribute = AXmlAttribute("name", InstrumenterUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER, ANDROID_NAMESPACE)
+        val nameAttribute = AXmlAttribute("name", InstrumentUtil.HELPER_SERVICE_FOR_COMPONENT_CALLER, ANDROID_NAMESPACE)
         val exportedAttribute = AXmlAttribute("exported", "false", ANDROID_NAMESPACE)
         componentCallerService.addAttribute(nameAttribute)
         componentCallerService.addAttribute(exportedAttribute)
@@ -161,7 +161,7 @@ object UtilApk {
     private fun addHookingHelperAsApplicationIfNecessary(androidManifest: ProcessManifest) {
         val application = androidManifest.application
         if (!application.hasAttribute("name")) {
-            val nameAttribute = AXmlAttribute("name", InstrumenterUtil.HELPER_APPLICATION_FOR_FORCED_CODE_INIT, ANDROID_NAMESPACE)
+            val nameAttribute = AXmlAttribute("name", InstrumentUtil.HELPER_APPLICATION_FOR_FORCED_CODE_INIT, ANDROID_NAMESPACE)
             application.addAttribute(nameAttribute)
         }
     }
@@ -182,7 +182,7 @@ object UtilApk {
 
     private fun addTracingService(androidManifest: ProcessManifest) {
         val tracingService = AXmlNode("service", null, androidManifest.application)
-        val nameAttribute = AXmlAttribute("name", InstrumenterUtil.HELPER_SERVICE_FOR_PATH_TRACKING, ANDROID_NAMESPACE)
+        val nameAttribute = AXmlAttribute("name", InstrumentUtil.HELPER_SERVICE_FOR_PATH_TRACKING, ANDROID_NAMESPACE)
         val exportedAttribute = AXmlAttribute("exported", "false", ANDROID_NAMESPACE)
         tracingService.addAttribute(nameAttribute)
         tracingService.addAttribute(exportedAttribute)
@@ -191,9 +191,9 @@ object UtilApk {
     }
 
     fun removeOldAPKs() {
-        val apkFile = File(InstrumenterUtil.SOOT_OUTPUT_APK)
+        val apkFile = File(InstrumentUtil.SOOT_OUTPUT_APK)
         if (apkFile.exists()) apkFile.delete()
-        val apkDeployedFile = File(InstrumenterUtil.SOOT_OUTPUT_DEPLOYED_APK)
+        val apkDeployedFile = File(InstrumentUtil.SOOT_OUTPUT_DEPLOYED_APK)
         if (apkDeployedFile.exists()) apkDeployedFile.delete()
     }
 

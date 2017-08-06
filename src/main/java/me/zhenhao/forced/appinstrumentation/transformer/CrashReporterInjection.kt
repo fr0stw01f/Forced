@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.Scene
 import soot.SceneTransformer
 import soot.Type
@@ -13,7 +13,7 @@ class CrashReporterInjection(private val methodsToInstrument: Set<String>) : Sce
 
     override fun internalTransform(phaseName: String, options: Map<String, String>) {
         val ref = Scene.v().makeMethodRef(
-                Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_CRASH_REPORTING),
+                Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_CRASH_REPORTING),
                 "registerExceptionHandler",
                 emptyList<Type>(),
                 VoidType.v(),

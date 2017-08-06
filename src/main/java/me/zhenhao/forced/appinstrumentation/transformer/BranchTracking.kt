@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.*
 import soot.jimple.IfStmt
 import soot.jimple.IntConstant
@@ -32,7 +32,7 @@ class BranchTracking : AbstractInstrumentationTransformer() {
     }
 
     private fun instrumentEachBranchAccess(body: Body, ifStmt: IfStmt) {
-        val sootClass = Scene.v().getSootClass(InstrumenterUtil.JAVA_CLASS_FOR_INSTRUMENTATION)
+        val sootClass = Scene.v().getSootClass(InstrumentUtil.JAVA_CLASS_FOR_INSTRUMENTATION)
 
         val reportCondition = sootClass.getMethod("reportConditionSynchronous", listOf<Type>(IntType.v()))
         val sieIfLogExpr = Jimple.v().newStaticInvokeExpr(reportCondition.makeRef(), IntConstant.v(branchId))

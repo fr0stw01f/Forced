@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.*
 import soot.Unit
 import soot.javaToJimple.LocalGenerator
@@ -30,7 +30,7 @@ class GlobalInstanceTransformer : SceneTransformer() {
         // Is this an Android component?
         for (sc in Scene.v().applicationClasses) {
             // We only instrument user code
-            if (!InstrumenterUtil.isAppDeveloperCode(sc))
+            if (!InstrumentUtil.isAppDeveloperCode(sc))
                 continue
 
             // Is this class a component?

@@ -1,6 +1,6 @@
 package me.zhenhao.forced.appinstrumentation.transformer
 
-import me.zhenhao.forced.appinstrumentation.InstrumenterUtil
+import me.zhenhao.forced.appinstrumentation.InstrumentUtil
 import soot.BodyTransformer
 import soot.Scene
 import soot.SootMethod
@@ -11,7 +11,7 @@ abstract class AbstractInstrumentationTransformer : BodyTransformer() {
     protected fun isInstrumentTarget(sm: SootMethod): Boolean {
         // Check whether this is actually user code
         val sClass = sm.declaringClass
-        if (!InstrumenterUtil.isAppDeveloperCode(sClass))
+        if (!InstrumentUtil.isAppDeveloperCode(sClass))
             return false
 
         // We do not instrument the dummy main method

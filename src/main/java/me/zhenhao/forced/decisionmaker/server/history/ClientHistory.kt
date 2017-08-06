@@ -63,8 +63,8 @@ class ClientHistory : Cloneable {
 
     fun addPathTrace(branchId: Int, unit: Unit, decision: Boolean) {
         pathTrace.add(Triple(branchId, unit, decision))
+        addBranchChoices(branchId, unit, decision)
     }
-
 
     fun addDecisionRequestAndResponse(request: DecisionRequest, response: AnalysisDecision) {
         decisionAndResponse.add(Pair(request, response))

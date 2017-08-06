@@ -52,6 +52,6 @@ class ActivityEvent(private val packageName: String?, private val activityPath: 
     }
 
     override fun toString(): String {
-        return "ActivityEvent"
+        return "ActivityEvent-$activityPath"
     }
 }
